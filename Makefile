@@ -1,6 +1,6 @@
 # Give the location of the top level distribution directory wrt. this.
 # Can be absolute or relative
-HILA_DIR := ..
+HILA_DIR := ../../HILA/hila
 
 APP_OPTS := -DNDIM=3
 #-DEVEN_SITES_FIRST=0
