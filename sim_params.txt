@@ -1,6 +1,6 @@
 N                   128
 dx		    0.5
-dtdxRation	    0.2
+dtdxRatio	    0.2
 tStart		    10.0
 tEnd		    50.0
 tdif		    20.0
