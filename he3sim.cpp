@@ -106,20 +106,26 @@ void scaling_sim::initialize() {
   int N = config.l;
   real_t dx = config.dx;
 
+  output0<<"R: "<<hila::random()<<"\n";
+  
   switch (config.initialCondition) {
     
   case 1: {
     pi = 0;
-    foralldir(d1) foralldir(d2){
+    foralldir(d1)foralldir(d2){
       onsites (ALL) {
 
-	A[X].e(d1,d2).re = hila::random();
-	A[X].e(d1,d2).im = hila::random();
-	
+	//if (d1==d2){ A[X].e(d1,d2)=1.0;}
+	if(d1==d2){A[X].e(d1,d2).re = hila::random();}
+	else {A[X].e(d1,d2).re = 0.0;}
+	A[X].e(d1,d2).im = 0.0;//hila::random();
+
       }}
 
     onsites (ALL) {
-      A[X] /= A[X].norm();}
+      A[X] /= A[X].norm();
+      A[X] *= 5.4772; //apparently the fix point
+    }
     
         output0 << "Components randomly created \n";
 
@@ -163,27 +169,47 @@ void scaling_sim::write_moduli() {
 
 void scaling_sim::write_energies() {
 
-  double suma = 0.0;
+  double sumar = 0.0;
+  double sumai = 0.0;
   double sumb1 = 0.0;
-  double sumb2 = 0.0;
-  double sumb3 = 0.0;
-  double sumb4 = 0.0;
-  double sumb5 = 0.0;
+  double sumb2r = 0.0;
+  double sumb2i = 0.0;
+  double sumb3r = 0.0;
+  double sumb3i = 0.0;
+  double sumb4r = 0.0;
+  double sumb4i = 0.0;
+  double sumb5r = 0.0;
+  double sumb5i = 0.0;
 
   hila::set_allreduce(false);
   onsites (ALL) {
 
-    suma += config.alpha * ((A[X]*A[X].dagger()).trace()).squarenorm();
+    sumar += config.alpha * ((A[X]*A[X].dagger()).trace()).re;
+    sumai += config.alpha * ((A[X]*A[X].dagger()).trace()).im;
+    
     sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-    sumb2 += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).squarenorm();
-    sumb3 += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).squarenorm();
-    sumb4 += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).squarenorm();
-    sumb5 += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).squarenorm();
+
+    sumb2r += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).re;
+    sumb2i += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).im;
+
+    sumb3r += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).re;
+    sumb3i += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).im;
+
+    sumb4r += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).re;
+    sumb4i += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).im;
+
+    sumb5r += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).re;
+    sumb5i += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).im;
   }
 
   if (hila::myrank() == 0) {
     double vol = (double)config.l * config.l * config.l;
-    config.stream << suma / vol << " " << sumb1 / vol << " " << sumb2 / vol << " " << sumb3 / vol << " " << sumb4 / vol << " " << sumb5 / vol << "\n ";
+    config.stream << sumar / vol << " "<< sumai / vol << " "
+		  << sumb1 / vol << " "
+		  << sumb2r / vol << " " << sumb2i / vol << " "
+		  << sumb3r / vol << " " << sumb3i / vol << " "
+ 		  << sumb4r / vol << " " << sumb4i / vol << " "
+		  << sumb5r / vol << " " << sumb5i / vol << "\n";
   }
 }  
 void scaling_sim::next() {
@@ -191,50 +217,31 @@ void scaling_sim::next() {
 
     static hila::timer next_timer("timestep");
     Field<phi_t> deltaPi;
-    Field<phi_t> partialA;
-    Field<phi_t> Appx;
-    Field<phi_t> Appy;
-    Field<phi_t> Appz;
-    Field<phi_t> Ampx;
-    Field<phi_t> Ampy;
-    Field<phi_t> Ampz;
-    Field<phi_t> Apmx;
-    Field<phi_t> Apmy;
-    Field<phi_t> Apmz;
-    Field<phi_t> Ammx;
-    Field<phi_t> Ammy;
-    Field<phi_t> Ammz;
+    Field<Vector<3,Complex<real_t>>> djAaj;
+
     
     next_timer.start();
 
     onsites (ALL) {
         A[X] += config.dt * pi[X];
-        deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() + 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
-	  + 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) + 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) + 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
+        deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() - 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
+	  - 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) - 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
     }
 
-    foralldir(d1) foralldir(d2){
-    onsites (ALL) {
-      Appx[X]=A[X+d2+e_x];
-      Appy[X]=A[X+d2+e_y];
-      Appz[X]=A[X+d2+e_z];
-      Ampx[X]=A[X-d2+e_x];
-      Ampy[X]=A[X-d2+e_y];
-      Ampz[X]=A[X-d2+e_z];
-      Apmx[X]=A[X+d2-e_x];
-      Apmy[X]=A[X+d2-e_y];
-      Apmz[X]=A[X+d2-e_z];
-      Ammx[X]=A[X-d2-e_x];
-      Ammy[X]=A[X-d2-e_y];
-      Ammz[X]=A[X-d2-e_z];
-      
-      deltaPi[X].e(d1,d2) += (1.0/(4.0*config.dx*config.dx)) * (Appx[X].e(d1,e_x) - Apmx[X].e(d1,e_x)
-								+Appy[X].e(d1,e_y) - Apmy[X].e(d1,e_y)
-								+Appz[X].e(d1,e_z) - Apmz[X].e(d1,e_z)
-								-Ampx[X].e(d1,e_x) + Ammx[X].e(d1,e_x)
-								-Ampy[X].e(d1,e_y) + Ammy[X].e(d1,e_y)
-							        -Ampz[X].e(d1,e_z) + Ammz[X].e(d1,e_z));
-    }}
+    onsites(ALL) {
+        djAaj[X] = 0;
+        foralldir(j) {
+            djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+        }
+    }
+    onsites(ALL) {
+        phi_t mat;
+        foralldir(d) {
+            auto col = djAaj[X+d] - djAaj[X-d];
+            for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+        }
+        deltaPi[X] += (1.0/(2.0*config.dx*config.dx))*mat;
+    }
 
     onsites (ALL) {  
       deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X + e_x] + A[X -e_x]
@@ -242,7 +249,7 @@ void scaling_sim::next() {
 						   + A[X + e_z] + A[X -e_z]
 						   - 6.0*A[X]);
     }
-
+    
 
     if (t < config.tdif)
     {
