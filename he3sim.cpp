@@ -112,15 +112,21 @@ void scaling_sim::initialize() {
     
   case 1: {
     pi = 0;
-    foralldir(d1)foralldir(d2){
-      onsites (ALL) {
 
-	//if (d1==d2){ A[X].e(d1,d2)=1.0;}
-	if(d1==d2){A[X].e(d1,d2).re = hila::random();}
-	else {A[X].e(d1,d2).re = 0.0;}
-	A[X].e(d1,d2).im = 0.0;//hila::random();
+    onsites(ALL) {
+        A[X] = 0;
+        foralldir(d1) A[X].e(d1,d1).re = hila::gaussrand();
+    }
 
-      }}
+    // foralldir(d1)foralldir(d2){
+    //   onsites (ALL) {
+
+	// //if (d1==d2){ A[X].e(d1,d2)=1.0;}
+	// if(d1==d2){A[X].e(d1,d2).re = hila::random();}
+	// else {A[X].e(d1,d2).re = 0.0;}
+	// A[X].e(d1,d2).im = 0.0;//hila::random();
+
+    //   }}
 
     onsites (ALL) {
       A[X] /= A[X].norm();
@@ -169,48 +175,77 @@ void scaling_sim::write_moduli() {
 
 void scaling_sim::write_energies() {
 
-  double sumar = 0.0;
-  double sumai = 0.0;
-  double sumb1 = 0.0;
-  double sumb2r = 0.0;
-  double sumb2i = 0.0;
-  double sumb3r = 0.0;
-  double sumb3i = 0.0;
-  double sumb4r = 0.0;
-  double sumb4i = 0.0;
-  double sumb5r = 0.0;
-  double sumb5i = 0.0;
+    Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
+    double sumb1 = 0;
 
-  hila::set_allreduce(false);
-  onsites (ALL) {
+    hila::set_allreduce(false);
+    onsites(ALL) {
+        suma += config.alpha * (A[X]*A[X].dagger()).trace();
 
-    sumar += config.alpha * ((A[X]*A[X].dagger()).trace()).re;
-    sumai += config.alpha * ((A[X]*A[X].dagger()).trace()).im;
-    
-    sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+        sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
 
-    sumb2r += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).re;
-    sumb2i += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).im;
+        sumb2 += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
 
-    sumb3r += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).re;
-    sumb3i += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).im;
+        sumb3 += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
 
-    sumb4r += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).re;
-    sumb4i += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).im;
+        sumb4 += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
 
-    sumb5r += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).re;
-    sumb5i += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).im;
-  }
+        sumb5 += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+    }
 
-  if (hila::myrank() == 0) {
-    double vol = (double)config.l * config.l * config.l;
-    config.stream << sumar / vol << " "<< sumai / vol << " "
+      if (hila::myrank() == 0) {
+        double vol = lattice->volume();
+        config.stream << suma.re / vol << " "<< suma.im / vol << " "
 		  << sumb1 / vol << " "
-		  << sumb2r / vol << " " << sumb2i / vol << " "
-		  << sumb3r / vol << " " << sumb3i / vol << " "
- 		  << sumb4r / vol << " " << sumb4i / vol << " "
-		  << sumb5r / vol << " " << sumb5i / vol << "\n";
-  }
+		  << sumb2.re / vol << " " << sumb2.im / vol << " "
+		  << sumb3.re / vol << " " << sumb3.im / vol << " "
+ 		  << sumb4.re / vol << " " << sumb4.im / vol << " "
+		  << sumb5.re / vol << " " << sumb5.im / vol << "\n";
+    }
+
+
+    //   double sumar = 0.0;
+    //   double sumai = 0.0;
+    //   double sumb1 = 0.0;
+    //   double sumb2r = 0.0;
+    //   double sumb2i = 0.0;
+    //   double sumb3r = 0.0;
+    //   double sumb3i = 0.0;
+    //   double sumb4r = 0.0;
+    //   double sumb4i = 0.0;
+    //   double sumb5r = 0.0;
+    //   double sumb5i = 0.0;
+
+    //   hila::set_allreduce(false);
+    //   onsites (ALL) {
+
+    //     sumar += config.alpha * ((A[X]*A[X].dagger()).trace()).re;
+    //     sumai += config.alpha * ((A[X]*A[X].dagger()).trace()).im;
+        
+    //     sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+
+    //     sumb2r += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).re;
+    //     sumb2i += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).im;
+
+    //     sumb3r += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).re;
+    //     sumb3i += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).im;
+
+    //     sumb4r += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).re;
+    //     sumb4i += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).im;
+
+    //     sumb5r += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).re;
+    //     sumb5i += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).im;
+    //   }
+
+    //   if (hila::myrank() == 0) {
+    //     double vol = (double)config.l * config.l * config.l;
+    //     config.stream << sumar / vol << " "<< sumai / vol << " "
+    // 		  << sumb1 / vol << " "
+    // 		  << sumb2r / vol << " " << sumb2i / vol << " "
+    // 		  << sumb3r / vol << " " << sumb3i / vol << " "
+    //  		  << sumb4r / vol << " " << sumb4i / vol << " "
+    // 		  << sumb5r / vol << " " << sumb5i / vol << "\n";
+    //   }
 }  
 void scaling_sim::next() {
 
@@ -224,8 +259,18 @@ void scaling_sim::next() {
 
     onsites (ALL) {
         A[X] += config.dt * pi[X];
-        deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() - 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
-	  - 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) - 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
+
+        auto AxAt = A[X]*A[X].transpose();
+        auto AxAd = A[X]*A[X].dagger();
+
+        deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*AxAt.trace() 
+            - 2.0*config.beta2*A[X]*AxAd.trace()
+	        - 2.0*config.beta3*(AxAt*A[X]) - 2.0*config.beta4*(AxAd*A[X]) 
+            - 2.0*config.beta5*(AxAd.conj()*A[X]);
+
+
+    //     deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() - 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
+	//   - 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) - 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
     }
 
     onsites(ALL) {
