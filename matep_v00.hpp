@@ -7,8 +7,8 @@
  *
  */ 
 
-#ifndef SCCO_H
-#define SCCO_H
+#ifndef MATEP_HPP
+#define MATEP_HPP
 
 //#include <string>
 #include <iostream>
@@ -16,9 +16,9 @@
 #include <cmath>
 
 
-class SCCO {
+class MATEP {
 public:
-        SCCO() = default; // constructor
+        MATEP() = default; // constructor
 
         // interfaces of dimensional qualities
 	

@@ -13,7 +13,7 @@
 #include <cmath>
 // using std::istream; using std::ostream;
 
-#include "SCCO_V00.hpp"
+#include "matep.hpp"
 
 //********************************************************************
 //********************************************************************
@@ -21,16 +21,16 @@
 //'
 
 //constexpr long double SCCO::pi = = 3.14159265358979323846264338328L;
-const long double SCCO::c1_arr[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};
-const long double SCCO::c2_arr[18] = {-0.0419, -0.0490, -0.0562, -0.0636, -0.0711, -0.0786, -0.0861, -0.0936, -0.1011, -0.1086, -0.1160, -0.1233, -0.1306, -0.1378, -0.1448, -0.1517, -0.1583, -0.1645};
-const long double SCCO::c3_arr[18] = {-0.0132, -0.0161, -0.0184, -0.0202, -0.0216, -0.0226, -0.0233, -0.0239, -0.0243, -0.0247, -0.0249, -0.0252, -0.0255, -0.0258, -0.0262, -0.0265, -0.0267, -0.0268};
-const long double SCCO::c4_arr[18] = {-0.0047, -0.0276, -0.0514, -0.0760, -0.1010, -0.1260, -0.1508, -0.1751, -0.1985, -0.2208, -0.2419, -0.2614, -0.2795, -0.2961, -0.3114, -0.3255, -0.3388, -0.3518};
-const long double SCCO::c5_arr[18] = {-0.0899, -0.1277, -0.1602, -0.1880, -0.2119, -0.2324, -0.2503, -0.2660, -0.2801, -0.2930, -0.3051, -0.3167, -0.3280, -0.3392, -0.3502, -0.3611, -0.3717, -0.3815};
+const long double MATEP::c1_arr[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};
+const long double MATEP::c2_arr[18] = {-0.0419, -0.0490, -0.0562, -0.0636, -0.0711, -0.0786, -0.0861, -0.0936, -0.1011, -0.1086, -0.1160, -0.1233, -0.1306, -0.1378, -0.1448, -0.1517, -0.1583, -0.1645};
+const long double MATEP::c3_arr[18] = {-0.0132, -0.0161, -0.0184, -0.0202, -0.0216, -0.0226, -0.0233, -0.0239, -0.0243, -0.0247, -0.0249, -0.0252, -0.0255, -0.0258, -0.0262, -0.0265, -0.0267, -0.0268};
+const long double MATEP::c4_arr[18] = {-0.0047, -0.0276, -0.0514, -0.0760, -0.1010, -0.1260, -0.1508, -0.1751, -0.1985, -0.2208, -0.2419, -0.2614, -0.2795, -0.2961, -0.3114, -0.3255, -0.3388, -0.3518};
+const long double MATEP::c5_arr[18] = {-0.0899, -0.1277, -0.1602, -0.1880, -0.2119, -0.2324, -0.2503, -0.2660, -0.2801, -0.2930, -0.3051, -0.3167, -0.3280, -0.3392, -0.3502, -0.3611, -0.3717, -0.3815};
 
-const long double SCCO::Tc_arr[18] = {0.929, 1.181, 1.388, 1.560, 1.705, 1.828, 1.934, 2.026, 2.106, 2.177, 2.239, 2.293, 2.339, 2.378, 2.411, 2.438, 2.463, 2.486}; // mK
-const long double SCCO::Ms_arr[18] = {2.80, 3.05, 3.27, 3.48, 3.68, 3.86, 4.03, 4.20, 4.37, 4.53, 4.70, 4.86, 5.02, 5.18, 5.34, 5.50, 5.66, 5.82}; // in unit of helium-3 atom
-const long double SCCO::VF_arr[18] = {59.03, 55.41, 52.36, 49.77, 47.56, 45.66, 44.00, 42.51, 41.17, 39.92, 38.74, 37.61, 36.53, 35.50, 34.53, 33.63, 32.85, 32.23}; // fermi velosity, m.s^-1
-const long double SCCO::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37, 27.66, 25.51, 23.76, 22.29, 21.03, 19.94, 18.99, 18.15, 17.41, 16.77, 16.22, 15.76};
+const long double MATEP::Tc_arr[18] = {0.929, 1.181, 1.388, 1.560, 1.705, 1.828, 1.934, 2.026, 2.106, 2.177, 2.239, 2.293, 2.339, 2.378, 2.411, 2.438, 2.463, 2.486}; // mK
+const long double MATEP::Ms_arr[18] = {2.80, 3.05, 3.27, 3.48, 3.68, 3.86, 4.03, 4.20, 4.37, 4.53, 4.70, 4.86, 5.02, 5.18, 5.34, 5.50, 5.66, 5.82}; // in unit of helium-3 atom
+const long double MATEP::VF_arr[18] = {59.03, 55.41, 52.36, 49.77, 47.56, 45.66, 44.00, 42.51, 41.17, 39.92, 38.74, 37.61, 36.53, 35.50, 34.53, 33.63, 32.85, 32.23}; // fermi velosity, m.s^-1
+const long double MATEP::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37, 27.66, 25.51, 23.76, 22.29, 21.03, 19.94, 18.99, 18.15, 17.41, 16.77, 16.22, 15.76};
 
 
 //*********************************************************************
@@ -39,13 +39,13 @@ const long double SCCO::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37,
 //'
 
 long double
-SCCO::Tcp(long double p){
+MATEP::Tcp(long double p){
   long double Tc = lininterp(Tc_arr, p)*std::pow(10,-3);
   return Tc;
 }
 
 long double
-SCCO::mEffp(long double p){
+MATEP::mEffp(long double p){
   constexpr long double kg = 1.0L;
   const long double u = 1.66053906660L*(std::pow(10.0L,-27))*kg;
   const long double m3 = 3.016293L*u;
@@ -55,14 +55,14 @@ SCCO::mEffp(long double p){
 }
 
 long double
-SCCO::vFp(long double p){
+MATEP::vFp(long double p){
   // unit m.s^-1
   long double vF = lininterp(VF_arr, p);
   return vF;
 }
 
 long double
-SCCO::xi0p(long double p){
+MATEP::xi0p(long double p){
   constexpr long double m = 1.0L;
   const long double nm = (std::pow(10.0L, -9))*m; 
   long double xi0 = lininterp(XI0_arr, p)*nm;
@@ -70,7 +70,7 @@ SCCO::xi0p(long double p){
 }  
 
 long double
-SCCO::N0p(long double p){
+MATEP::N0p(long double p){
   constexpr long double J = 1.0L, s = 1.0L, pi = 3.14159265358979323846264338328L;;
   const long double hbar = 1.054571817L*(std::pow(10.0L,-34))*J*s;
   long double N0 = (std::pow(mEffp(p),2)*vFp(p))/((2.0L*pi*pi)*std::pow(hbar,3));
@@ -84,11 +84,11 @@ SCCO::N0p(long double p){
 //'''     member functions, interfaces of dimensionless coefficients
 
 long double
-SCCO::alpha_bar(long double p, long double T){ return (1.L/3.L)*(T/Tcp(p)-1); }  
+MATEP::alpha_bar(long double p, long double T){ return (1.L/3.L)*(T/Tcp(p)-1); }  
 
 
 long double
-SCCO::beta1_bar(long double p, long double T){
+MATEP::beta1_bar(long double p, long double T){
   constexpr long double pi = 3.14159265358979323846264338328L;
   const long double zeta3 = std::riemann_zetal(3.0L);
   const long double c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
@@ -99,7 +99,7 @@ SCCO::beta1_bar(long double p, long double T){
 
 
 long double
-SCCO::beta2_bar(long double p, long double T){
+MATEP::beta2_bar(long double p, long double T){
   constexpr long double pi = 3.14159265358979323846264338328L;
   const long double zeta3 = std::riemann_zetal(3.0L);
   const long double c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
@@ -110,7 +110,7 @@ SCCO::beta2_bar(long double p, long double T){
 
 
 long double
-SCCO::beta3_bar(long double p, long double T){
+MATEP::beta3_bar(long double p, long double T){
   constexpr long double pi = 3.14159265358979323846264338328L;
   const long double zeta3 = std::riemann_zetal(3.0L);
   const long double c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
@@ -121,7 +121,7 @@ SCCO::beta3_bar(long double p, long double T){
 
 
 long double
-SCCO::beta4_bar(long double p, long double T){
+MATEP::beta4_bar(long double p, long double T){
   constexpr long double pi = 3.14159265358979323846264338328L;
   const long double zeta3 = std::riemann_zetal(3.0L);
   const long double c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
@@ -132,7 +132,7 @@ SCCO::beta4_bar(long double p, long double T){
 
 
 long double
-SCCO::beta5_bar(long double p, long double T){
+MATEP::beta5_bar(long double p, long double T){
   constexpr long double pi = 3.14159265358979323846264338328L;
   const long double zeta3 = std::riemann_zetal(3.0L);
   const long double c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
@@ -149,7 +149,7 @@ SCCO::beta5_bar(long double p, long double T){
 //'
 
 long double
-SCCO::lininterp(const long double *cX_arr, long double p){
+MATEP::lininterp(const long double *cX_arr, long double p){
   long double pk, pk1, fp;
   size_t k, k1;
 
