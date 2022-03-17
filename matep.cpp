@@ -69,7 +69,7 @@ MATEP::xi0p(real_t p){
 }  
 
 real_t
-MATEP::N0p(long double p){
+MATEP::N0p(real_t p){
   constexpr float J = 1.0f, s = 1.0f, pi = 3.14159265358979323846264338328f;;
   const float hbar = 1.054571817f*(std::pow(10.0f,-34))*J*s;
   real_t N0 = (std::pow(mEffp(p),2)*vFp(p))/((2.0f*pi*pi)*std::pow(hbar,3));
@@ -89,7 +89,7 @@ MATEP::alpha_bar(real_t p, real_t T){ return (1.f/3.f)*(T/Tcp(p)-1); }
 real_t
 MATEP::beta1_bar(real_t p, real_t T){
   constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zetal(3.0f);
+  const float zeta3 = std::riemann_zeta(3.0f);
   const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
   real_t beta1 = c_betai*(-1.0f + (T/Tcp(p))*lininterp(c1_arr, p));
 
@@ -100,7 +100,7 @@ MATEP::beta1_bar(real_t p, real_t T){
 real_t
 MATEP::beta2_bar(real_t p, real_t T){
   constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zetal(3.0f);
+  const float zeta3 = std::riemann_zeta(3.0f);
   const float c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
   real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c2_arr, p));
 
@@ -111,7 +111,7 @@ MATEP::beta2_bar(real_t p, real_t T){
 real_t
 MATEP::beta3_bar(real_t p, real_t T){
   constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zetal(3.0f);
+  const float zeta3 = std::riemann_zeta(3.0f);
   const float c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
   real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c3_arr, p));
 
@@ -122,7 +122,7 @@ MATEP::beta3_bar(real_t p, real_t T){
 real_t
 MATEP::beta4_bar(real_t p, real_t T){
   constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zetal(3.0f);
+  const float zeta3 = std::riemann_zeta(3.0f);
   const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
   real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c4_arr, p));
 
@@ -133,7 +133,7 @@ MATEP::beta4_bar(real_t p, real_t T){
 real_t
 MATEP::beta5_bar(real_t p, real_t T){
   constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zetal(3.0f);
+  const float zeta3 = std::riemann_zeta(3.0f);
   const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
   real_t beta1 = c_betai*(-2.0f + (T/Tcp(p))*lininterp(c5_arr, p));
 
