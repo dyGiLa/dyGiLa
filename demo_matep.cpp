@@ -3,7 +3,7 @@
 //#include <cstddef>
 //#include <cmath>
 
-#include "SCCO_V00.hpp"
+#include "matep.hpp"
 
 
 int main(){
@@ -12,11 +12,11 @@ int main(){
   long double p = 32.0;
   long double something = 3.14159265358979323846264338328L;
 
-  SCCO SC;
+  MATEP MP;
 
-  std::cout << SC.beta1_bar(p, T) << " and Tc is " << SC.Tcp(p) << std::endl;
-  std::cout << something << SC.alpha_bar(p, T) << std::endl;
-  std::cout << SC.N0p(p) << std::endl;
+  std::cout << MP.beta1_bar(p, T) << " and Tc is " << MP.Tcp(p) << std::endl;
+  std::cout << something << MP.alpha_bar(p, T) << std::endl;
+  std::cout << MP.N0p(p) << std::endl;
 
   return 0;
 
