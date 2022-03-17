@@ -7,3 +7,8 @@ Uses HILA framework (Kari Rummukainen et al): https://bitbucket.org/Kari_Rummuka
 
 Create branch materialp for material parameter (Quang Zhang, timohyva@github)
 
+### demo of matep
+compiling & run
+~~~ bash
+ g++ -std=c++2a -g -o demo.app demo_matep.cpp matep.cpp matep.hpp
+~~~
