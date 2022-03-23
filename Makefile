@@ -15,7 +15,6 @@ endif
 # Read in the main makefile contents, incl. platforms
 include $(HILA_DIR)/libraries/main.mk
 
-
 # With multiple targets we want to use "make target", not "make build/target".
 # This is needed to carry the dependencies to build-subdir
 

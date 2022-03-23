@@ -6,9 +6,11 @@
 //#include <math.h>
 #include <assert.h>
 
+
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 
+#include "matep.hpp"
 
 // Definition of the fiedl that we will use
 using real_t = float;   // or double
@@ -23,6 +25,7 @@ public:
   scaling_sim() = default;
   const std::string allocate(const std::string &fname, int argc, char **argv);
   void initialize();
+  void update_params();
   void write_moduli();
   void write_energies();
   void next();
@@ -31,6 +34,13 @@ public:
   Field<phi_t> pi;
 
   real_t t;
+
+  real_t alpha;
+  real_t beta1;
+  real_t beta2;
+  real_t beta3;
+  real_t beta4;
+  real_t beta5;
   
     struct config {
       int l;
@@ -50,6 +60,9 @@ public:
       int seed;
       
       real_t tau;
+
+      real_t T;
+      real_t p;
       real_t alpha;
       real_t beta1;
       real_t beta2;
@@ -65,7 +78,10 @@ public:
 
 const std::string scaling_sim::allocate(const std::string &fname, int argc,
                                         char **argv) {
-    hila::initialize(argc, argv);
+
+  MATEP MP;
+  
+  hila::initialize(argc, argv);
 
     hila::input parameters(fname);
     config.l = parameters.get("N");
@@ -80,12 +96,25 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.initialCondition = parameters.get("initialCondition");
     config.seed = parameters.get("seed");
     config.tau = parameters.get("tau");
-    config.alpha = parameters.get("alpha");
-    config.beta1 = parameters.get("beta1");
-    config.beta2 = parameters.get("beta2");
-    config.beta3 = parameters.get("beta3");
-    config.beta4 = parameters.get("beta4");
-    config.beta5 = parameters.get("beta5");
+    int item = parameters.get_item("category",{"fixed", "computed"});
+    if (item == 0){
+      config.alpha = parameters.get("alpha");
+      config.beta1 = parameters.get("beta1");
+      config.beta2 = parameters.get("beta2");
+      config.beta3 = parameters.get("beta3");
+      config.beta4 = parameters.get("beta4");
+      config.beta5 = parameters.get("beta5");
+    }
+    else {
+      config.T = parameters.get("T");
+      config.p = parameters.get("p");
+      config.alpha = MP.alpha_bar(config.p, config.T);
+      config.beta1 = MP.beta1_bar(config.p, config.T);
+      config.beta2 = MP.beta2_bar(config.p, config.T);
+      config.beta3 = MP.beta3_bar(config.p, config.T);
+      config.beta4 = MP.beta4_bar(config.p, config.T);
+      config.beta5 = MP.beta5_bar(config.p, config.T);
+    }
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
     const std::string output_file = parameters.get("output_file");
@@ -114,28 +143,12 @@ void scaling_sim::initialize() {
     pi = 0;
 
     onsites(ALL) {
-        A[X] = 0;
-        foralldir(d1) A[X].e(d1,d1).re = hila::gaussrand();
+      foralldir(d1)foralldir(d2){ A[X].e(d1,d2).re = hila::gaussrand();}
     }
 
-    // foralldir(d1)foralldir(d2){
-    //   onsites (ALL) {
+    output0 << "Components randomly created \n";
 
-	// //if (d1==d2){ A[X].e(d1,d2)=1.0;}
-	// if(d1==d2){A[X].e(d1,d2).re = hila::random();}
-	// else {A[X].e(d1,d2).re = 0.0;}
-	// A[X].e(d1,d2).im = 0.0;//hila::random();
-
-    //   }}
-
-    onsites (ALL) {
-      A[X] /= A[X].norm();
-      A[X] *= 5.4772; //apparently the fix point
-    }
-    
-        output0 << "Components randomly created \n";
-
-        break;
+    break;
     }
     
   default: {
