@@ -16,10 +16,20 @@
 
 //********************************************************************
 //********************************************************************
+//''' static physical constants of he3 members
+const real_t MATEP::u = 1.66053906660f*(std::pow(10.0f,-27))*kg;
+const real_t MATEP::m3 = 3.016293f*u;
+const real_t MATEP::nm = (std::pow(10.0f, -9))*m;
+const real_t MATEP::hbar = 1.054571817f*(std::pow(10.0f,-34))*J*s;
+const real_t MATEP::zeta3 = std::riemann_zeta(3.0f);
+const real_t MATEP::c_betai = (7.0f*zeta3)/(80.0f*pi*pi);
+
+
+//********************************************************************
+//********************************************************************
 //''' data sheets of  strong coupling corrected material parameters
 //'
 
-//constexpr long double SCCO::pi = = 3.14159265358979323846264338328L;
 const real_t MATEP::c1_arr[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};
 const real_t MATEP::c2_arr[18] = {-0.0419, -0.0490, -0.0562, -0.0636, -0.0711, -0.0786, -0.0861, -0.0936, -0.1011, -0.1086, -0.1160, -0.1233, -0.1306, -0.1378, -0.1448, -0.1517, -0.1583, -0.1645};
 const real_t MATEP::c3_arr[18] = {-0.0132, -0.0161, -0.0184, -0.0202, -0.0216, -0.0226, -0.0233, -0.0239, -0.0243, -0.0247, -0.0249, -0.0252, -0.0255, -0.0258, -0.0262, -0.0265, -0.0267, -0.0268};
@@ -44,11 +54,12 @@ MATEP::Tcp(real_t p){
 }
 
 real_t
-MATEP::mEffp(real_t p){
-  constexpr float kg = 1.0f;
-  const float u = 1.66053906660f*(std::pow(10.0f,-27))*kg;
-  const float m3 = 3.016293f*u;
-  
+MATEP::Tcp_mK(real_t p) {return lininterp(Tc_arr, p);
+}
+
+
+real_t
+MATEP::mEffp(real_t p){  
   real_t mEff = lininterp(Ms_arr, p)*m3;;
   return mEff;
 }
@@ -62,17 +73,23 @@ MATEP::vFp(real_t p){
 
 real_t
 MATEP::xi0p(real_t p){
-  constexpr real_t m = 1.0f;
-  const real_t nm = (std::pow(10.0f, -9))*m; 
   real_t xi0 = lininterp(XI0_arr, p)*nm;
   return xi0;
 }  
 
-real_t
+// real_t
+// MATEP::N0p(real_t p){
+//   // ((mEff(p)**(2))*vF(p))/((2*pi*pi)*(hbar**(3)))
+//   return N0;
+// }
+
+
+double
 MATEP::N0p(real_t p){
-  constexpr float J = 1.0f, s = 1.0f, pi = 3.14159265358979323846264338328f;;
-  const float hbar = 1.054571817f*(std::pow(10.0f,-34))*J*s;
-  real_t N0 = (std::pow(mEffp(p),2)*vFp(p))/((2.0f*pi*pi)*std::pow(hbar,3));
+  /*
+   * the maginitude of N0p is about 10^(50), it must be double type 
+   */
+  double N0 = (std::pow(mEffp(p),2)*vFp(p))/((2.0f*pi*pi)*std::pow(hbar,3));
   // ((mEff(p)**(2))*vF(p))/((2*pi*pi)*(hbar**(3)))
   return N0;
 }
@@ -83,59 +100,44 @@ MATEP::N0p(real_t p){
 //'''     member functions, interfaces of dimensionless coefficients
 
 real_t
-MATEP::alpha_bar(real_t p, real_t T){ return (1.f/3.f)*(T/Tcp(p)-1); }  
+MATEP::alpha_td(real_t p, real_t T){ return 1.f*(T/Tcp_mK(p)-1); }  
 
 
 real_t
-MATEP::beta1_bar(real_t p, real_t T){
-  constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zeta(3.0f);
-  const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
-  real_t beta1 = c_betai*(-1.0f + (T/Tcp(p))*lininterp(c1_arr, p));
+MATEP::beta1_td(real_t p, real_t T){
+  real_t beta1 = c_betai*(-1.0f + (T/Tcp_mK(p))*lininterp(c1_arr, p));
 
   return beta1;
 }  
 
 
 real_t
-MATEP::beta2_bar(real_t p, real_t T){
-  constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zeta(3.0f);
-  const float c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
-  real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c2_arr, p));
+MATEP::beta2_td(real_t p, real_t T){
+  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c2_arr, p));
 
   return beta1;
 }  
 
 
 real_t
-MATEP::beta3_bar(real_t p, real_t T){
-  constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zeta(3.0f);
-  const float c_betai = (7.0L*zeta3)/(240.0L*pi*pi);
-  real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c3_arr, p));
+MATEP::beta3_td(real_t p, real_t T){
+  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c3_arr, p));
 
   return beta1;
 }  
 
 
 real_t
-MATEP::beta4_bar(real_t p, real_t T){
-  constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zeta(3.0f);
-  const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
-  real_t beta1 = c_betai*(2.0f + (T/Tcp(p))*lininterp(c4_arr, p));
+MATEP::beta4_td(real_t p, real_t T){
+  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c4_arr, p));
 
   return beta1;
 }
 
 
 real_t
-MATEP::beta5_bar(real_t p, real_t T){
-  constexpr float pi = 3.14159265358979323846264338328f;
-  const float zeta3 = std::riemann_zeta(3.0f);
-  const float c_betai = (7.0f*zeta3)/(240.0f*pi*pi);
-  real_t beta1 = c_betai*(-2.0f + (T/Tcp(p))*lininterp(c5_arr, p));
+MATEP::beta5_td(real_t p, real_t T){
+  real_t beta1 = c_betai*(-2.0f + (T/Tcp_mK(p))*lininterp(c5_arr, p));
 
   return beta1;
 }  
