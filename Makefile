@@ -21,6 +21,8 @@ include $(HILA_DIR)/libraries/main.mk
 he3sim: build/he3sim ; @:
 
 # Now the linking step for each target executable
-build/he3sim: Makefile build/he3sim.o $(HILA_OBJECTS) $(HEADERS) 
-	$(LD) -o $@ build/he3sim.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
+build/he3sim: Makefile build/he3sim.o build/matep.o $(HILA_OBJECTS) $(HEADERS) 
+	$(LD) -o $@ build/he3sim.o build/matep.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
+
+
 

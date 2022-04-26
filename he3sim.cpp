@@ -26,6 +26,7 @@ public:
   const std::string allocate(const std::string &fname, int argc, char **argv);
   void initialize();
   void update_params();
+  void update_Tp (real_t t, real_t Tp[2]);
   void write_moduli();
   void write_energies();
   void next();
@@ -35,12 +36,11 @@ public:
 
   real_t t;
 
-  real_t alpha;
-  real_t beta1;
-  real_t beta2;
-  real_t beta3;
-  real_t beta4;
-  real_t beta5;
+  real_t tc = 0;
+
+  std::vector<real_t> t_v;
+  std::vector<real_t> T_v;
+  std::vector<real_t> p_v;
   
     struct config {
       int l;
@@ -59,8 +59,7 @@ public:
       int initialCondition;
       int seed;
       
-      real_t tau;
-
+      int item;
       real_t T;
       real_t p;
       real_t alpha;
@@ -79,9 +78,7 @@ public:
 const std::string scaling_sim::allocate(const std::string &fname, int argc,
                                         char **argv) {
 
-  MATEP MP;
-  
-  hila::initialize(argc, argv);
+   hila::initialize(argc, argv);
 
     hila::input parameters(fname);
     config.l = parameters.get("N");
@@ -95,9 +92,8 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.gamma = parameters.get("gamma");
     config.initialCondition = parameters.get("initialCondition");
     config.seed = parameters.get("seed");
-    config.tau = parameters.get("tau");
-    int item = parameters.get_item("category",{"fixed", "computed"});
-    if (item == 0){
+    config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
+    if (config.item == 0){
       config.alpha = parameters.get("alpha");
       config.beta1 = parameters.get("beta1");
       config.beta2 = parameters.get("beta2");
@@ -105,18 +101,32 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
       config.beta4 = parameters.get("beta4");
       config.beta5 = parameters.get("beta5");
     }
-    else {
+    else if (config.item == 1) {
       config.T = parameters.get("T");
       config.p = parameters.get("p");
-      config.alpha = MP.alpha_bar(config.p, config.T);
-      config.beta1 = MP.beta1_bar(config.p, config.T);
-      config.beta2 = MP.beta2_bar(config.p, config.T);
-      config.beta3 = MP.beta3_bar(config.p, config.T);
-      config.beta4 = MP.beta4_bar(config.p, config.T);
-      config.beta5 = MP.beta5_bar(config.p, config.T);
+    }
+    else {
+      const std::string in_file = parameters.get("params_file");
+
+      std::fstream params_stream;
+      params_stream.open(in_file, std::ios::in);
+      std::string line;
+
+      while (std::getline(params_stream, line))
+	{
+	  std::stringstream ss(line);
+	  real_t a, b, c;
+	  if (ss >> a >> b >> c)
+	    {
+	      t_v.push_back(a);
+	      T_v.push_back(b);
+	      p_v.push_back(c);
+	    }
+	}
     }
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
+
     const std::string output_file = parameters.get("output_file");
 
     config.dt = config.dx * config.dtdxRatio;
@@ -125,6 +135,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     CoordinateVector box_dimensions = {config.l, config.l, config.l};
     lattice->setup(box_dimensions);
     hila::seed_random(config.seed);
+
 
     return output_file;
 }
@@ -143,14 +154,55 @@ void scaling_sim::initialize() {
     pi = 0;
 
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){ A[X].e(d1,d2).re = hila::gaussrand();}
+      foralldir(d1)foralldir(d2){
+	A[X].e(d1,d2).re = hila::gaussrand();
+	A[X].e(d1,d2).im = hila::gaussrand();
+      }
+      A[X] = 0.1 * A[X]/A[X].norm();
     }
 
     output0 << "Components randomly created \n";
 
     break;
     }
-    
+  case 2: {
+    auto kA = A;
+
+        onsites (ALL) {
+            real_t constant = pow(1.0, 2.0) * pow(2.0 * M_PI, 1.5) *
+                              pow(1.0, 3.0) /
+                              (2.0 * N * N * N * dx * dx * dx);
+            real_t kSqu;
+            real_t std;
+            kSqu = 0.0;
+            auto k = X.coordinates();
+
+            foralldir (d) { kSqu += pow(sin(M_PI * k.e(d) / N), 2.0); }
+            kSqu *= pow(2.0 / dx, 2.0);
+
+            if (kSqu > 0.0) {
+                std = sqrt(0.5 * constant *
+                           exp(-0.5 * kSqu * 1.0 * 1.0));
+		foralldir(d1) foralldir(d2) {
+		  kA[X].e(d1,d2).re=hila::gaussrand() * std;
+		  kA[X].e(d1,d2).im=hila::gaussrand() * std;
+		} 
+            } else {
+               foralldir(d1) foralldir(d2) {
+                  kA[X].e(d1,d2).re=0.0;
+                  kA[X].e(d1,d2).im=0.0;
+                }
+            }
+        }
+
+        FFT_field(kA, A, fft_direction::back);
+
+        pi[ALL] = 0;
+
+        output0 << "k space generation \n";
+
+        break;
+  }
   default: {
 
     // #pragma hila ast_dump
@@ -166,6 +218,57 @@ void scaling_sim::initialize() {
   }
 }
 
+void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
+
+  int k1,k2;
+  int size = t_v.size();
+
+  if (t == t_v[size -1]) {
+    k1 = size-1;
+    k2 = size-1;}
+  else {
+    for (int i=1; i<size; i++) {
+
+      if (t >= t_v[i-1] && t < t_v[i]) {
+	k1 = i-1;
+	k2 = i; }
+    }
+  }
+
+  if (k1 == k2 && k1 == size-1){
+    Tp[0] = T_v[size-1];
+    Tp[1] = p_v[size-1];}
+  else {
+    Tp[0]= T_v[k1] + ((T_v[k2]-T_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);
+    Tp[1]= p_v[k1] + ((p_v[k2]-p_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);}
+  
+
+}
+void scaling_sim::update_params() {
+
+  MATEP MP;
+  real_t Tp[2];
+
+  
+  if (config.item ==1 && t == config.tStart){
+    config.alpha = MP.alpha_td(config.p, config.T);
+    config.beta1 = MP.beta1_td(config.p, config.T);
+    config.beta2 = MP.beta2_td(config.p, config.T);
+    config.beta3 = MP.beta3_td(config.p, config.T);
+    config.beta4 = MP.beta4_td(config.p, config.T);
+    config.beta5 = MP.beta5_td(config.p, config.T);}
+  else if (config.item ==2){
+    update_Tp(t, Tp);
+    tc = MP.Tcp_mK(Tp[1]);
+    config.alpha = MP.alpha_td(Tp[1], Tp[0]);
+    config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
+    config.beta2 = MP.beta2_td(Tp[1], Tp[0]);
+    config.beta3 = MP.beta3_td(Tp[1], Tp[0]);
+    config.beta4 = MP.beta4_td(Tp[1], Tp[0]);
+    config.beta5 = MP.beta5_td(Tp[1], Tp[0]);
+  }
+}
+
 void scaling_sim::write_moduli() {
 
    // real_t a = scaleFactor(t);
@@ -173,14 +276,21 @@ void scaling_sim::write_moduli() {
     double Amod = 0.0;
     double pimod = 0.0;
 
+    real_t Tp[2];
+
     hila::set_allreduce(false);
     onsites (ALL) {
         Amod += A[X].norm();
         pimod += pi[X].norm();
     }
 
+    update_Tp(t, Tp);
+    
     if (hila::myrank() == 0) {
         config.stream << t << " "
+	              << tc << " "
+	              << Tp[0] << " " << Tp[1] << " "
+		      << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " " <<	config.beta5 << " "
                       << Amod / lattice->volume() << " " << pimod / lattice->volume()
                       << " ";
     }
@@ -188,11 +298,19 @@ void scaling_sim::write_moduli() {
 
 void scaling_sim::write_energies() {
 
-    Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
-    double sumb1 = 0;
+  Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
+  Complex<double> sumk1(0),sumk2(0),sumk3(0);
+  double sumb1 = 0;
 
     hila::set_allreduce(false);
     onsites(ALL) {
+
+      foralldir(j) foralldir (k) foralldir(al){
+	sumk1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(config.dx*config.dx);
+	sumk2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(config.dx*config.dx);
+	sumk3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(config.dx*config.dx);
+      }
+      
         suma += config.alpha * (A[X]*A[X].dagger()).trace();
 
         sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
@@ -208,12 +326,15 @@ void scaling_sim::write_energies() {
 
       if (hila::myrank() == 0) {
         double vol = lattice->volume();
-        config.stream << suma.re / vol << " "<< suma.im / vol << " "
-		  << sumb1 / vol << " "
-		  << sumb2.re / vol << " " << sumb2.im / vol << " "
-		  << sumb3.re / vol << " " << sumb3.im / vol << " "
- 		  << sumb4.re / vol << " " << sumb4.im / vol << " "
-		  << sumb5.re / vol << " " << sumb5.im / vol << "\n";
+        config.stream << sumk1.re / vol << " " << sumk1.im / vol << " "
+	              << sumk2.re / vol	<< " " << sumk2.im / vol << " "
+	              << sumk3.re / vol	<< " " << sumk3.im / vol << " "
+	              << suma.re / vol << " " << suma.im / vol << " "
+		      << sumb1 / vol << " "
+		      << sumb2.re / vol << " " << sumb2.im / vol << " "
+		      << sumb3.re / vol << " " << sumb3.im / vol << " "
+ 		      << sumb4.re / vol << " " << sumb4.im / vol << " "
+		      << sumb5.re / vol << " " << sumb5.im / vol << "\n";
     }
 
 
@@ -316,12 +437,12 @@ void scaling_sim::next() {
     }
     else if (t < config.tdis && config.gamma > 0 )
     {
-      pi[ALL] = pi[X] + (1.0/config.tau) * (deltaPi[X] - 2.0 * config.gamma * pi[X]);
+      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X]);
       t += config.dt;
     }
     else
     {
-      pi[ALL] = pi[X] + (1.0/config.tau) * deltaPi[X];
+      pi[ALL] = pi[X] + deltaPi[X];
       t += config.dt;
     }
 
@@ -332,6 +453,7 @@ void scaling_sim::next() {
 int main(int argc, char **argv) {
     scaling_sim sim;
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
+    sim.update_params();
     sim.initialize();
 
     int steps =
@@ -364,6 +486,7 @@ int main(int argc, char **argv) {
             }
             stat_counter++;
         }
+	sim.update_params();
         sim.next();
     }
     run_timer.stop();
