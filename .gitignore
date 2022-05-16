@@ -52,3 +52,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Test codes
+test*.cpp
+test*.hpp
+test*.CC
+test*.cpp~
+test*.hpp~

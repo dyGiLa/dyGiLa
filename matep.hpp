@@ -14,13 +14,15 @@
 #include <iostream>
 #include <cstddef>
 #include <cmath>
+#include <vector>
 
 
 using real_t = float;
 
 class MATEP {
 public:
-        MATEP() = default; // constructor
+        MATEP(): Switch("OFF") {}; // default constructor
+        MATEP(const std::string &S): Switch(S) {}; // metap with fudge exponent switch
 
         // interfaces of dimensional qualities
 	
@@ -30,7 +32,7 @@ public:
         real_t mEffp(real_t p);
         real_t vFp(real_t p);
         real_t xi0p(real_t p);
-     // real_t N0p(real_t p);
+        // real_t N0p(real_t p);
         double N0p(real_t p);
 
         // interfaces of dimensionless coeficients; SC-correction parts:
@@ -41,15 +43,27 @@ public:
         real_t beta3_td(real_t p, real_t T);
         real_t beta4_td(real_t p, real_t T);
         real_t beta5_td(real_t p, real_t T);
+
+        // interfaces for beta_A, beta_B and Gaps
+        real_t beta_A_td(real_t p, real_t T);
+        real_t beta_B_td(real_t p, real_t T);
+        real_t gap_A_td(real_t p, real_t T);
+        real_t gap_B_td(real_t p, real_t T);
+
+        // read the coef4 vector
+        // void read_coef();
         
 private:
         // SI unit
-        static constexpr real_t J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f
-	                        ,pi = 3.14159265358979323846264338328f;
+        static constexpr real_t Kelvin =1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f
+                         	,pi = 3.14159265358979323846264338328f, p_pcp = 21.22;
+
+        // fudge Switch, "ON" or "OFF"
+        std::string Switch = "OFF"; 
 
         // physical constants for he3
-        static const real_t u, m3, nm, hbar
-	                    ,zeta3, c_betai ;
+        static const real_t u, m3, nm, hbar, kb
+                            ,zeta3, c_betai;
  
        
         // SC-data sheets arries, All associate to SCCO class
@@ -59,14 +73,20 @@ private:
         static const real_t c4_arr[18];
         static const real_t c5_arr[18];
         // ***************************************************
-        // '''
         static const real_t Tc_arr[18];
         static const real_t Ms_arr[18];
         static const real_t VF_arr[18];
         static const real_t XI0_arr[18];
 
+        // coefficients vector for fudge polynomial
+        static const std::vector<real_t> coef4;
+        // static const std::vector<real_t> coef6;
+
         // linear interpolation member:
         real_t lininterp(const real_t *cX_arr, real_t p);
+
+        // fudge expotent calculator
+        real_t exp_q(real_t p);
 };
 
 #endif

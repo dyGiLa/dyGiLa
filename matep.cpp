@@ -11,12 +11,15 @@
 #include <iostream>
 #include <cstddef>
 #include <cmath>
+#include <vector>
 
 #include "matep.hpp"
 
+
 //********************************************************************
+//***          static physical constants of he3 members            ***
 //********************************************************************
-//''' static physical constants of he3 members
+const real_t MATEP::kb = 1.380649*(std::pow(10.0f, -23))*J*1.0f;
 const real_t MATEP::u = 1.66053906660f*(std::pow(10.0f,-27))*kg;
 const real_t MATEP::m3 = 3.016293f*u;
 const real_t MATEP::nm = (std::pow(10.0f, -9))*m;
@@ -42,10 +45,18 @@ const real_t MATEP::VF_arr[18] = {59.03, 55.41, 52.36, 49.77, 47.56, 45.66, 44.0
 const real_t MATEP::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37, 27.66, 25.51, 23.76, 22.29, 21.03, 19.94, 18.99, 18.15, 17.41, 16.77, 16.22, 15.76};
 
 
+//********************************************************************
+// ***          data sheet of fudge exponet polynomial             ***
+//********************************************************************
+
+//const std::vector<real_t> MATEP::coef4 = {-6.00498973e-03, -1.01758101e-02,  1.46969023e-03, -1.14870022e-04, 4.11400719e-06};
+
+const std::vector<real_t> MATEP::coef4 = {-6.00498973*std::pow(10.f,-3), -1.01758101*std::pow(10.f,-2), 1.46969023*std::pow(10.f,-3), -1.14870022*std::pow(10.f,-4), 4.11400719*std::pow(10.f,-6)};
+
+
 //*********************************************************************
+//***     member functions, interfaces of dimensional qualities     ***
 //*********************************************************************
-//'''     member functions, interfaces of dimensional qualities
-//'
 
 real_t
 MATEP::Tcp(real_t p){
@@ -96,8 +107,8 @@ MATEP::N0p(real_t p){
 
 
 //**********************************************************************
+//***    member functions, interfaces of dimensionless coefficients  ***
 //**********************************************************************
-//'''     member functions, interfaces of dimensionless coefficients
 
 real_t
 MATEP::alpha_td(real_t p, real_t T){ return 1.f*(T/Tcp_mK(p)-1); }  
@@ -105,7 +116,7 @@ MATEP::alpha_td(real_t p, real_t T){ return 1.f*(T/Tcp_mK(p)-1); }
 
 real_t
 MATEP::beta1_td(real_t p, real_t T){
-  real_t beta1 = c_betai*(-1.0f + (T/Tcp_mK(p))*lininterp(c1_arr, p));
+  real_t beta1 = c_betai*(-1.0f + (T/Tcp_mK(p))*exp_q(p)*lininterp(c1_arr, p));
 
   return beta1;
 }  
@@ -113,41 +124,135 @@ MATEP::beta1_td(real_t p, real_t T){
 
 real_t
 MATEP::beta2_td(real_t p, real_t T){
-  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c2_arr, p));
+  real_t beta2 = c_betai*(2.0f + (T/Tcp_mK(p))*exp_q(p)*lininterp(c2_arr, p));
 
-  return beta1;
+  return beta2;
 }  
 
 
 real_t
 MATEP::beta3_td(real_t p, real_t T){
-  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c3_arr, p));
+  real_t beta3 = c_betai*(2.0f + (T/Tcp_mK(p))*exp_q(p)*lininterp(c3_arr, p));
 
-  return beta1;
+  return beta3;
 }  
 
 
 real_t
 MATEP::beta4_td(real_t p, real_t T){
-  real_t beta1 = c_betai*(2.0f + (T/Tcp_mK(p))*lininterp(c4_arr, p));
+  real_t beta4 = c_betai*(2.0f + (T/Tcp_mK(p))*exp_q(p)*lininterp(c4_arr, p));
 
-  return beta1;
+  return beta4;
 }
 
 
 real_t
 MATEP::beta5_td(real_t p, real_t T){
-  real_t beta1 = c_betai*(-2.0f + (T/Tcp_mK(p))*lininterp(c5_arr, p));
+  real_t beta5 = c_betai*(-2.0f + (T/Tcp_mK(p))*exp_q(p)*lininterp(c5_arr, p));
 
-  return beta1;
+  return beta5;
 }  
 
 
+//**********************************************************************
+//***                 beta_A, beta_B and Gaps                        ***
+//**********************************************************************
+
+real_t
+MATEP::beta_A_td(real_t p, real_t T){
+  return beta2_td(p, T) + beta4_td(p, T) + beta5_td(p, T);
+}
+
+real_t
+MATEP::beta_B_td(real_t p, real_t T){
+  return beta1_td(p, T) + beta2_td(p, T) + (1.f/3.f)*(beta3_td(p, T) + beta4_td(p, T) + beta5_td(p, T));
+}
+
+// A-phase gap energy, in unit of Kb * Tc
+real_t
+MATEP::gap_A_td(real_t p, real_t T){
+  real_t gap2 =-alpha_td(p, T)/(beta_A_td(p, T)); // (kb Tc)^2
+
+  return std::sqrt(gap2);
+}
+
+// B-phase gap energy, in unit of Kb * Tc
+real_t
+MATEP::gap_B_td(real_t p, real_t T){
+  real_t gap2 =-alpha_td(p, T)/(beta_B_td(p, T)); // (kb Tc)^2
+
+  return std::sqrt(gap2);
+}
+
 
 //**********************************************************************
+//***                    read coef4  vector                          ***
 //**********************************************************************
-//'''                  linear intepolation function
-//'
+
+// void
+// MATEP::read_coef(){
+//   for (auto &element : coef4)
+//     std::cout << element << std::endl;
+
+//   for (int i = 0; i <= 4; ++i)
+//     std::cout << " while using index : " << coef4[i] << std::endl;
+
+//   real_t p = 27.5, p_pcp = 21.22, defp_G, q;
+//   defp_G = p - p_pcp;
+//   q = coef4[0]
+//         + coef4[1]*defp_G
+//         + coef4[2]*defp_G*defp_G
+//         + coef4[3]*defp_G*defp_G*defp_G
+//         + coef4[4]*defp_G*defp_G*defp_G*defp_G;
+  
+//   std::cout << q << std::endl;
+  
+//}
+
+
+//**********************************************************************
+//***              private method : fudge expotential                ***
+//**********************************************************************
+
+real_t
+MATEP::exp_q(real_t p){
+  // 4th-order polynomial of q for Greywall scale
+
+  real_t q, defp_G;
+  defp_G = p - p_pcp;
+  
+  // std::cout << " \n defp_G is " << defp_G << std::endl;
+  if (Switch == "ON") {
+    
+    if (defp_G >= 0.0){
+      q = coef4[0]
+        + coef4[1]*defp_G
+        + coef4[2]*defp_G*defp_G
+        + coef4[3]*defp_G*defp_G*defp_G
+        + coef4[4]*defp_G*defp_G*defp_G*defp_G;  
+    } else {
+      q = 0.0;
+    } 
+    //std::cout << " q is " << q <<  " coef4[0] is " << coef4[0] << std::endl;
+    //std::cout << " coef4[0] is " << coef4[0] << std::endl;
+    return std::exp(q);
+
+  } else if (Switch == "OFF") {
+    q = 0.0;
+    //std::cout << " q is " << q << std::endl;
+    return std::exp(0.0);
+
+  } else {
+
+    std::cout << " \n Switch must be \"ON\" or \"OFF\"! " << std::endl;
+    return 1;
+  }
+  
+}  
+
+//**********************************************************************
+//***       private method :  linear intepolation function           ***
+//**********************************************************************
 
 real_t
 MATEP::lininterp(const real_t *cX_arr, real_t p){
@@ -191,12 +296,6 @@ MATEP::lininterp(const real_t *cX_arr, real_t p){
   fp = ((cX_arr[k+1]-cX_arr[k])/2.0)*(p-pk)+cX_arr[k];
   return fp; 
 }
-
-
-
-
-
-
 
 
 
