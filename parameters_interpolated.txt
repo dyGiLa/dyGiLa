@@ -1,0 +1,17 @@
+N                   128
+dx		    0.5
+dtdxRatio	    0.05
+tStart		    10.0
+tEnd		    75.0
+tdif		    10.0
+difFac		    30.0
+tdis		    10.0
+gamma		    0.001
+initialCondition    3
+seed		    1
+category            interpolated
+params_file	    tp.txt
+tStats		    10.0
+nOutputs	    100
+output_file         stats/stability
+
