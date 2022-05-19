@@ -50,6 +50,10 @@ public:
         real_t gap_A_td(real_t p, real_t T);
         real_t gap_B_td(real_t p, real_t T);
 
+        // interfaces for f_{A}, f_{B}, in unit of (1/3)(Kb Tc)^2 N(0)
+        real_t f_A_td(real_t p, real_t T);
+        real_t f_B_td(real_t p, real_t T);
+
         // read the coef4 vector
         // void read_coef();
         

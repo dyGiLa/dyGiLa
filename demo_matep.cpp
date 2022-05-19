@@ -15,8 +15,8 @@ int main(){
   real_t T[6] = {2.3f, 0.2f, 1.21, 0.456f, 1.5f, 1.9f}; // mK
   real_t p[6] = {26.f, 32.f, 21.50f, 23.9f, 27.5f, 33.f}; //bar
   
-  MATEP MP; // object with with fudge switch "OFF"
-  //MATEP MP("ON"); // object with fudge switch "ON", constructor overload std::string Switch
+  //MATEP MP; // object with with fudge switch "OFF"
+  MATEP MP("ON"); // object with fudge switch "ON", constructor overload std::string Switch
 
   
 
@@ -42,7 +42,9 @@ int main(){
     std::cout << "\n gap_A = " << MP.gap_A_td(p[i], T[i]) << std::endl;
     std::cout << "\n gap_B = " << MP.gap_B_td(p[i], T[i]) << std::endl;
 
-
+    std::cout << "\n f_A = " << MP.f_A_td(p[i], T[i]) << std::endl;
+    std::cout << "\n f_B = " << MP.f_B_td(p[i], T[i]) << std::endl;
+    
     //MP.read_coef();
 
     std::cout <<  "\n===================== " << " \n\n " << std::endl;

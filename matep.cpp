@@ -184,6 +184,14 @@ MATEP::gap_B_td(real_t p, real_t T){
   return std::sqrt(gap2);
 }
 
+// A-Phase free energy density in unit of (1/3)(Kb Tc)^2 N(0)
+real_t
+MATEP::f_A_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_A_td(p, T); }
+
+// B-Phase free energy density in unit of (1/3)(Kb Tc)^2 N(0)
+real_t
+MATEP::f_B_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_B_td(p, T); }
+
 
 //**********************************************************************
 //***                    read coef4  vector                          ***
@@ -218,18 +226,22 @@ real_t
 MATEP::exp_q(real_t p){
   // 4th-order polynomial of q for Greywall scale
 
-  real_t q, defp_G;
+  real_t q = 0.0, defp_G;
   defp_G = p - p_pcp;
   
   // std::cout << " \n defp_G is " << defp_G << std::endl;
   if (Switch == "ON") {
     
     if (defp_G >= 0.0){
-      q = coef4[0]
-        + coef4[1]*defp_G
-        + coef4[2]*defp_G*defp_G
-        + coef4[3]*defp_G*defp_G*defp_G
-        + coef4[4]*defp_G*defp_G*defp_G*defp_G;  
+      // q = coef4[0]
+      //   + coef4[1]*defp_G
+      //   + coef4[2]*defp_G*defp_G
+      //   + coef4[3]*defp_G*defp_G*defp_G
+      //   + coef4[4]*defp_G*defp_G*defp_G*defp_G;
+
+      for (int co = 0; co < 5; ++co){
+      	q += coef4[co]*(std::pow(defp_G,co));
+      }
     } else {
       q = 0.0;
     } 
@@ -249,6 +261,21 @@ MATEP::exp_q(real_t p){
   }
   
 }  
+
+
+//**********************************************************************
+//***              private method : polynominal of defp_G            ***
+//**********************************************************************
+
+// template <unsigned L>
+// real_t q_poly(const std::vector<real_t> coef[L]){
+//   real_t q = 0.0;
+//   for (int c = 0; c < L; ++c){
+//     q += coef[c]*(std::pow(1.f,c.f));
+//   }
+//   return q;
+// }
+
 
 //**********************************************************************
 //***       private method :  linear intepolation function           ***
