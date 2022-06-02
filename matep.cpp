@@ -171,7 +171,7 @@ MATEP::beta_B_td(real_t p, real_t T){
 // A-phase gap energy, in unit of Kb * Tc
 real_t
 MATEP::gap_A_td(real_t p, real_t T){
-  real_t gap2 =-alpha_td(p, T)/(beta_A_td(p, T)); // (kb Tc)^2
+  real_t gap2 =-alpha_td(p, T)/(2.f*beta_A_td(p, T)); // (kb Tc)^2
 
   return std::sqrt(gap2);
 }
@@ -179,7 +179,7 @@ MATEP::gap_A_td(real_t p, real_t T){
 // B-phase gap energy, in unit of Kb * Tc
 real_t
 MATEP::gap_B_td(real_t p, real_t T){
-  real_t gap2 =-alpha_td(p, T)/(beta_B_td(p, T)); // (kb Tc)^2
+  real_t gap2 =-alpha_td(p, T)/(2.f*beta_B_td(p, T)); // (kb Tc)^2
 
   return std::sqrt(gap2);
 }
@@ -226,13 +226,13 @@ real_t
 MATEP::exp_q(real_t p){
   // 4th-order polynomial of q for Greywall scale
 
-  real_t q = 0.0, defp_G;
+  real_t q = 0.f, defp_G;
   defp_G = p - p_pcp;
   
   // std::cout << " \n defp_G is " << defp_G << std::endl;
   if (Switch == "ON") {
     
-    if (defp_G >= 0.0){
+    if (defp_G >= 0.f){
       // q = coef4[0]
       //   + coef4[1]*defp_G
       //   + coef4[2]*defp_G*defp_G
@@ -243,16 +243,16 @@ MATEP::exp_q(real_t p){
       	q += coef4[co]*(std::pow(defp_G,co));
       }
     } else {
-      q = 0.0;
+      q = 0.f;
     } 
     //std::cout << " q is " << q <<  " coef4[0] is " << coef4[0] << std::endl;
     //std::cout << " coef4[0] is " << coef4[0] << std::endl;
     return std::exp(q);
 
   } else if (Switch == "OFF") {
-    q = 0.0;
+    q = 0.f;
     //std::cout << " q is " << q << std::endl;
-    return std::exp(0.0);
+    return std::exp(0.f);
 
   } else {
 
