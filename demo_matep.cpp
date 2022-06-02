@@ -15,8 +15,8 @@ int main(){
   real_t T[7] = {2.f, 2.3f, 0.2f, 1.21, 0.456f, 1.5f, 1.9f}; // mK
   real_t p[7] = {20.f, 26.f, 32.f, 21.50f, 23.9f, 27.5f, 33.f}; //bar
   
-  MATEP MP; // object with with fudge switch "OFF"
-  //MATEP MP("ON"); // object with fudge switch "ON", constructor overload std::string Switch
+  Matep MP; // object with with fudge switch "OFF"
+  //Matep MP("ON"); // object with fudge switch "ON", constructor overload std::string Switch
 
   
 

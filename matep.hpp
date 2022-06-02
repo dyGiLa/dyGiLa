@@ -19,20 +19,21 @@
 
 using real_t = float;
 
-class MATEP {
+class Matep {
 public:
-        MATEP(): Switch("OFF") {}; // default constructor
-        MATEP(const std::string &S): Switch(S) {}; // metap with fudge exponent switch
+        Matep():
+	  Switch("OFF") {};                 // default constructor
+        Matep(const std::string &S):
+	  Switch(S) {}; // metap with fudge exponent switch
 
         // interfaces of dimensional qualities
 	
-        real_t Tcp(real_t p); // in unit of Kelvin
-        real_t Tcp_mK(real_t p); // in unit of mK
+        real_t Tcp(real_t p);                      // in unit of Kelvin
+        real_t Tcp_mK(real_t p);                   // in unit of mK
   
         real_t mEffp(real_t p);
         real_t vFp(real_t p);
         real_t xi0p(real_t p);
-        // real_t N0p(real_t p);
         double N0p(real_t p);
 
         // interfaces of dimensionless coeficients; SC-correction parts:
