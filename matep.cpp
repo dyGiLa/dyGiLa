@@ -1,7 +1,8 @@
 /*
  * This is the *.cpp file of the Strong Coupling Correction Object (SCCO)
+ * or Material Parameters Object (Matep).
  * 
- * Member functions are declared at SCCO.hpp, and then defined at here.
+ * Member functions are declared at Matep.hpp, and then defined at here.
  *
  * author: Quang. Zhang (timohyva@github)
  *
@@ -28,10 +29,9 @@ const real_t Matep::zeta3 = std::riemann_zeta(3.0f);
 const real_t Matep::c_betai = (7.0f*zeta3)/(80.0f*pi*pi);
 
 
-//********************************************************************
-//********************************************************************
-//''' data sheets of  strong coupling corrected material parameters
-//'
+// *******************************************************************
+// >> data sheets of  strong coupling corrected material parameters <<
+//'*******************************************************************
 
 const real_t Matep::c1_arr[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};
 const real_t Matep::c2_arr[18] = {-0.0419, -0.0490, -0.0562, -0.0636, -0.0711, -0.0786, -0.0861, -0.0936, -0.1011, -0.1086, -0.1160, -0.1233, -0.1306, -0.1378, -0.1448, -0.1517, -0.1583, -0.1645};
@@ -87,13 +87,6 @@ Matep::xi0p(real_t p){
   real_t xi0 = lininterp(XI0_arr, p)*nm;
   return xi0;
 }  
-
-// real_t
-// MATEP::N0p(real_t p){
-//   // ((mEff(p)**(2))*vF(p))/((2*pi*pi)*(hbar**(3)))
-//   return N0;
-// }
-
 
 double
 Matep::N0p(real_t p){
@@ -184,6 +177,17 @@ Matep::gap_B_td(real_t p, real_t T){
   return std::sqrt(gap2);
 }
 
+// tAB_RWS 2019
+real_t
+Matep::tAB_RWS(real_t p){
+  real_t t = 1.f/(3.f*lininterp(c1_arr, p)
+           + lininterp(c3_arr, p)
+           - 2.f*lininterp(c4_arr, p)
+           - 2.f*lininterp(c5_arr, p));
+  return t;
+}
+
+
 // A-Phase free energy density in unit of (1/3)(Kb Tc)^2 N(0)
 real_t
 Matep::f_A_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_A_td(p, T); }
@@ -192,30 +196,6 @@ Matep::f_A_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.
 real_t
 Matep::f_B_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_B_td(p, T); }
 
-
-//**********************************************************************
-//***                    read coef4  vector                          ***
-//**********************************************************************
-
-// void
-// MATEP::read_coef(){
-//   for (auto &element : coef4)
-//     std::cout << element << std::endl;
-
-//   for (int i = 0; i <= 4; ++i)
-//     std::cout << " while using index : " << coef4[i] << std::endl;
-
-//   real_t p = 27.5, p_pcp = 21.22, defp_G, q;
-//   defp_G = p - p_pcp;
-//   q = coef4[0]
-//         + coef4[1]*defp_G
-//         + coef4[2]*defp_G*defp_G
-//         + coef4[3]*defp_G*defp_G*defp_G
-//         + coef4[4]*defp_G*defp_G*defp_G*defp_G;
-  
-//   std::cout << q << std::endl;
-  
-//}
 
 
 //**********************************************************************
@@ -233,20 +213,14 @@ Matep::exp_q(real_t p){
   if (Switch == "ON") {
     
     if (defp_G >= 0.f){
-      // q = coef4[0]
-      //   + coef4[1]*defp_G
-      //   + coef4[2]*defp_G*defp_G
-      //   + coef4[3]*defp_G*defp_G*defp_G
-      //   + coef4[4]*defp_G*defp_G*defp_G*defp_G;
-
-      for (int co = 0; co < 5; ++co){
+      
+      for (unsigned co = 0; co < 5; ++co){
       	q += coef4[co]*(std::pow(defp_G,co));
       }
     } else {
       q = 0.f;
     } 
-    //std::cout << " q is " << q <<  " coef4[0] is " << coef4[0] << std::endl;
-    //std::cout << " coef4[0] is " << coef4[0] << std::endl;
+    
     return std::exp(q);
 
   } else if (Switch == "OFF") {
@@ -261,21 +235,6 @@ Matep::exp_q(real_t p){
   }
   
 }  
-
-
-//**********************************************************************
-//***              private method : polynominal of defp_G            ***
-//**********************************************************************
-
-// template <unsigned L>
-// real_t q_poly(const std::vector<real_t> coef[L]){
-//   real_t q = 0.0;
-//   for (int c = 0; c < L; ++c){
-//     q += coef[c]*(std::pow(1.f,c.f));
-//   }
-//   return q;
-// }
-
 
 //**********************************************************************
 //***       private method :  linear intepolation function           ***
