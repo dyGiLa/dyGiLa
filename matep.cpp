@@ -49,16 +49,11 @@ const real_t Matep::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37, 27.
 // ***          data sheet of fudge exponet polynomial             ***
 //********************************************************************
 
-/*
- * note about the possible compling issue about std::pow:
- * Matep::coef4 works well for g++ v9.4 with c++17.
- * But Clang complier still isn't specificly tested yet.
- * 
- */
 
-//const std::vector<real_t> MATEP::coef4 = {-6.00498973e-03, -1.01758101e-02,  1.46969023e-03, -1.14870022e-04, 4.11400719e-06};
+const std::vector<real_t> Matep::coef4 = {-6.00498973e-03, -1.01758101e-02,  1.46969023e-03, -1.14870022e-04, 4.11400719e-06};
 
-const std::vector<real_t> Matep::coef4 = {-6.00498973*std::pow(10.f,-3), -1.01758101*std::pow(10.f,-2), 1.46969023*std::pow(10.f,-3), -1.14870022*std::pow(10.f,-4), 4.11400719*std::pow(10.f,-6)};
+
+//const std::vector<real_t> Matep::coef4 = {-6.00498973*std::pow(10.f,-3), -1.01758101*std::pow(10.f,-2), 1.46969023*std::pow(10.f,-3), -1.14870022*std::pow(10.f,-4), 4.11400719*std::pow(10.f,-6)};
 
 
 //*********************************************************************
