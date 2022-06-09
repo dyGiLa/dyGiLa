@@ -143,6 +143,10 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
 
 void scaling_sim::initialize() {
 
+  Matep MP;
+  real_t Tp[2];
+  update_Tp(t, Tp);
+  
   int N = config.l;
   real_t dx = config.dx;
 
@@ -152,13 +156,13 @@ void scaling_sim::initialize() {
     
   case 1: {
     pi = 0;
-
+    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     onsites(ALL) {
       foralldir(d1)foralldir(d2){
 	A[X].e(d1,d2).re = hila::gaussrand();
 	A[X].e(d1,d2).im = hila::gaussrand();
       }
-      A[X] = 0.1 * A[X]/A[X].norm();
+      A[X] = gap * A[X]/A[X].norm();
     }
 
     output0 << "Components randomly created \n";
@@ -167,10 +171,10 @@ void scaling_sim::initialize() {
     }
   case 2: {
     auto kA = A;
-
+    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
         onsites (ALL) {
-            real_t constant = pow(1.0, 2.0) * pow(2.0 * M_PI, 1.5) *
-                              pow(1.0, 3.0) /
+            real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) *
+	      pow(1.0/sqrt(abs(config.alpha)), 3.0) /
                               (2.0 * N * N * N * dx * dx * dx);
             real_t kSqu;
             real_t std;
@@ -182,16 +186,18 @@ void scaling_sim::initialize() {
 
             if (kSqu > 0.0) {
                 std = sqrt(0.5 * constant *
-                           exp(-0.5 * kSqu * 1.0 * 1.0));
+                           exp(-0.5 * kSqu / abs(config.alpha)));
+		//kA[X].gaussian_random(std);
 		foralldir(d1) foralldir(d2) {
 		  kA[X].e(d1,d2).re=hila::gaussrand() * std;
 		  kA[X].e(d1,d2).im=hila::gaussrand() * std;
-		} 
+		  } 
             } else {
-               foralldir(d1) foralldir(d2) {
+	      kA[X]=0;
+	      /*foralldir(d1) foralldir(d2) {
                   kA[X].e(d1,d2).re=0.0;
                   kA[X].e(d1,d2).im=0.0;
-                }
+		  }*/
             }
         }
 
@@ -203,6 +209,53 @@ void scaling_sim::initialize() {
 
         break;
   }
+  case 3: {
+    pi = 0;
+    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    output0<<"Gap B: "<<gap<<"\n";
+    onsites(ALL) {
+      foralldir(d1)foralldir(d2){
+
+	if (d1==d2){
+	  A[X].e(d1,d2).re = 1.0;}
+	else {
+	  A[X].e(d1,d2).re = 0.0;}
+	A[X].e(d1,d2).im = 0.0;
+      }
+      A[X] = gap * A[X]/sqrt(3.0);
+    }
+
+    output0 << "Pure B phase \n";
+
+    break;
+    }
+  case 4: {
+    pi = 0;
+    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
+    output0<<"Gap A: "<<gap<<"\n";
+    onsites(ALL) {
+      foralldir(d1)foralldir(d2){
+
+        if (d1==0 && d2==2){
+          A[X].e(d1,d2).re = 1.0;
+	  A[X].e(d1,d2).im = 0.0;
+	}
+	else if (d1==1 && d2==2){
+	  A[X].e(d1,d2).re = 0.0;
+	  A[X].e(d1,d2).im = 1.0;
+	}
+        else {
+          A[X].e(d1,d2).re = 0.0;
+	  A[X].e(d1,d2).im = 0.0;
+	}
+      }
+      A[X] = gap * A[X]/sqrt(2.0);
+    }
+
+    output0 << "Pure A phase \n";
+
+    break;
+    }
   default: {
 
     // #pragma hila ast_dump
@@ -220,43 +273,57 @@ void scaling_sim::initialize() {
 
 void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
 
-  int k1,k2;
-  int size = t_v.size();
+  if (config.item ==2)
+    {
+      int k1,k2;
+      int size = t_v.size();
 
-  if (t == t_v[size -1]) {
-    k1 = size-1;
-    k2 = size-1;}
-  else {
-    for (int i=1; i<size; i++) {
-
-      if (t >= t_v[i-1] && t < t_v[i]) {
-	k1 = i-1;
-	k2 = i; }
+      if (t == t_v[size -1]) {
+	k1 = size-1;
+	k2 = size-1;}
+      else {
+	for (int i=1; i<size; i++) {
+	  
+	  if (t >= t_v[i-1] && t < t_v[i]) {
+	    k1 = i-1;
+	    k2 = i; }
+	}
+      }
+      
+      if (k1 == k2 && k1 == size-1){
+	Tp[0] = T_v[size-1];
+	Tp[1] = p_v[size-1];}
+      else {
+	Tp[0]= T_v[k1] + ((T_v[k2]-T_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);
+	Tp[1]= p_v[k1] + ((p_v[k2]-p_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);}
     }
-  }
-
-  if (k1 == k2 && k1 == size-1){
-    Tp[0] = T_v[size-1];
-    Tp[1] = p_v[size-1];}
-  else {
-    Tp[0]= T_v[k1] + ((T_v[k2]-T_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);
-    Tp[1]= p_v[k1] + ((p_v[k2]-p_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);}
-  
-
+  else if (config.item == 1)
+    {
+      Tp[0] = config.T;
+      Tp[1] = config.p;
+    }
+  else if (config.item == 0)
+    {
+      Tp[0] = 0.0;
+      Tp[1] = 0.0;
+    }
 }
 void scaling_sim::update_params() {
 
-  MATEP MP;
+  Matep MP;
   real_t Tp[2];
 
   
   if (config.item ==1 && t == config.tStart){
+    tc = MP.Tcp_mK(config.p);
     config.alpha = MP.alpha_td(config.p, config.T);
     config.beta1 = MP.beta1_td(config.p, config.T);
     config.beta2 = MP.beta2_td(config.p, config.T);
     config.beta3 = MP.beta3_td(config.p, config.T);
     config.beta4 = MP.beta4_td(config.p, config.T);
-    config.beta5 = MP.beta5_td(config.p, config.T);}
+    config.beta5 = MP.beta5_td(config.p, config.T);
+    output0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5;
+  }
   else if (config.item ==2){
     update_Tp(t, Tp);
     tc = MP.Tcp_mK(Tp[1]);
@@ -284,6 +351,7 @@ void scaling_sim::write_moduli() {
         pimod += pi[X].norm();
     }
 
+        
     update_Tp(t, Tp);
     
     if (hila::myrank() == 0) {
@@ -337,6 +405,7 @@ void scaling_sim::write_energies() {
 		      << sumb5.re / vol << " " << sumb5.im / vol << "\n";
     }
 
+       output0<< "Energy done \n";
 
     //   double sumar = 0.0;
     //   double sumai = 0.0;
@@ -396,12 +465,13 @@ void scaling_sim::next() {
 
         auto AxAt = A[X]*A[X].transpose();
         auto AxAd = A[X]*A[X].dagger();
-
+ 
+	
         deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*AxAt.trace() 
             - 2.0*config.beta2*A[X]*AxAd.trace()
 	        - 2.0*config.beta3*(AxAt*A[X]) - 2.0*config.beta4*(AxAd*A[X]) 
-            - 2.0*config.beta5*(AxAd.conj()*A[X]);
-
+	  //- 2.0*config.beta5*(AxAd.conj()*A[X]);
+	  - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
 
     //     deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() - 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
 	//   - 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) - 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
@@ -410,7 +480,7 @@ void scaling_sim::next() {
     onsites(ALL) {
         djAaj[X] = 0;
         foralldir(j) {
-            djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+	  djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
         }
     }
     onsites(ALL) {
@@ -419,7 +489,7 @@ void scaling_sim::next() {
             auto col = djAaj[X+d] - djAaj[X-d];
             for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
         }
-        deltaPi[X] += (1.0/(2.0*config.dx*config.dx))*mat;
+        deltaPi[X] += (2.0/(config.dx*config.dx))*mat;
     }
 
     onsites (ALL) {  
