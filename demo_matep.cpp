@@ -47,7 +47,13 @@ int main(){
     
     //MP.read_coef();
 
-    std::cout <<  "\n===================== " << " \n\n " << std::endl;
+    std::cout <<  "\n===================== " << std::endl;
+
+    real_t gap = MP.gap_td(p[i], T[i]);
+    std::cout << "And the gap is: " << gap << " kb*Tc(p) "<< std::endl;
+
+    std::cout << "\n***************************************************\n\n\n " << std::endl;
+
   }
 
   return 0;

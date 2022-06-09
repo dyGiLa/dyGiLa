@@ -49,6 +49,13 @@ const real_t Matep::XI0_arr[18] = {77.21, 57.04, 45.85, 38.77, 33.91, 30.37, 27.
 // ***          data sheet of fudge exponet polynomial             ***
 //********************************************************************
 
+/*
+ * note about the possible compling issue about std::pow:
+ * Matep::coef4 works well for g++ v9.4 with c++17.
+ * But Clang complier still isn't specificly tested yet.
+ * 
+ */
+
 //const std::vector<real_t> MATEP::coef4 = {-6.00498973e-03, -1.01758101e-02,  1.46969023e-03, -1.14870022e-04, 4.11400719e-06};
 
 const std::vector<real_t> Matep::coef4 = {-6.00498973*std::pow(10.f,-3), -1.01758101*std::pow(10.f,-2), 1.46969023*std::pow(10.f,-3), -1.14870022*std::pow(10.f,-4), 4.11400719*std::pow(10.f,-6)};
@@ -175,6 +182,44 @@ Matep::gap_B_td(real_t p, real_t T){
   real_t gap2 =-alpha_td(p, T)/(2.f*beta_B_td(p, T)); // (kb Tc)^2
 
   return std::sqrt(gap2);
+}
+
+// A general gap function with message of equlibrium phase
+real_t
+Matep::gap_td(real_t p, real_t T){
+
+  if (f_A_td(p, T) > f_B_td(p, T)){
+    std::cout << " \nnow p, T are: " << p << ", " << T
+              << ", equlibrum bulk phase is B phase. "
+              << std::endl;
+    return gap_A_td(p, T);
+    
+  } else if (f_A_td(p, T) < f_B_td(p, T)) { 
+    
+    std::cout << " \nnow p, T are: " << p << ", " << T
+              << ", equlibrum bulk phase is A phase. "
+              << std::endl;
+    return gap_B_td(p, T);   
+
+  } else {
+
+    if (f_A_td(p, T) == f_B_td(p, T)){
+
+       std::cout << " \nnow p, T are: " << p << ", " << T
+                 << ", and A and B degenerate, return as -1. "
+                 << std::endl;
+       return -1.f;
+
+    } else {
+
+            std::cout << " \nnow p, T are: " << p << ", " << T
+	            << ", system is in normal phase. "
+	            << std::endl;
+	    return 0.f;
+
+    }
+
+  }
 }
 
 // tAB_RWS 2019

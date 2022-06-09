@@ -58,8 +58,9 @@ public:
         real_t beta_B_td(real_t p, real_t T);
         real_t gap_A_td(real_t p, real_t T);
         real_t gap_B_td(real_t p, real_t T);
+        real_t gap_td(real_t p, real_t T);      // gap for given p,T, and showing message
 
-        real_t tAB_RWS(real_t p);
+        real_t tAB_RWS(real_t p);               
 
   // >>>>>>> interfaces for f_{A}, f_{B}, in unit of (1/3)(Kb Tc)^2 N(0) <<<<< //
   
