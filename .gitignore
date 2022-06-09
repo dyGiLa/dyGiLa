@@ -52,6 +52,9 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+*.pdf
+*.csv
+pd/*.csv
 
 # Test codes
 test*.cpp
@@ -59,3 +62,10 @@ test*.hpp
 test*.CC
 test*.cpp~
 test*.hpp~
+
+# emacs autosave
+*.sh~
+*.cpp~
+*.hpp~
+*.py~
+pd/*.py~

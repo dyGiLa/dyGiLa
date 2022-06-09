@@ -1,7 +1,9 @@
 /*
- * This is the *.hpp file of the Strong Coupling Correction Object (SCCO)
  * 
- * Member functions are declared at here, and then defined at SCCO.cpp.
+ * This is the *.hpp header file of the Strong Coupling Correction Object (SCCO) 
+ * or Material Parameters Object (Matep).
+ * 
+ * Member functions are declared at here, and then defined at Matep.cpp.
  *
  * author: Quang. Zhang (timohyva@github)
  *
@@ -22,21 +24,26 @@ using real_t = float;
 class Matep {
 public:
         Matep():
-	  Switch("OFF") {};                 // default constructor
+	  Switch("OFF") {};                    // default constructor
         Matep(const std::string &S):
-	  Switch(S) {}; // metap with fudge exponent switch
+	  Switch(S) {};                        // metap with fudge exponent switch
 
-        // interfaces of dimensional qualities
+  // ************************************************************************** //
+  // >>>>>>>>>>>        interfaces of dimensional qualities        <<<<<<<<<<<< //
+  // ************************************************************************** //
 	
-        real_t Tcp(real_t p);                      // in unit of Kelvin
-        real_t Tcp_mK(real_t p);                   // in unit of mK
+        real_t Tcp(real_t p);                  // in unit of Kelvin
+        real_t Tcp_mK(real_t p);               // in unit of mK
   
-        real_t mEffp(real_t p);
-        real_t vFp(real_t p);
-        real_t xi0p(real_t p);
-        double N0p(real_t p);
+        real_t mEffp(real_t p);                // quisiparticle effective mass 
+        real_t vFp(real_t p);                  // Fermi velocity
+        real_t xi0p(real_t p);                 // zero Temperature coherent length
+        double N0p(real_t p);                  // deisty of state on Fermi surface
+  
 
-        // interfaces of dimensionless coeficients; SC-correction parts:
+  // ************************************************************************* //
+  // >>>>  interfaces of dimensionless coeficients; SC-correction parts: <<<<< //
+  // ************************************************************************* //
   
         real_t alpha_td(real_t p, real_t T);
         real_t beta1_td(real_t p, real_t T);
@@ -45,23 +52,25 @@ public:
         real_t beta4_td(real_t p, real_t T);
         real_t beta5_td(real_t p, real_t T);
 
-        // interfaces for beta_A, beta_B and Gaps
+  // >>>>>>>>>    interfaces for beta_A, beta_B, gaps and tAB_RWS    <<<<<<<<< //
+  
         real_t beta_A_td(real_t p, real_t T);
         real_t beta_B_td(real_t p, real_t T);
         real_t gap_A_td(real_t p, real_t T);
         real_t gap_B_td(real_t p, real_t T);
 
-        // interfaces for f_{A}, f_{B}, in unit of (1/3)(Kb Tc)^2 N(0)
+        real_t tAB_RWS(real_t p);
+
+  // >>>>>>> interfaces for f_{A}, f_{B}, in unit of (1/3)(Kb Tc)^2 N(0) <<<<< //
+  
         real_t f_A_td(real_t p, real_t T);
         real_t f_B_td(real_t p, real_t T);
-
-        // read the coef4 vector
-        // void read_coef();
+        
         
 private:
         // SI unit
         static constexpr real_t Kelvin =1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f
-                         	,pi = 3.14159265358979323846264338328f, p_pcp = 21.22;
+                         	,pi = 3.14159265358979323846264338328f, p_pcp = 21.22f;
 
         // fudge Switch, "ON" or "OFF"
         std::string Switch = "OFF"; 
@@ -77,7 +86,9 @@ private:
         static const real_t c3_arr[18];
         static const real_t c4_arr[18];
         static const real_t c5_arr[18];
+
         // ***************************************************
+
         static const real_t Tc_arr[18];
         static const real_t Ms_arr[18];
         static const real_t VF_arr[18];
