@@ -44,6 +44,8 @@ Thumbs.db
 *.app
 *.exe
 *.war
+*.o
+*.gch
 
 # Large media files
 *.mp4
@@ -69,3 +71,4 @@ test*.hpp~
 *.hpp~
 *.py~
 pd/*.py~
+*~
