@@ -8,6 +8,8 @@ APP_OPTS := -DNDIM=3
 # Set default goal and arch
 .DEFAULT_GOAL := he3sim
 
+# ARCH is important on mahti, 
+# make -j8(24) ARCH=mahtis
 ifndef ARCH
 ARCH := vanilla
 endif
