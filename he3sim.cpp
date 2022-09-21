@@ -58,6 +58,8 @@ public:
 
       int initialCondition;
       int seed;
+      real_t IniMod;
+      real_t Inilc;
       
       int item;
       real_t T;
@@ -92,6 +94,8 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.gamma = parameters.get("gamma");
     config.initialCondition = parameters.get("initialCondition");
     config.seed = parameters.get("seed");
+    config.IniMod = parameters.get("IniMod");
+    config.Inilc = parameters.get("Inilc");
     config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
     if (config.item == 0){
       config.alpha = parameters.get("alpha");
@@ -171,11 +175,13 @@ void scaling_sim::initialize() {
     }
   case 2: {
     auto kA = A;
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
-        onsites (ALL) {
-            real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) *
-	      pow(1.0/sqrt(abs(config.alpha)), 3.0) /
-                              (2.0 * N * N * N * dx * dx * dx);
+    real_t gap = config.IniMod; //MP.gap_B_td(Tp[1], Tp[0]);
+    real_t lc = config.Inilc;//1.0/sqrt(abs(config.alpha));
+
+    output0 << "Correlation length in ICs: "<< lc <<"\n";
+    
+    onsites (ALL) {
+            real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) * pow(lc, 3.0)/(9.0 * N * N * N * dx * dx * dx);
             real_t kSqu;
             real_t std;
             kSqu = 0.0;
@@ -186,7 +192,7 @@ void scaling_sim::initialize() {
 
             if (kSqu > 0.0) {
                 std = sqrt(0.5 * constant *
-                           exp(-0.5 * kSqu / abs(config.alpha)));
+                           exp(-0.5 * kSqu * lc * lc));
 		//kA[X].gaussian_random(std);
 		foralldir(d1) foralldir(d2) {
 		  kA[X].e(d1,d2).re=hila::gaussrand() * std;
@@ -217,7 +223,9 @@ void scaling_sim::initialize() {
       foralldir(d1)foralldir(d2){
 
 	if (d1==d2){
-	  A[X].e(d1,d2).re = 1.0;}
+	  A[X].e(d1,d2).re = 1.0;
+	  A[X].e(d1,d2).im = 0.0;
+	}
 	else {
 	  A[X].e(d1,d2).re = 0.0;}
 	A[X].e(d1,d2).im = 0.0;
@@ -369,9 +377,31 @@ void scaling_sim::write_energies() {
   Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
   Complex<double> sumk1(0),sumk2(0),sumk3(0);
   double sumb1 = 0;
-
+  Complex<double> sumkin(0);
+  Complex<double> ebfe(0);
+  
     hila::set_allreduce(false);
     onsites(ALL) {
+
+      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+      Complex<double> bfe(0);
+      double b1 = 0;
+      
+      a = config.alpha * (A[X]*A[X].dagger()).trace();
+
+      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+
+      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+
+      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+
+      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+
+      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+
+      bfe = a + b1 + b2 + b3 + b4 + b5;
+      
+      sumkin += (pi[X]*pi[X].dagger()).trace();
 
       foralldir(j) foralldir (k) foralldir(al){
 	sumk1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(config.dx*config.dx);
@@ -379,22 +409,23 @@ void scaling_sim::write_energies() {
 	sumk3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(config.dx*config.dx);
       }
       
-        suma += config.alpha * (A[X]*A[X].dagger()).trace();
+      suma += a;
 
-        sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+      sumb1 += b1;
 
-        sumb2 += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+      sumb2 += b2;
 
-        sumb3 += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+      sumb3 += b3;
 
-        sumb4 += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+      sumb4 += b4;
 
-        sumb5 += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+      sumb5 += b5;
     }
 
       if (hila::myrank() == 0) {
         double vol = lattice->volume();
-        config.stream << sumk1.re / vol << " " << sumk1.im / vol << " "
+        config.stream << sumkin.re / vol << " " << sumkin.im / vol << " "
+	              << sumk1.re / vol << " " << sumk1.im / vol << " "
 	              << sumk2.re / vol	<< " " << sumk2.im / vol << " "
 	              << sumk3.re / vol	<< " " << sumk3.im / vol << " "
 	              << suma.re / vol << " " << suma.im / vol << " "
@@ -489,7 +520,7 @@ void scaling_sim::next() {
             auto col = djAaj[X+d] - djAaj[X-d];
             for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
         }
-        deltaPi[X] += (2.0/(config.dx*config.dx))*mat;
+        deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
     }
 
     onsites (ALL) {  
@@ -498,7 +529,8 @@ void scaling_sim::next() {
 						   + A[X + e_z] + A[X -e_z]
 						   - 6.0*A[X]);
     }
-    
+
+    onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
 
     if (t < config.tdif)
     {
