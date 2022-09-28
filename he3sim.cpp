@@ -29,6 +29,7 @@ public:
   void update_Tp (real_t t, real_t Tp[2]);
   void write_moduli();
   void write_energies();
+  void write_positions();
   void next();
   
   Field<phi_t> A;
@@ -74,6 +75,9 @@ public:
       real_t tStats;
       real_t nOutputs;
       std::fstream stream;
+      int positions;
+      std::fstream stream_positions;
+      int boundary_conditions;
     } config;
 };
 
@@ -132,7 +136,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.nOutputs = parameters.get("nOutputs");
 
     const std::string output_file = parameters.get("output_file");
-
+    
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 
@@ -140,6 +144,8 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     lattice->setup(box_dimensions);
     hila::seed_random(config.seed);
 
+    config.positions = 0;
+    config.boundary_conditions=0;
 
     return output_file;
 }
@@ -374,16 +380,28 @@ void scaling_sim::write_moduli() {
 
 void scaling_sim::write_energies() {
 
+  Matep MP;
+  
   Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
+  Complex<double> suma_we(0),sumb2_we(0),sumb3_we(0),sumb4_we(0),sumb5_we(0);
   Complex<double> sumk1(0),sumk2(0),sumk3(0);
-  double sumb1 = 0;
+  Complex<double> sumk1_we(0),sumk2_we(0),sumk3_we(0);
+  real_t sumb1 = 0;
+  Complex<double> sumb1_we = 0;
   Complex<double> sumkin(0);
-  Complex<double> ebfe(0);
+  Complex<double> sumkin_we(0);
+  real_t Tp[2];
+
+  update_Tp(t, Tp);
+
+  real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
   
     hila::set_allreduce(false);
     onsites(ALL) {
 
       Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+      Complex<double> kin(0);
+      Complex<double> k1(0), k2(0), k3(0);
       Complex<double> bfe(0);
       double b1 = 0;
       
@@ -399,41 +417,69 @@ void scaling_sim::write_energies() {
 
       b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
 
-      bfe = a + b1 + b2 + b3 + b4 + b5;
-      
-      sumkin += (pi[X]*pi[X].dagger()).trace();
+      bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
 
+      kin = (pi[X]*pi[X].dagger()).trace();
+      
       foralldir(j) foralldir (k) foralldir(al){
-	sumk1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(config.dx*config.dx);
-	sumk2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(config.dx*config.dx);
-	sumk3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(config.dx*config.dx);
+	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(config.dx*config.dx);
+	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(config.dx*config.dx);
+	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(config.dx*config.dx);
       }
+
+      sumkin += kin;
+      sumkin_we += bfe * kin;
+
+      sumk1 += k1;
+      sumk1_we += bfe * k1;
+
+      sumk2 += k2;
+      sumk2_we += bfe *	k2;
+
+      sumk3 += k3;
+      sumk3_we += bfe *	k3;
       
       suma += a;
+      suma_we += bfe * a;
 
       sumb1 += b1;
+      sumb1_we += bfe * b1;
 
       sumb2 += b2;
+      sumb2_we += bfe * b2;
 
       sumb3 += b3;
+      sumb3_we += bfe * b3;
 
       sumb4 += b4;
+      sumb4_we += bfe * b4;
 
       sumb5 += b5;
+      sumb5_we += bfe * b5;
     }
 
       if (hila::myrank() == 0) {
         double vol = lattice->volume();
         config.stream << sumkin.re / vol << " " << sumkin.im / vol << " "
-	              << sumk1.re / vol << " " << sumk1.im / vol << " "
-	              << sumk2.re / vol	<< " " << sumk2.im / vol << " "
-	              << sumk3.re / vol	<< " " << sumk3.im / vol << " "
-	              << suma.re / vol << " " << suma.im / vol << " "
+	              << sumkin_we.re / vol << " " << sumkin_we.im / vol << " "
+		      << sumk1.re / vol << " " << sumk1.im / vol << " "
+	              << sumk1_we.re / vol << " " << sumk1_we.im / vol << " "
+		      << sumk2.re / vol	<< " " << sumk2.im / vol << " "
+	              << sumk2_we.re / vol << " " << sumk2_we.im / vol << " "
+		      << sumk3.re / vol	<< " " << sumk3.im / vol << " "
+	              << sumk3_we.re / vol << " " << sumk3_we.im / vol << " "
+		      << suma.re / vol << " " << suma.im / vol << " "
+	              << suma_we.re / vol << " " << suma_we.im / vol << " "
 		      << sumb1 / vol << " "
+	              << sumb1_we.re / vol << " " << sumb1_we.im / vol << " "
 		      << sumb2.re / vol << " " << sumb2.im / vol << " "
+	              << sumb2_we.re / vol << " " << sumb2_we.im / vol << " "
 		      << sumb3.re / vol << " " << sumb3.im / vol << " "
- 		      << sumb4.re / vol << " " << sumb4.im / vol << " "
-		      << sumb5.re / vol << " " << sumb5.im / vol << "\n";
+	              << sumb3_we.re / vol << " " << sumb3_we.im / vol << " "
+		      << sumb4.re / vol << " " << sumb4.im / vol << " "
+	              << sumb4_we.re / vol << " " << sumb4_we.im / vol << " "
+		      << sumb5.re / vol << " " << sumb5.im / vol << " "
+	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << "\n";
     }
 
        output0<< "Energy done \n";
@@ -480,7 +526,47 @@ void scaling_sim::write_energies() {
     //  		  << sumb4r / vol << " " << sumb4i / vol << " "
     // 		  << sumb5r / vol << " " << sumb5i / vol << "\n";
     //   }
-}  
+}
+
+void scaling_sim::write_positions() {
+
+  Matep MP;
+
+  real_t Tp[2];
+
+  update_Tp(t, Tp);
+
+  real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
+
+    hila::set_allreduce(false);
+    onsites(ALL) {
+
+      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+      Complex<double> bfe(0);
+      double b1 = 0;
+
+      a = config.alpha * (A[X]*A[X].dagger()).trace();
+
+      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+
+      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+
+      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+
+      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+
+      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+
+      bfe = a + b1 + b2 + b3 + b4 + b5;
+
+      if (bfe.re > 2.0*ebfe)
+	{config.stream_positions<< t << " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << "\n";}
+      
+    }
+
+}
+
+
 void scaling_sim::next() {
 
 
@@ -492,17 +578,25 @@ void scaling_sim::next() {
     next_timer.start();
 
     onsites (ALL) {
-        A[X] += config.dt * pi[X];
 
-        auto AxAt = A[X]*A[X].transpose();
-        auto AxAd = A[X]*A[X].dagger();
+      if (config.boundary_conditions == 1)
+	{
+	  if (X.coordinate(e_x)==0 or X.coordinate(e_x)==(config.l-1) or X.coordinate(e_y)==0 or X.coordinate(e_y)==(config.l-1) or X.coordinate(e_z)==0 or X.coordinate(e_z)==(config.l-1))
+	    {A[X] = 0.0;}
+	  else {A[X] += config.dt * pi[X];}
+	}
+      else {A[X] += config.dt * pi[X];}
+
+
+      auto AxAt = A[X]*A[X].transpose();
+      auto AxAd = A[X]*A[X].dagger();
  
 	
-        deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*AxAt.trace() 
-            - 2.0*config.beta2*A[X]*AxAd.trace()
-	        - 2.0*config.beta3*(AxAt*A[X]) - 2.0*config.beta4*(AxAd*A[X]) 
+      deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*AxAt.trace() 
+	- 2.0*config.beta2*A[X]*AxAd.trace()
+	- 2.0*config.beta3*(AxAt*A[X]) - 2.0*config.beta4*(AxAd*A[X]) 
 	  //- 2.0*config.beta5*(AxAd.conj()*A[X]);
-	  - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
+	- 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
 
     //     deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*(A[X]*A[X].transpose()).trace() - 2.0*config.beta2*A[X]*(A[X]*A[X].dagger()).trace()
 	//   - 2.0*config.beta3*(A[X]*A[X].transpose()*A[X]) - 2.0*config.beta4*(A[X]*A[X].dagger()*A[X]) - 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
@@ -554,10 +648,14 @@ void scaling_sim::next() {
 
 int main(int argc, char **argv) {
     scaling_sim sim;
+    output0 << "0 \n";
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
+    output0 << "1 \n";
     sim.update_params();
+    output0 << "2 \n";
     sim.initialize();
-
+    output0 << "3 \n";
+    
     int steps =
         (sim.config.tEnd - sim.config.tStats) /
         (sim.config.dt * sim.config.nOutputs); // number of steps between printing stats
@@ -570,7 +668,12 @@ int main(int argc, char **argv) {
         sim.config.stream.open(output_fname, std::ios::out);
     }
 
-
+    if (sim.config.positions == 1)
+      {
+	const std::string positions_fname = "positions_"+std::to_string(hila::myrank())+".dat";
+	sim.config.stream_positions.open(positions_fname, std::ios::out);
+      }
+    
     // on gpu the simulation timer is fake, because there's no sync here.  
     // BUt we want to avoid unnecessary sync anyway.
     static hila::timer run_timer("Simulation time"), meas_timer("Measurements");
