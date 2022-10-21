@@ -31,6 +31,7 @@ public:
   void write_energies();
   void write_positions();
   void next();
+  int  boundary_point(CoordinateVector e);
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -205,10 +206,21 @@ void scaling_sim::initialize() {
                   kA[X].e(d1,d2).im=0.0;
 		  }*/
             }
-        }
+    }
 
         FFT_field(kA, A, fft_direction::back);
 
+	real_t rre=hila::gaussrand();
+	real_t rim=hila::gaussrand();
+	
+	onsites (ALL){
+	  foralldir(d1) foralldir(d2) {
+	    A[X].e(d1,d2).re=1.0;
+	    A[X].e(d1,d2).im=1.0;
+	    }
+	  A[X]=gap*A[X]/A[X].norm();
+	}
+	
         pi[ALL] = 0;
 
         output0 << "k space generation \n";
@@ -220,7 +232,7 @@ void scaling_sim::initialize() {
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     output0<<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
-      A[X] = gap/sqrt(3.0);
+      A[X] = gap/sqrt(3.0);   // there was 1/A[X].norm(), but this would have been 1/sqrt(3)
     }
 
     output0 << "Pure B phase \n";
@@ -395,9 +407,9 @@ void scaling_sim::write_energies() {
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
-	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(config.dx*config.dx);
-	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(config.dx*config.dx);
-	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(config.dx*config.dx);
+	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
+	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
       }
 
       sumkin += kin;
@@ -505,40 +517,75 @@ void scaling_sim::write_positions() {
 
   Matep MP;
 
-  real_t Tp[2];
+      real_t Tp[2];
 
-  update_Tp(t, Tp);
+      update_Tp(t, Tp);
 
-  real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
+      real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
 
-    hila::set_allreduce(false);
-    onsites(ALL) {
-
-      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
-      Complex<double> bfe(0);
-      double b1 = 0;
-
-      a = config.alpha * (A[X]*A[X].dagger()).trace();
-
-      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-
-      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
-
-      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
-
-      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
-
-      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
-
-      bfe = a + b1 + b2 + b3 + b4 + b5;
-
-      if (bfe.re > 2.0*ebfe)
-	{config.stream_positions<< t << " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << "\n";}
+                 
+      if (hila::myrank() == 0)
+        {
+          config.stream_positions<< t << " " << MP.f_A_td(Tp[1], Tp[0])<<" "<<MP.f_B_td(Tp[1], Tp[0]) <<"\n";
+	}
       
-    }
+      hila::set_allreduce(false);
+      onsites(ALL) {
+
+	Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+	Complex<double> bfe(0);
+	double b1 = 0;
+
+	a = config.alpha * (A[X]*A[X].dagger()).trace();
+
+	b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+
+	b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+
+	b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+
+	b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+
+	b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+
+	bfe = a + b1 + b2 + b3 + b4 + b5;
+
+	if (bfe.re<-0.07)
+	  {
+	    config.stream_positions<< bfe <<"\n";
+	    
+	    }
+
+	
+	/*if ( hila::myrank() == 0)
+	  {config.stream_positions<< bfe.re << " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " "
+	       << A[X].e(0,0).re << " " << A[X].e(0,0).re
+				  << A[X].e(0,1).re << " " << A[X].e(0,1).re
+				  << A[X].e(0,2).re << " " << A[X].e(0,2).re
+				  << A[X].e(1,0).re << " " << A[X].e(1,0).re
+				  << A[X].e(1,1).re << " " << A[X].e(1,1).re
+				  << A[X].e(1,2).re << " " << A[X].e(1,2).re
+				  << A[X].e(2,0).re << " " << A[X].e(2,0).re
+				  << A[X].e(2,1).re << " " << A[X].e(2,1).re
+				  << A[X].e(2,2).re << " " << A[X].e(2,2).re
+				  <<  "\n";
+	  }*/
+      
+      }
 
 }
 
+int  scaling_sim::boundary_point(CoordinateVector e) {
+
+  if (e[e_x]==0 or e[e_x]==(config.l-1) or e[e_y]==0 or e[e_y]==(config.l-1) or e[e_z]==0 or e[e_z]==(config.l-1))
+    {
+      return 1;
+    }
+  else
+    {
+      return 0;
+    }
+}
 
 void scaling_sim::next() {
 
@@ -546,7 +593,6 @@ void scaling_sim::next() {
     static hila::timer next_timer("timestep");
     Field<phi_t> deltaPi;
     Field<Vector<3,Complex<real_t>>> djAaj;
-
     
     next_timer.start();
 
@@ -554,7 +600,7 @@ void scaling_sim::next() {
 
       if (config.boundary_conditions == 1)
 	{
-	  if (X.coordinate(e_x)==0 or X.coordinate(e_x)==(config.l-1) or X.coordinate(e_y)==0 or X.coordinate(e_y)==(config.l-1) or X.coordinate(e_z)==0 or X.coordinate(e_z)==(config.l-1))
+	  if (boundary_point(X.coordinates())==1)
 	    {A[X] = 0.0;}
 	  else {A[X] += config.dt * pi[X];}
 	}
@@ -562,7 +608,7 @@ void scaling_sim::next() {
 
 
       auto AxAt = A[X]*A[X].transpose();
-      auto AxAd = A[X]*A[X].dagger();
+      auto AxAd = A[X]*(A[X].dagger());
  
 	
       deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*AxAt.trace()*A[X].conj() 
@@ -578,9 +624,29 @@ void scaling_sim::next() {
     onsites(ALL) {
         djAaj[X] = 0;
         foralldir(j) {
-	  djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-        }
+	  auto Xp = X.coordinates()+Direction(j);
+	  auto Xm = X.coordinates()-Direction(j);
+	  if (config.boundary_conditions == 1)
+	    {
+	      if (boundary_point(Xp)==1 and boundary_point(Xm)==1)
+		{
+		  djAaj[X] = djAaj[X];
+		}
+	      else if (boundary_point(Xp)==1)
+		{
+		  djAaj[X] +=  - A[X - j].column(j);
+		}
+	      else if (boundary_point(Xm)==1)
+		{
+		  djAaj[X] += A[X + j].column(j);
+		}
+	      else {djAaj[X] += A[X + j].column(j) - A[X - j].column(j);}
+	    }
+	  else {djAaj[X] += A[X + j].column(j) - A[X - j].column(j);}
+	    
+	} 
     }
+
     onsites(ALL) {
         phi_t mat;
         foralldir(d) {
@@ -590,30 +656,65 @@ void scaling_sim::next() {
         deltaPi[X] += (1.0/(4.0*(config.dx*config.dx)))*mat;
     }
 
-    onsites (ALL) {  
-      deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X + e_x] + A[X -e_x]
-						   + A[X + e_y] + A[X -e_y]
-						   + A[X + e_z] + A[X -e_z]
+    onsites (ALL) {
+      if (config.boundary_conditions == 1)
+	{
+	  foralldir(j) {
+	    auto Xp = X.coordinates()+Direction(j);
+	    auto Xm = X.coordinates()-Direction(j);
+	    if (boundary_point(Xp)==1 and boundary_point(Xm)==1)
+	      {
+		deltaPi[X] = deltaPi[X]; 
+	      }
+	    else if (boundary_point(Xp)==1)
+	      {
+		deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X -e_x]);
+	      }
+	    else if (boundary_point(Xm)==1)
+	      {
+		deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X -e_x]);
+	      }
+	    else
+	      {
+		deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X + e_x] + A[X -e_x]);
+	      }
+	    if (boundary_point(X.coordinates())==1)
+	      {
+		deltaPi[X] = deltaPi[X];
+	      }
+	    else
+	      {
+		deltaPi[X] += (1.0/(config.dx*config.dx)) * ( - 6.0*A[X]);
+	      }
+	  }
+	}
+      else
+	{
+	  deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x + e_x] + A[X - e_x - e_x]
+						     + A[X + e_y + e_y] + A[X - e_y - e_y]
+						     + A[X + e_z + e_z] + A[X - e_z - e_z]
 						   - 6.0*A[X]);
+	}
     }
 
-    onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
+    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
 
-    if (t < config.tdif)
-    {
-        pi[ALL] = deltaPi[X]/(config.difFac*config.dt);
-        t += config.dt/config.difFac;
-    }
-    else if (t < config.tdis && config.gamma > 0 )
-    {
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X]);
-      t += config.dt;
-    }
-    else
-    {
-      pi[ALL] = pi[X] + deltaPi[X];
-      t += config.dt;
-    }
+      if (t < config.tdif)
+	{
+	  pi[ALL] = deltaPi[X]/(config.difFac);
+	  t += config.dt/config.difFac;
+	}
+      else if (t < config.tdis && config.gamma > 0 )
+	{
+	  pi[ALL] = pi[X] + (deltaPi[X]*config.dt - 2.0 * config.gamma * pi[X]);
+	  t += config.dt;
+	}
+      else
+	{
+	  onsites (ALL){pi[X] = pi[X] + deltaPi[X]*config.dt;}
+	  t += config.dt;
+	}
+
 
     next_timer.stop();
 
@@ -621,13 +722,9 @@ void scaling_sim::next() {
 
 int main(int argc, char **argv) {
     scaling_sim sim;
-    output0 << "0 \n";
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
-    output0 << "1 \n";
     sim.update_params();
-    output0 << "2 \n";
     sim.initialize();
-    output0 << "3 \n";
     
     int steps =
         (sim.config.tEnd - sim.config.tStats) /
@@ -641,7 +738,7 @@ int main(int argc, char **argv) {
         sim.config.stream.open(output_fname, std::ios::out);
     }
 
-    if (sim.config.positions == 1)
+    if (sim.config.positions == 1 and hila::myrank() == 0)
       {
 	const std::string positions_fname = "positions_"+std::to_string(hila::myrank())+".dat";
 	sim.config.stream_positions.open(positions_fname, std::ios::out);
@@ -658,6 +755,7 @@ int main(int argc, char **argv) {
             if (stat_counter % steps == 0) {
 	      meas_timer.start();
 	      output0 << "Writing output at time " << sim.t << "\n";
+	      if (sim.config.positions == 1){sim.write_positions();}
 	      sim.write_moduli();
 	      sim.write_energies();
 	      meas_timer.stop();
@@ -671,6 +769,7 @@ int main(int argc, char **argv) {
 
     if (hila::myrank() == 0) {
         sim.config.stream.close();
+	sim.config.stream_positions.close();
     }
 
     hila::finishrun();
