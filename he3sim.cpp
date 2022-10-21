@@ -161,7 +161,7 @@ void scaling_sim::initialize() {
   int N = config.l;
   real_t dx = config.dx;
 
-  output0<<"R: "<<hila::random()<<"\n";
+  hila::out0<<"R: "<<hila::random()<<"\n";
   
   switch (config.initialCondition) {
     
@@ -173,7 +173,7 @@ void scaling_sim::initialize() {
       A[X] = gap * A[X]/A[X].norm();
     }
 
-    output0 << "Components randomly created \n";
+    hila::out0 << "Components randomly created \n";
 
     break;
     }
@@ -182,7 +182,7 @@ void scaling_sim::initialize() {
     real_t gap = config.IniMod; //MP.gap_B_td(Tp[1], Tp[0]);
     real_t lc = config.Inilc;//1.0/sqrt(abs(config.alpha));
 
-    output0 << "Correlation length in ICs: "<< lc <<"\n";
+    hila::out0 << "Correlation length in ICs: "<< lc <<"\n";
     
     onsites (ALL) {
             real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) * pow(lc, 3.0)/(9.0 * N * N * N * dx * dx * dx);
@@ -223,26 +223,26 @@ void scaling_sim::initialize() {
 	
         pi[ALL] = 0;
 
-        output0 << "k space generation \n";
+        hila::out0 << "k space generation \n";
 
         break;
   }
   case 3: {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
-    output0<<"Gap B: "<<gap<<"\n";
+    hila::out0<<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
       A[X] = gap/sqrt(3.0);   // there was 1/A[X].norm(), but this would have been 1/sqrt(3)
     }
 
-    output0 << "Pure B phase \n";
+    hila::out0 << "Pure B phase \n";
 
     break;
     }
   case 4: {
     pi = 0;
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
-    output0<<"Gap A: "<<gap<<"\n";
+    hila::out0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
         A[X] = 0;
         A[X].e(0,2) = 1;
@@ -251,7 +251,7 @@ void scaling_sim::initialize() {
       A[X] = gap * A[X]/sqrt(2.0);
     }
 
-    output0 << "Pure A phase \n";
+    hila::out0 << "Pure A phase \n";
 
     break;
     }
@@ -263,7 +263,7 @@ void scaling_sim::initialize() {
       A[X].fill(1.0);
     }
     
-    output0 << "Field matrix set to 1 everywhere \n";
+    hila::out0 << "Field matrix set to 1 everywhere \n";
 
     break;
   }
@@ -321,7 +321,7 @@ void scaling_sim::update_params() {
     config.beta3 = MP.beta3_td(config.p, config.T);
     config.beta4 = MP.beta4_td(config.p, config.T);
     config.beta5 = MP.beta5_td(config.p, config.T);
-    output0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5;
+    hila::out0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5;
   }
   else if (config.item ==2){
     update_Tp(t, Tp);
@@ -467,7 +467,7 @@ void scaling_sim::write_energies() {
 	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << "\n";
     }
 
-       output0<< "Energy done \n";
+       hila::out0<< "Energy done \n";
 
     //   double sumar = 0.0;
     //   double sumai = 0.0;
@@ -754,7 +754,7 @@ int main(int argc, char **argv) {
         if (sim.t >= sim.config.tStats) {
             if (stat_counter % steps == 0) {
 	      meas_timer.start();
-	      output0 << "Writing output at time " << sim.t << "\n";
+	      hila::out0 << "Writing output at time " << sim.t << "\n";
 	      if (sim.config.positions == 1){sim.write_positions();}
 	      sim.write_moduli();
 	      sim.write_energies();
