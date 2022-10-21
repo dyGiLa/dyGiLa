@@ -168,10 +168,7 @@ void scaling_sim::initialize() {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
-	A[X].e(d1,d2).re = hila::gaussrand();
-	A[X].e(d1,d2).im = hila::gaussrand();
-      }
+        A[X].gaussian_random();
       A[X] = gap * A[X]/A[X].norm();
     }
 
@@ -199,11 +196,8 @@ void scaling_sim::initialize() {
             if (kSqu > 0.0) {
                 std = sqrt(0.5 * constant *
                            exp(-0.5 * kSqu * lc * lc));
-		//kA[X].gaussian_random(std);
-		foralldir(d1) foralldir(d2) {
-		  kA[X].e(d1,d2).re=hila::gaussrand() * std;
-		  kA[X].e(d1,d2).im=hila::gaussrand() * std;
-		  } 
+		        kA[X].gaussian_random(std);
+
             } else {
 	      kA[X]=0;
 	      /*foralldir(d1) foralldir(d2) {
@@ -226,17 +220,7 @@ void scaling_sim::initialize() {
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     output0<<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
-
-	if (d1==d2){
-	  A[X].e(d1,d2).re = 1.0;
-	  A[X].e(d1,d2).im = 0.0;
-	}
-	else {
-	  A[X].e(d1,d2).re = 0.0;}
-	A[X].e(d1,d2).im = 0.0;
-      }
-      A[X] = gap * A[X]/sqrt(3.0);
+      A[X] = gap/sqrt(3.0);
     }
 
     output0 << "Pure B phase \n";
@@ -248,21 +232,10 @@ void scaling_sim::initialize() {
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
     output0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
-
-        if (d1==0 && d2==2){
-          A[X].e(d1,d2).re = 1.0;
-	  A[X].e(d1,d2).im = 0.0;
-	}
-	else if (d1==1 && d2==2){
-	  A[X].e(d1,d2).re = 0.0;
-	  A[X].e(d1,d2).im = 1.0;
-	}
-        else {
-          A[X].e(d1,d2).re = 0.0;
-	  A[X].e(d1,d2).im = 0.0;
-	}
-      }
+        A[X] = 0;
+        A[X].e(0,2) = 1;
+        A[X].e(1,2) = I;
+      
       A[X] = gap * A[X]/sqrt(2.0);
     }
 
@@ -592,9 +565,9 @@ void scaling_sim::next() {
       auto AxAd = A[X]*A[X].dagger();
  
 	
-      deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*A[X]*AxAt.trace() 
-	- 2.0*config.beta2*A[X]*AxAd.trace()
-	- 2.0*config.beta3*(AxAt*A[X]) - 2.0*config.beta4*(AxAd*A[X]) 
+      deltaPi[X] = - config.alpha*A[X] - 2.0*config.beta1*AxAt.trace()*A[X].conj() 
+	- 2.0*config.beta2*AxAd.trace()*A[X]
+	- 2.0*config.beta3*(AxAt*A[X].conj()) - 2.0*config.beta4*(AxAd*A[X]) 
 	  //- 2.0*config.beta5*(AxAd.conj()*A[X]);
 	- 2.0*config.beta5*(A[X].conj()*A[X].transpose()*A[X]);
 
@@ -614,7 +587,7 @@ void scaling_sim::next() {
             auto col = djAaj[X+d] - djAaj[X-d];
             for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
         }
-        deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+        deltaPi[X] += (1.0/(4.0*(config.dx*config.dx)))*mat;
     }
 
     onsites (ALL) {  
