@@ -653,7 +653,7 @@ void scaling_sim::next() {
             auto col = djAaj[X+d] - djAaj[X-d];
             for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
         }
-        deltaPi[X] += (1.0/(4.0*(config.dx*config.dx)))*mat;
+        deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
     }
 
     onsites (ALL) {
