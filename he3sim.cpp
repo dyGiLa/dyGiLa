@@ -142,7 +142,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     t = config.tStart;
 
     CoordinateVector box_dimensions = {config.l, config.l, config.l};
-    lattice->setup(box_dimensions);
+    lattice.setup(box_dimensions);
     hila::seed_random(config.seed);
 
     config.positions = 0;
@@ -358,7 +358,7 @@ void scaling_sim::write_moduli() {
 	              << tc << " "
 	              << Tp[0] << " " << Tp[1] << " "
 		      << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " " <<	config.beta5 << " "
-                      << Amod / lattice->volume() << " " << pimod / lattice->volume()
+                      << Amod / lattice.volume() << " " << pimod / lattice.volume()
                       << " ";
     }
 }
@@ -444,7 +444,7 @@ void scaling_sim::write_energies() {
     }
 
       if (hila::myrank() == 0) {
-        double vol = lattice->volume();
+        double vol = lattice.volume();
         config.stream << sumkin.re / vol << " " << sumkin.im / vol << " "
 	              << sumkin_we.re / vol << " " << sumkin_we.im / vol << " "
 		      << sumk1.re / vol << " " << sumk1.im / vol << " "
