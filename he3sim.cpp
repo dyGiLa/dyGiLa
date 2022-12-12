@@ -31,8 +31,7 @@ public:
   void write_energies();
   void write_positions();
   void next();
-  int  boundary_point(CoordinateVector e);
-  
+   
   Field<phi_t> A;
   Field<phi_t> pi;
 
@@ -45,7 +44,9 @@ public:
   std::vector<real_t> p_v;
   
     struct config {
-      int l;
+      int lx;
+      int ly;
+      int lz;
       real_t dx;
       real_t dt;
       real_t dtdxRatio;
@@ -88,7 +89,9 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
    hila::initialize(argc, argv);
 
     hila::input parameters(fname);
-    config.l = parameters.get("N");
+    config.lx = parameters.get("Nx");
+    config.ly = parameters.get("Ny");
+    config.lz = parameters.get("Nz");
     config.dx = parameters.get("dx");
     config.dtdxRatio = parameters.get("dtdxRatio");
     config.tStart = parameters.get("tStart");
@@ -97,7 +100,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
     config.gamma = parameters.get("gamma");
-    config.initialCondition = parameters.get("initialCondition");
+    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
@@ -113,7 +116,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     else if (config.item == 1) {
       config.T = parameters.get("T");
       config.p = parameters.get("p");
-      output0 << "Tab: "<< MP.tAB_RWS(config.p);
+      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p);
     }
     else {
       const std::string in_file = parameters.get("params_file");
@@ -138,16 +141,17 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.nOutputs = parameters.get("nOutputs");
 
     const std::string output_file = parameters.get("output_file");
+
+    config.positions = parameters.get_item("out_points",{"no", "yes"});
+    config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 
-    CoordinateVector box_dimensions = {config.l, config.l, config.l};
-    lattice->setup(box_dimensions);
+    CoordinateVector box_dimensions = {config.lx, config.ly, config.lz};
+    lattice.setup(box_dimensions);
     hila::seed_random(config.seed);
 
-    config.positions = 1;
-    config.boundary_conditions=0;
 
     return output_file;
 }
@@ -159,61 +163,55 @@ void scaling_sim::initialize() {
   real_t Tp[2];
   update_Tp(t, Tp);
   
-  int N = config.l;
+  int Nx = config.lx;
+  int Ny = config.ly;
+  int Nz = config.lz;
+  
   real_t dx = config.dx;
 
   real_t ttc = MP.Tcp_mK(Tp[1]);
-  output0<<"T_AB: "<<MP.tAB_RWS(Tp[1])*ttc<<"\n";
+  hila::out0 <<"T_AB: "<<MP.tAB_RWS(Tp[1])*ttc<<"\n";
   
   switch (config.initialCondition) {
     
-  case 1: {
+  case 0: {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
-	A[X].e(d1,d2).re = hila::gaussrand();
-	A[X].e(d1,d2).im = hila::gaussrand();
-      }
+      A[X] = hila::gaussrand();
       A[X] = gap * A[X]/A[X].norm();
     }
 
-    output0 << "Components randomly created \n";
+    hila::out0 << "Components randomly created \n";
 
     break;
     }
-  case 2: {
+  case 1: {
     auto kA = A;
     real_t gap = config.IniMod; //MP.gap_B_td(Tp[1], Tp[0]);
     real_t lc = config.Inilc;//1.0/sqrt(abs(config.alpha));
 
-    output0 << "Correlation length in ICs: "<< lc <<"\n";
+    hila::out0 << "Correlation length in ICs: "<< lc <<"\n";
     
     onsites (ALL) {
-            real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) * pow(lc, 3.0)/(9.0 * N * N * N * dx * dx * dx);
+            real_t constant = pow(gap, 2.0) * pow(2.0 * M_PI, 1.5) * pow(lc, 3.0)/(9.0 * Nx * Ny * Nz * dx * dx * dx);
             real_t kSqu;
             real_t std;
             kSqu = 0.0;
             auto k = X.coordinates();
 
-            foralldir (d) { kSqu += pow(sin(M_PI * k.e(d) / N), 2.0); }
+            kSqu = pow(sin(M_PI * k.e(0) / Nx), 2.0)+pow(sin(M_PI * k.e(1) / Ny), 2.0)+pow(sin(M_PI * k.e(2) / Nz), 2.0); 
             kSqu *= pow(2.0 / dx, 2.0);
 
             if (kSqu > 0.0) {
                 std = sqrt(0.5 * constant *
                            exp(-0.5 * kSqu * lc * lc));
+
 		kA[X].gaussian_random(std);
-		/*foralldir(d1) foralldir(d2) {
-		  kA[X].e(d1,d2).re=hila::gaussrand() * std;
-		  kA[X].e(d1,d2).im=hila::gaussrand() * std;
-		  }*/ 
+		
             } else {
 	      kA[X]=0;
-	      /*foralldir(d1) foralldir(d2) {
-                  kA[X].e(d1,d2).re=0.0;
-                  kA[X].e(d1,d2).im=0.0;
-		  }*/
-            }
+	    }
     }
 
         FFT_field(kA, A, fft_direction::back);
@@ -222,61 +220,51 @@ void scaling_sim::initialize() {
 	
 	onsites (ALL)
 	  {
-	    A[X]=gap*A[X]/A[X].norm();
+	    if (A[X].norm()>0.0){A[X]=gap*A[X]/A[X].norm();}
 	  }
 	
         pi[ALL] = 0;
 
-        output0 << "k space generation \n";
+        hila::out0 << "k space generation \n";
 
         break;
   }
-  case 3: {
+  case 2: {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
-    output0<<"Gap B: "<<gap<<"\n";
+    hila::out0 <<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
       foralldir(d1)foralldir(d2){
 
 	if (d1==d2){
-	  A[X].e(d1,d2).re = 1.0;
+	  A[X].e(d1,d2).re=1.0; //hila::gaussrand() hila::random()
 	  A[X].e(d1,d2).im = 0.0;
 	}
 	else {
 	  A[X].e(d1,d2).re = 0.0;
 	  A[X].e(d1,d2).im = 0.0;}
       }
-      A[X] = gap * A[X]/sqrt(3.0);
+      A[X] = gap * A[X]/A[X].norm();
     }
 
-    output0 << "Pure B phase \n";
+    hila::out0 << "Pure B phase \n";
 
     break;
     }
-  case 4: {
+  case 3: {
     pi = 0;
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
-    output0<<"Gap A: "<<gap<<"\n";
+    hila::out0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
 
-        if (d1==2 && d2==0){
-          A[X].e(d1,d2).re = 1.0;
-	  A[X].e(d1,d2).im = 0.0;
-	}
-	else if (d1==2 && d2==1){
-	  A[X].e(d1,d2).re = 0.0;
-	  A[X].e(d1,d2).im = 1.0;
-	}
-        else {
-          A[X].e(d1,d2).re = 0.0;
-	  A[X].e(d1,d2).im = 0.0;
-	}
-      }
+        A[X] = 0;
+        A[X].e(0,2).re = 1.0;
+        A[X].e(1,2).im = 1.0;
+      
       A[X] = gap * A[X]/sqrt(2.0);
     }
 
-    output0 << "Pure A phase \n";
+    hila::out0 << "Pure A phase \n";
 
     break;
     }
@@ -288,7 +276,7 @@ void scaling_sim::initialize() {
       A[X].fill(1.0);
     }
     
-    output0 << "Field matrix set to 1 everywhere \n";
+    hila::out0 << "Field matrix set to 1 everywhere \n";
 
     break;
   }
@@ -342,21 +330,23 @@ void scaling_sim::update_params() {
     tc = MP.Tcp_mK(config.p);
     gapa = MP.gap_A_td(config.p, config.T);
     gapb = MP.gap_B_td(config.p, config.T);
-    output0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
     config.alpha = MP.alpha_td(config.p, config.T);
     config.beta1 = MP.beta1_td(config.p, config.T);
     config.beta2 = MP.beta2_td(config.p, config.T);
     config.beta3 = MP.beta3_td(config.p, config.T);
     config.beta4 = MP.beta4_td(config.p, config.T);
     config.beta5 = MP.beta5_td(config.p, config.T);
-    output0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5<< "\n";
+
+    hila::out0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5<< "\n";
+
   }
   else if (config.item ==2){
     update_Tp(t, Tp);
     tc = MP.Tcp_mK(Tp[1]);
     gapa = MP.gap_A_td(Tp[1], Tp[0]);
     gapb = MP.gap_B_td(Tp[1], Tp[0]);
-    output0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
     config.alpha = MP.alpha_td(Tp[1], Tp[0]);
     config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
     config.beta2 = MP.beta2_td(Tp[1], Tp[0]);
@@ -389,7 +379,7 @@ void scaling_sim::write_moduli() {
 	              << tc << " "
 	              << Tp[0] << " " << Tp[1] << " "
 		      << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " " <<	config.beta5 << " "
-                      << Amod / lattice->volume() << " " << pimod / lattice->volume()
+                      << Amod / lattice.volume() << " " << pimod / lattice.volume()
                       << " ";
     }
 }
@@ -475,7 +465,7 @@ void scaling_sim::write_energies() {
     }
 
       if (hila::myrank() == 0) {
-        double vol = lattice->volume();
+        double vol = lattice.volume();
         config.stream << sumkin.re / vol << " " << sumkin.im / vol << " "
 	              << sumkin_we.re / vol << " " << sumkin_we.im / vol << " "
 		      << sumk1.re / vol << " " << sumk1.im / vol << " "
@@ -498,7 +488,7 @@ void scaling_sim::write_energies() {
 	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << "\n";
     }
 
-       output0<< "Energy done \n";
+       hila::out0 << "Energy done \n";
 
     //   double sumar = 0.0;
     //   double sumai = 0.0;
@@ -556,12 +546,13 @@ void scaling_sim::write_positions() {
 
   
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-       
+  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+  
   hila::set_allreduce(false);
 
   onsites (ALL) {
 
-    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].norm()/gapa <<"\n";
+    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].norm()/gapb <<"\n";
 
   }
 
@@ -569,17 +560,6 @@ void scaling_sim::write_positions() {
   
 }
 
-int  scaling_sim::boundary_point(CoordinateVector e) {
-
-  if (e[e_x]==0 or e[e_x]==(config.l-1) or e[e_y]==0 or e[e_y]==(config.l-1) or e[e_z]==0 or e[e_z]==(config.l-1))
-    {
-      return 1;
-    }
-  else
-    {
-      return 0;
-    }
-}
 
 void scaling_sim::next() {
 
@@ -594,9 +574,10 @@ void scaling_sim::next() {
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
-  int bc=2;
+
+    int bc=config.boundary_conditions;
   
-  next_timer.start();
+    next_timer.start();
 
   onsites (ALL) {
 
@@ -617,7 +598,7 @@ void scaling_sim::next() {
 	    }
 	    A[X] = gapb * A[X]/sqrt(3.0);
 	  }
-	else if (X.coordinate(e_z) == (config.l - 1) or X.coordinate(e_z) == (config.l - 2))
+	else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
 	  {
 	    foralldir(d1)foralldir(d2){
 	      if (d1==2 && d2==0){
@@ -638,12 +619,12 @@ void scaling_sim::next() {
       }
     else if (bc==2)
       {
-	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.l - 1) or
-	    X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.l - 2) or
-	    X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.l - 1) or
-	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.l - 2) or
-	    X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.l - 1) or
-	    X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.l - 2))
+	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
+	    X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
+	    X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
+	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
+	    X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
+	    X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
           {
 	    A[X]=0.0;
 	  }
@@ -740,7 +721,7 @@ int main(int argc, char **argv) {
         if (sim.t >= sim.config.tStats) {
             if (stat_counter % steps == 0) {
 	      meas_timer.start();
-	      output0 << "Writing output at time " << sim.t << "\n";
+	      hila::out0 << "Writing output at time " << sim.t << "\n";
 	      if (sim.config.positions == 1){sim.write_positions();}
 	      sim.write_moduli();
 	      sim.write_energies();
