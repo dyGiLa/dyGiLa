@@ -12,13 +12,13 @@
 
 #include "matep.hpp"
 
-// Definition of the fiedl that we will use
-using real_t = float;   // or double
+// Definition of the fieldthat we will use
+using real_t = double;                          // or double
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
 
 
-/// Container for simulation parameters and methods
+// Container for simulation parameters and methods
 class scaling_sim{
 
 public:
@@ -36,7 +36,6 @@ public:
   Field<phi_t> pi;
 
   real_t t;
-
   real_t tc = 0;
 
   std::vector<real_t> t_v;
@@ -82,13 +81,13 @@ public:
     } config;
 };
 
-const std::string scaling_sim::allocate(const std::string &fname, int argc,
-                                        char **argv) {
+const std::string scaling_sim::allocate(const std::string &fname, int argc, char **argv)
+{
 
-  Matep MP;
-   hila::initialize(argc, argv);
-
+    Matep MP;
+    hila::initialize(argc, argv);
     hila::input parameters(fname);
+    
     config.lx = parameters.get("Nx");
     config.ly = parameters.get("Ny");
     config.lz = parameters.get("Nz");
@@ -104,6 +103,9 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
+
+    // ******************************************************************************** //
+    // >>>>>>>>>>>>>>>       different way for updating parameters      <<<<<<<<<<<<<<< //
     config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
     if (config.item == 0){
       config.alpha = parameters.get("alpha");
@@ -119,7 +121,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
       hila::out0 << "Tab: "<< MP.tAB_RWS(config.p);
     }
     else {
-      const std::string in_file = parameters.get("params_file");
+      const std::string in_file = parameters.get("params_file"); // where is params_file ???
 
       std::fstream params_stream;
       params_stream.open(in_file, std::ios::in);
@@ -137,9 +139,12 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
 	    }
 	}
     }
+    // ******************************************************************************** //
+    
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
+    // output_file is the saving path of output file, which offered in congigration file
     const std::string output_file = parameters.get("output_file");
 
     config.positions = parameters.get_item("out_points",{"no", "yes"});
@@ -148,6 +153,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc,
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 
+    // setup the hila lattice geometry 
     CoordinateVector box_dimensions = {config.lx, config.ly, config.lz};
     lattice.setup(box_dimensions);
     hila::seed_random(config.seed);
@@ -175,11 +181,11 @@ void scaling_sim::initialize() {
   switch (config.initialCondition) {
     
   case 0: {
-    pi = 0;
+    pi = 0;                            // what pi is ?
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
-    onsites(ALL) {
+    onsites(ALL) {                     // what is onsites(ALL)
       A[X] = hila::gaussrand();
-      A[X] = gap * A[X]/A[X].norm();
+      A[X] = gap * A[X]/A[X].norm();   // A[X].norm() is norm for what?
     }
 
     hila::out0 << "Components randomly created \n";
@@ -188,8 +194,8 @@ void scaling_sim::initialize() {
     }
   case 1: {
     auto kA = A;
-    real_t gap = config.IniMod; //MP.gap_B_td(Tp[1], Tp[0]);
-    real_t lc = config.Inilc;//1.0/sqrt(abs(config.alpha));
+    real_t gap = config.IniMod;        //MP.gap_B_td(Tp[1], Tp[0]);
+    real_t lc = config.Inilc;          //1.0/sqrt(abs(config.alpha));
 
     hila::out0 << "Correlation length in ICs: "<< lc <<"\n";
     
@@ -237,7 +243,7 @@ void scaling_sim::initialize() {
       foralldir(d1)foralldir(d2){
 
 	if (d1==d2){
-	  A[X].e(d1,d2).re=1.0; //hila::gaussrand() hila::random()
+	  A[X].e(d1,d2).re = 1.0; //hila::gaussrand() hila::random()
 	  A[X].e(d1,d2).im = 0.0;
 	}
 	else {
@@ -258,7 +264,7 @@ void scaling_sim::initialize() {
     onsites(ALL) {
 
         A[X] = 0;
-        A[X].e(0,2).re = 1.0;
+        A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
         A[X].e(1,2).im = 1.0;
       
       A[X] = gap * A[X]/sqrt(2.0);
@@ -331,6 +337,7 @@ void scaling_sim::update_params() {
     gapa = MP.gap_A_td(config.p, config.T);
     gapb = MP.gap_B_td(config.p, config.T);
     hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    
     config.alpha = MP.alpha_td(config.p, config.T);
     config.beta1 = MP.beta1_td(config.p, config.T);
     config.beta2 = MP.beta2_td(config.p, config.T);
@@ -347,6 +354,7 @@ void scaling_sim::update_params() {
     gapa = MP.gap_A_td(Tp[1], Tp[0]);
     gapb = MP.gap_B_td(Tp[1], Tp[0]);
     hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    
     config.alpha = MP.alpha_td(Tp[1], Tp[0]);
     config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
     config.beta2 = MP.beta2_td(Tp[1], Tp[0]);
@@ -541,6 +549,7 @@ void scaling_sim::write_positions() {
   update_Tp(t, Tp);
 
   std::fstream stream_out;
+  
   const std::string fname = "points/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
   stream_out.open(fname, std::ios::out);
 
@@ -557,6 +566,20 @@ void scaling_sim::write_positions() {
   }
 
   stream_out.close();
+
+  // ******************************************************************************** //
+  // >>>>>>>>>>>>>>>            bA matrix elements output             <<<<<<<<<<<<<<< //
+  const std::string fname2 = "A_matrix_output/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
+  stream_out.open(fname2, std::ios::out);
+
+  hila::set_allreduce(false);
+
+  onsites (ALL) {
+  // stream_out.precision(12);
+    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].write(fname2) << "\n";
+
+  }
+
   
 }
 
@@ -575,9 +598,9 @@ void scaling_sim::next() {
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
 
-    int bc=config.boundary_conditions;
+  int bc=config.boundary_conditions;
   
-    next_timer.start();
+  next_timer.start();
 
   onsites (ALL) {
 
@@ -606,7 +629,7 @@ void scaling_sim::next() {
 		A[X].e(d1,d2).im = 0.0;
 	      }
 	      else if (d1==2 && d2==1){
-		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).re = 0.0;  // this A-order parameter same with GL-theory note eq.46
 		A[X].e(d1,d2).im = 1.0;
 	      }
 	      else {
