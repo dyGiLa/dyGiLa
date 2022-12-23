@@ -19,7 +19,7 @@
 #include <vector>
 
 
-using real_t = double; // or float
+using real_t = float; // or float
 
 class Matep {
 public:

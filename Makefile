@@ -1,6 +1,6 @@
 # Give the location of the top level distribution directory wrt. this.
 # Can be absolute or relative
-HILA_DIR := ../../HILA/hila
+HILA_DIR := /projappl/cosfithe/HILA
 
 APP_OPTS := -DNDIM=3
 #-DEVEN_SITES_FIRST=0

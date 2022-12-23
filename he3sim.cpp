@@ -13,7 +13,7 @@
 #include "matep.hpp"
 
 // Definition of the fieldthat we will use
-using real_t = double;                          // or double
+using real_t = float;                         // or float
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
 
@@ -31,7 +31,10 @@ public:
   void write_energies();
   void write_positions();
   void next();
-   
+
+  void write_A_matrix_positions();             // output A-matrix after certain time interval
+  void latticeCoordinate_output();     // lattice coordinates output with same sequence of A.write() 
+  
   Field<phi_t> A;
   Field<phi_t> pi;
 
@@ -566,23 +569,82 @@ void scaling_sim::write_positions() {
   }
 
   stream_out.close();
-
-  // ******************************************************************************** //
-  // >>>>>>>>>>>>>>>            bA matrix elements output             <<<<<<<<<<<<<<< //
-  const std::string fname2 = "A_matrix_output/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
-  stream_out.open(fname2, std::ios::out);
-
-  hila::set_allreduce(false);
-
-  onsites (ALL) {
-  // stream_out.precision(12);
-    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].write(fname2) << "\n";
-
-  }
-
   
 }
 
+void scaling_sim::write_A_matrix_positions() {
+
+  Matep MP;
+  real_t Tp[2];
+  update_Tp(t, Tp);
+
+  std::ofstream stream_out;
+  
+  const std::string fname = "A_matrix_output/t"+std::to_string(int(t/config.dt))+".dat";
+  stream_out.open(fname, std::ios::out);
+
+  
+  // real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
+  // real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+  
+  // hila::set_allreduce(false);
+
+  // onsites (ALL) {
+
+  //   stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].norm()/gapb <<"\n";
+
+  // }
+
+  // stream_out.close();
+
+  // ******************************************************************************** //
+  // >>>>>>>>>>>>>>>             A matrix elements output             <<<<<<<<<<<<<<< //
+  // const std::string fname2 = "A_matrix_output/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
+  // stream_out.open(fname, std::ios::out);
+
+  hila::set_allreduce(false);
+  A.write(stream_out,false,8);
+
+  // stream_out.precision(8);
+  // onsites (ALL) {
+  
+  //    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X] << "\n";
+
+    
+  // }
+  
+  stream_out.close();
+
+  // ******************************************************************************** //
+
+}
+
+void scaling_sim::latticeCoordinate_output()
+{
+  std::ofstream stream_out;
+  
+  const std::string fname_coordinates = "A_matrix_output/t"+std::to_string(int(t/config.dt))+"coordinates"+".dat";
+
+  const long Nx = config.lx, Ny = config.ly, Nz = config.lz;
+  const long NxNyNz = (Nx * Ny) * Nz;
+  
+  std::vector<long> lineNumList;
+
+  for (long index = 0; index != NxNyNz; ++index)
+    {
+      lineNumList.push_back(index);
+    }
+  
+  stream_out.open(fname_coordinates, std::ios::out);
+
+  for (auto &i : lineNumList)
+    {
+      stream_out << " " << i % (Nx) << " " << (i/Nx) % Ny << " " << i/(Nx * Ny) << "\n";
+    }
+
+  stream_out.close();
+
+}
 
 void scaling_sim::next() {
 
@@ -738,14 +800,37 @@ int main(int argc, char **argv) {
     // BUt we want to avoid unnecessary sync anyway.
     static hila::timer run_timer("Simulation time"), meas_timer("Measurements");
     run_timer.start();
+
+    // lattice coordinates output
+    sim.latticeCoordinate_output();
+
+    // output steps just before while loop
+    // std::cout << "\n" << "steps is " << steps << " with nOutput " << sim.config.nOutputs << "\n";
     
     //auto tildephi = sim.phi;
     while (sim.t < sim.config.tEnd) {
         if (sim.t >= sim.config.tStats) {
+
+	    // hila::out0 << "Writing output at time " << sim.t
+	    //            << "stat_counter is " << stat_counter
+            //            << "t point is " << sim.t/sim.config.dt
+	    // 	       << "steps is " << steps
+	    // 	       << "\n";
+            
+	  
             if (stat_counter % steps == 0) {
 	      meas_timer.start();
-	      hila::out0 << "Writing output at time " << sim.t << "\n";
-	      if (sim.config.positions == 1){sim.write_positions();}
+	      hila::out0 << "Writing output at time " << sim.t 
+			 << ", stat_counter is " << stat_counter
+                         << ", t point is " << sim.t/sim.config.dt
+			 << ", steps is " << steps
+			 << "\n";
+	      // if (sim.config.positions == 1){sim.write_positions();}
+	      if (sim.config.positions == 1)
+		 {
+		   sim.write_A_matrix_positions();
+		   // sim.write_positions();
+		 }
 	      sim.write_moduli();
 	      sim.write_energies();
 	      meas_timer.stop();
