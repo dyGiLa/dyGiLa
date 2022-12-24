@@ -35,7 +35,7 @@
 
 #include "matep.hpp"
 
-using real_t = float;
+using real_t = float;    // or float
 using counter = unsigned int;
 
 
@@ -258,7 +258,7 @@ SFdata::run(){
 
 int main(){
 
-  const real_t p_0 = 0.f, p_34 = 34.f;    // bar
+  const real_t p_0 = 0.l, p_34 = 34.l;    // bar
   
   SFdata sf_data(p_0, p_34);
 
