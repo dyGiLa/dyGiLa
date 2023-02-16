@@ -748,10 +748,18 @@ void scaling_sim::next() {
   }
 
   onsites (ALL) {
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x + e_x] + A[X - e_x - e_x]
-						     + A[X + e_y + e_y] + A[X - e_y - e_y]
-						     + A[X + e_z + e_z] + A[X - e_z - e_z]
-						     - 6.0*A[X]);
+    // deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x + e_x] + A[X - e_x - e_x]
+    // 						     + A[X + e_y + e_y] + A[X - e_y - e_y]
+    // 						     + A[X + e_z + e_z] + A[X - e_z - e_z]
+    // 						     - 6.0*A[X]);
+
+    /*
+     * debug gradient updates: 
+     */
+    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
+						      + A[X + e_y] + A[X - e_y]
+						      + A[X + e_z] + A[X - e_z]
+						      - 6.0 * A[X]);
   }
 
     //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
