@@ -13,7 +13,7 @@
 #include "matep.hpp"
 
 // Definition of the fieldthat we will use
-using real_t = float;                         // or float
+using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
 
@@ -33,7 +33,7 @@ public:
   void next();
 
   void write_A_matrix_positions();             // output A-matrix after certain time interval
-  void latticeCoordinate_output();     // lattice coordinates output with same sequence of A.write() 
+  void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -184,11 +184,11 @@ void scaling_sim::initialize() {
   switch (config.initialCondition) {
     
   case 0: {
-    pi = 0;                            // what pi is ?
+    pi = 0;                            
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
-    onsites(ALL) {                     // what is onsites(ALL)
+    onsites(ALL) {                     
       A[X] = hila::gaussrand();
-      A[X] = gap * A[X]/A[X].norm();   // A[X].norm() is norm for what?
+      A[X] = gap * A[X]/A[X].norm();   
     }
 
     hila::out0 << "Components randomly created \n";
@@ -810,7 +810,7 @@ int main(int argc, char **argv) {
 	      if (sim.config.positions == 1)
 		 {
 		   sim.write_A_matrix_positions();
-		   // sim.write_positions();
+		   // sim.write_positions();    // uncomment this line to get sim.write_positions() called
 		 }
 	      sim.write_moduli();
 	      sim.write_energies();
