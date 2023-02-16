@@ -583,35 +583,8 @@ void scaling_sim::write_A_matrix_positions() {
   const std::string fname = "A_matrix_output/t"+std::to_string(int(t/config.dt))+".dat";
   stream_out.open(fname, std::ios::out);
 
-  
-  // real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  // real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-  
-  // hila::set_allreduce(false);
-
-  // onsites (ALL) {
-
-  //   stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].norm()/gapb <<"\n";
-
-  // }
-
-  // stream_out.close();
-
-  // ******************************************************************************** //
-  // >>>>>>>>>>>>>>>             A matrix elements output             <<<<<<<<<<<<<<< //
-  // const std::string fname2 = "A_matrix_output/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
-  // stream_out.open(fname, std::ios::out);
-
   hila::set_allreduce(false);
   A.write(stream_out,false,8);
-
-  // stream_out.precision(8);
-  // onsites (ALL) {
-  
-  //    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X] << "\n";
-
-    
-  // }
   
   stream_out.close();
 

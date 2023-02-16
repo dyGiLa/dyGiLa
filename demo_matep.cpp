@@ -12,8 +12,8 @@ int main(){
   real_t kb = 1.380649*(std::pow(10.0f, -23));
 
   // real_t T[6] = {2.3*std::pow(10.f,-3),0.2f*std::pow(10.f,-3),1.21f*std::pow(10.f,-3),0.456f*std::pow(10.f,-3),1.5f*std::pow(10.f,-3),1.9f*std::pow(10.f,-3)}; //Kelvin
-  real_t T[7] = {2.f, 2.3f, 0.2f, 1.21, 0.456f, 1.5f, 1.9f}; // mK
-  real_t p[7] = {20.f, 26.f, 32.f, 21.50f, 23.9f, 27.5f, 33.f}; //bar
+  real_t T[8] = {0.5f, 2.f, 2.3f, 0.2f, 1.21, 0.456f, 1.5f, 1.9f}; // mK
+  real_t p[8] = {15.f, 20.f, 26.f, 32.f, 21.50f, 23.9f, 27.5f, 33.f}; //bar
   
   Matep MP; // object with with fudge switch "OFF"
   //Matep MP("ON"); // object with fudge switch "ON", constructor overload std::string Switch
