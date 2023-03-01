@@ -19,5 +19,9 @@ p                   15.0
 tStats              10.0             # Starting time for the output_file
 nOutputs	    61.0             # Number of outputs for the output_file
 output_file         stats/phaseB.txt #Path for output_file
-out_points          yes              #yes or no create a points directory for the output 
+out_points          yes              #yes or no create a points directory for the output
+write_phases        no               #write pahse info poitn by point, if out_points set to no remove line
+write_eigen         no               #wriet eigenvalue and eigenvector, if out_points set to no remove line 
 boundary_conditions PairBreaking     #periodic, AB or PairBreaking
+useTbath            no               #yes or no, if yes uses the upodate with thermal bath
+Tbath               1.0              #Temperature of thermal bath

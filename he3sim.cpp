@@ -30,7 +30,10 @@ public:
   void write_moduli();
   void write_energies();
   void write_positions();
+  void write_phases();
   void next();
+  void next_bath();
+
 
   void write_A_matrix_positions();             // output A-matrix after certain time interval
   void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
@@ -81,6 +84,10 @@ public:
       std::fstream stream;
       int positions;
       int boundary_conditions;
+      int Tbath;
+      int useTbath;
+      int write_phases;
+      int write_eigen;
     } config;
 };
 
@@ -151,7 +158,19 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     const std::string output_file = parameters.get("output_file");
 
     config.positions = parameters.get_item("out_points",{"no", "yes"});
+    if(config.positions==1)
+      {
+	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
+	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
+      }
     config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
+    config.useTbath = parameters.get_item("useTbath",{"no","yes"});
+    if(config.useTbath==1)
+      { 
+        config.Tbath = parameters.get("Tbath");
+      }
+
+
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
@@ -229,7 +248,8 @@ void scaling_sim::initialize() {
 	
 	onsites (ALL)
 	  {
-	    if (A[X].norm()>0.0){A[X]=gap*A[X]/A[X].norm();}
+	    // if (A[X].norm()>0.0){A[X]=gap*A[X]/A[X].norm();}
+	    A[X]=A[X]/sqrt((A[X]*A[X].dagger()).trace());
 	  }
 	
         pi[ALL] = 0;
@@ -294,6 +314,7 @@ void scaling_sim::initialize() {
 
 void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
 
+   
   if (config.item ==2)
     {
       int k1,k2;
@@ -328,6 +349,8 @@ void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
       Tp[0] = 0.0;
       Tp[1] = 0.0;
     }
+
+ 
 }
 void scaling_sim::update_params() {
 
@@ -496,7 +519,7 @@ void scaling_sim::write_energies() {
 		      << sumb4.re / vol << " " << sumb4.im / vol << " "
 	              << sumb4_we.re / vol << " " << sumb4_we.im / vol << " "
 		      << sumb5.re / vol << " " << sumb5.im / vol << " "
-	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << "\n";
+	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << " ";
     }
 
        hila::out0 << "Energy done \n";
@@ -545,31 +568,165 @@ void scaling_sim::write_energies() {
     //   }
 }
 
+void scaling_sim::write_phases() {
+
+  real_t ph0(0),ph1(0),ph2(0),ph3(0),ph4(0),ph5(0),ph6(0),ph7(0),ph8(0),ph9(0);
+
+  hila::set_allreduce(false);
+
+  onsites (ALL) {
+
+    real_t R1,R2,R3,R4,R5;
+    real_t p1,p2,p3,p4,p5,p6,p7,p8;
+    real_t error=1.0/5.0;
+    int phase;
+    real_t p;
+    phi_t Ac;
+
+    Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+
+    R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
+
+    R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
+
+    R3 = real(((Ac*Ac.transpose()*Ac.conj()*Ac.dagger()).trace()));
+
+    R4 = real(((Ac*Ac.dagger()*Ac*Ac.dagger()).trace()));
+
+    R5 = real(((Ac*Ac.dagger()*Ac.conj()*Ac.transpose()).trace()));
+
+    p1=abs(R1-1.0) + abs(R3-1.0/3.0) + abs(R4-1.0/3.0) + abs(R5-1.0/3.0);
+
+    p2=abs(R1-1.0) + abs(R3-1.0/2.0) + abs(R4-1.0/2.0) + abs(R5-1.0/2.0);
+
+    p3=abs(R1-1.0) + abs(R3-1.0) + abs(R4-1.0) + abs(R5-1.0);
+
+    p4=abs(R1-0.0) + abs(R3-1.0/3.0) + abs(R4-1.0/3.0) + abs(R5-1.0/3.0);
+
+    p5=abs(R1-0.0) + abs(R3-1.0/2.0) + abs(R4-1.0/2.0) + abs(R5-1.0/2.0);
+
+    p6=abs(R1-0.0) + abs(R3-0.0) + abs(R4-1.0) + abs(R5-1.0);
+
+    p7=abs(R1-0.0) + abs(R3-1.0) + abs(R4-1.0) + abs(R5-0.0);
+
+    p8=abs(R1-0.0) + abs(R3-0.0) + abs(R4-1.0) + abs(R5-0.0);
+
+    if(p1<p2 and p1<p3 and p1<p4 and p1<p5 and p1<p6 and p1<p7 and p1<p8 and p1<error)
+      {
+	ph1+=1;
+      }
+    else if (p2<p1 and p2<p3 and p2<p4 and p2<p5 and p2<p6 and p2<p7 and p2<p8 and p2<error)
+      {
+	ph2+=1;
+      }
+    else if (p3<p2 and p3<p1 and p3<p4 and p3<p5 and p3<p6 and p3<p7 and p3<p8 and p3<error)
+      {
+	ph3+=1;
+      }
+    else if (p4<p2 and p4<p3 and p4<p1 and p4<p5 and p4<p6 and p4<p7 and p4<p8 and p4<error)
+      {
+	ph4+=1;
+      }
+    else if (p5<p2 and p5<p3 and p5<p4 and p5<p1 and p5<p6 and p5<p7 and p5<p8 and p5<error)
+      {
+        ph5+=1;
+      }
+    else if (p6<p2 and p6<p3 and p6<p4 and p6<p5 and p6<p1 and p6<p7 and p6<p8 and p6<error)
+      {
+	ph6+=1;
+      }
+    else if (p7<p2 and p7<p3 and p7<p4 and p7<p5 and p7<p6 and p7<p1 and p7<p8 and p7<error)
+      {
+	ph7+=1;
+      }
+    else if (p8<p2 and p8<p3 and p8<p4 and p8<p5 and p8<p6 and p8<p7 and p8<p1 and p8<error)
+      {
+	ph8+=1;
+      }
+    else
+      {
+	ph0+=1;
+      }
+  }
+
+  if (hila::myrank() == 0)
+    {
+      double vol = lattice.volume();
+      config.stream << ph0/vol << " " << ph1/vol << " " << ph2/vol << " " << ph3/vol << " " << ph4/vol << " " << ph5/vol << " " << ph6/vol << " " << ph7/vol << " " << ph8/vol << " " << ph9/vol << "\n";
+    }
+
+}
 void scaling_sim::write_positions() {
 
   Matep MP;
   real_t Tp[2];
   update_Tp(t, Tp);
 
-  std::fstream stream_out;
-  
-  const std::string fname = "points/positions_r"+std::to_string(hila::myrank())+"_t"+std::to_string(int(t/config.dt))+".dat";
-  stream_out.open(fname, std::ios::out);
-
-  
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
   
   hila::set_allreduce(false);
 
-  onsites (ALL) {
+  if (config.write_phases==1)
+    {
+      Field<Vector<8,float>> data;
+      
+      onsites (ALL) {
 
-    stream_out<< " " << X.coordinate(e_x) << " " << X.coordinate(e_y) << " "<< X.coordinate(e_z) << " " << A[X].norm()/gapb <<"\n";
+	real_t R1,R2,R3,R4,R5;
+	phi_t Ac;
 
-  }
+	Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
 
-  stream_out.close();
-  
+	R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
+
+	R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
+
+	R3 = real(((Ac*Ac.transpose()*Ac.conj()*Ac.dagger()).trace()));
+
+	R4 = real(((Ac*Ac.dagger()*Ac*Ac.dagger()).trace()));
+
+	R5 = real(((Ac*Ac.dagger()*Ac.conj()*Ac.transpose()).trace()));
+
+	data[X].e(0)=abs(R1-1.0) + abs(R3-1.0/3.0) + abs(R4-1.0/3.0) + abs(R5-1.0/3.0);
+
+	data[X].e(1)=abs(R1-1.0) + abs(R3-1.0/2.0) + abs(R4-1.0/2.0) + abs(R5-1.0/2.0);
+
+	data[X].e(2)=abs(R1-1.0) + abs(R3-1.0) + abs(R4-1.0) + abs(R5-1.0);
+
+	data[X].e(3)=abs(R1-0.0) + abs(R3-1.0/3.0) + abs(R4-1.0/3.0) + abs(R5-1.0/3.0);
+
+	data[X].e(4)=abs(R1-0.0) + abs(R3-1.0/2.0) + abs(R4-1.0/2.0) + abs(R5-1.0/2.0);
+
+	data[X].e(5)=abs(R1-0.0) + abs(R3-0.0) + abs(R4-1.0) + abs(R5-1.0);
+
+	data[X].e(6)=abs(R1-0.0) + abs(R3-1.0) + abs(R4-1.0) + abs(R5-0.0);
+
+	data[X].e(7)=abs(R1-0.0) + abs(R3-0.0) + abs(R4-1.0) + abs(R5-0.0);
+
+      }
+
+      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);
+
+    }
+
+  if(config.write_eigen==1)
+    {
+
+      Field<Vector<3,double>> eval;
+      Field<Matrix<3,3,Complex<double>>> evec;
+
+      onsites(ALL){
+
+	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X]);
+
+      }
+
+      eval.write("points/eigenvalues-t"+std::to_string(int(t/config.dt)),false);
+      //evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
+      
+    }
+      
 }
 
 void scaling_sim::write_A_matrix_positions() {
@@ -758,6 +915,190 @@ void scaling_sim::next() {
 
 }
 
+void scaling_sim::next_bath() {
+
+  Matep MP;
+  real_t Tp[2];
+  update_Tp(t, Tp);
+
+  static hila::timer next_timer("timestep");
+  Field<phi_t> deltaPi;
+  Field<Vector<3,Complex<real_t>>> djAaj;
+
+  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
+  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+
+  real_t tb = Tp[0]/tc;
+  real_t sig = sqrt(2.0*tb*config.gamma);
+  real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
+
+  int bc=config.boundary_conditions;
+
+    next_timer.start();
+
+  onsites (ALL) {
+
+    A[X] += config.dt * pi[X];
+
+    if (bc ==1)
+      {
+        if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
+          {
+            foralldir(d1)foralldir(d2){
+              if (d1==d2){
+                A[X].e(d1,d2).re = 1.0;
+                A[X].e(d1,d2).im = 0.0;
+              }
+              else {
+                A[X].e(d1,d2).re = 0.0;
+                A[X].e(d1,d2).im = 0.0;}
+            }
+            A[X] = gapb * A[X]/sqrt(3.0);
+          }
+        else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
+          {
+            foralldir(d1)foralldir(d2){
+              if (d1==2 && d2==0){
+                A[X].e(d1,d2).re = 1.0;
+                A[X].e(d1,d2).im = 0.0;
+              }
+              else if (d1==2 && d2==1){
+                A[X].e(d1,d2).re = 0.0;
+                A[X].e(d1,d2).im = 1.0;
+              }
+              else {
+                A[X].e(d1,d2).re = 0.0;
+                A[X].e(d1,d2).im = 0.0;
+              }
+	               }
+            A[X] = gapa * A[X]/sqrt(2.0);
+          }
+        }
+    else if (bc==2)
+      {
+        if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
+            X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
+            X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
+            X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
+            X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
+            X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
+          {
+            A[X]=0.0;
+          }
+      }
+  }
+
+  onsites (ALL) {
+
+    auto AxAt = A[X]*A[X].transpose();
+    auto AxAd = A[X]*A[X].dagger();
+
+    deltaPi[X] = - config.alpha*A[X]
+      - 2.0*config.beta1*A[X].conj()*AxAt.trace()
+      - 2.0*config.beta2*A[X]*AxAd.trace()
+      - 2.0*config.beta3*AxAt*A[X].conj()
+      - 2.0*config.beta4*AxAd*A[X]
+      - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+
+  }
+
+  onsites(ALL) {
+    djAaj[X] = 0;
+    foralldir(j) {
+      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+    }
+  }
+
+  onsites(ALL) {
+    phi_t mat;
+    foralldir(d) {
+      auto col = djAaj[X+d] - djAaj[X-d];
+      for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+    }
+
+    deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+  }
+
+  onsites (ALL) {
+    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+                                                     + A[X + e_y] + A[X - e_y]
+                                                     + A[X + e_z] + A[X - e_z]
+                                                     - 6.0*A[X]);
+     deltaPi[X] += hila::gaussrand()*sig;
+
+  }
+
+    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt                                                                                      \
+                                                                                                                                                                                                            
+
+  if (t < config.tdif)
+    {
+      pi[ALL] = deltaPi[X]/(config.difFac);
+      t += config.dt/config.difFac;
+    }
+  else if (t < config.tdis && config.gamma > 0 )
+    {
+      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+
+      pi[ALL] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*hila::gaussrand();
+
+
+      deltaPi[ALL] = 0.0;
+
+      onsites (ALL) {
+
+        auto AxAt = A[X]*A[X].transpose();
+        auto AxAd = A[X]*A[X].dagger();
+
+        deltaPi[X] = - config.alpha*A[X]
+          - 2.0*config.beta1*A[X].conj()*AxAt.trace()
+          - 2.0*config.beta2*A[X]*AxAd.trace()
+          - 2.0*config.beta3*AxAt*A[X].conj()
+          - 2.0*config.beta4*AxAd*A[X]
+          - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+      }
+
+      onsites(ALL) {
+        djAaj[X] = 0;
+        foralldir(j) {
+          djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+        }
+      }
+
+      onsites(ALL) {
+        phi_t mat;
+        foralldir(d) {
+          auto col = djAaj[X+d] - djAaj[X-d];
+          for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+        }
+
+        deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+      }
+
+      onsites (ALL) {
+        deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+                                                     + A[X + e_y] + A[X - e_y]
+                                                     + A[X + e_z] + A[X - e_z]
+							 - 6.0*A[X]);
+        deltaPi[X] += hila::gaussrand()*sig;
+      }
+
+
+      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+
+      t += config.dt;
+    }
+  else
+    {
+      pi[ALL] = pi[X] + deltaPi[X]*config.dt;
+      t += config.dt;
+    }
+
+
+  next_timer.stop();
+
+}
+
 int main(int argc, char **argv) {
     scaling_sim sim;
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
@@ -809,17 +1150,23 @@ int main(int argc, char **argv) {
 	      // if (sim.config.positions == 1){sim.write_positions();}
 	      if (sim.config.positions == 1)
 		 {
-		   sim.write_A_matrix_positions();
-		   // sim.write_positions();    // uncomment this line to get sim.write_positions() called
+		   //sim.write_A_matrix_positions();
+		   sim.write_positions();    // uncomment this line to get sim.write_positions() called
 		 }
 	      sim.write_moduli();
 	      sim.write_energies();
+	      sim.write_phases();
 	      meas_timer.stop();
             }
             stat_counter++;
         }
 	sim.update_params();
-        sim.next();
+	if (sim.config.useTbath == 1)
+	  {
+	    sim.next_bath();}
+	else
+	  {
+	    sim.next();}
     }
     run_timer.stop();
 
