@@ -25,8 +25,9 @@ public:
   scaling_sim() = default;
   const std::string allocate(const std::string &fname, int argc, char **argv);
   void initialize();
-  void update_params();
-  void update_Tp (real_t t, real_t Tp[2]);
+  void initializeT();
+  void initializep();
+  void point_params(real_t T, real_t p, real_t beta[6]);
   void write_moduli();
   void write_energies();
   void write_positions();
@@ -41,6 +42,9 @@ public:
   Field<phi_t> A;
   Field<phi_t> pi;
 
+  Field<real_t> T;
+  Field<real_t> p;
+  
   real_t t;
   real_t tc = 0;
 
@@ -70,8 +74,10 @@ public:
       real_t Inilc;
       
       int item;
-      real_t T;
-      real_t p;
+      real_t IniT;
+      real_t Inip;
+      //real_t T;
+      //real_t p;
       real_t alpha;
       real_t beta1;
       real_t beta2;
@@ -113,44 +119,10 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
-
-    // ******************************************************************************** //
-    // >>>>>>>>>>>>>>>       different way for updating parameters      <<<<<<<<<<<<<<< //
-    config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
-    if (config.item == 0){
-      config.alpha = parameters.get("alpha");
-      config.beta1 = parameters.get("beta1");
-      config.beta2 = parameters.get("beta2");
-      config.beta3 = parameters.get("beta3");
-      config.beta4 = parameters.get("beta4");
-      config.beta5 = parameters.get("beta5");
-    }
-    else if (config.item == 1) {
-      config.T = parameters.get("T");
-      config.p = parameters.get("p");
-      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p);
-    }
-    else {
-      const std::string in_file = parameters.get("params_file"); // where is params_file ???
-
-      std::fstream params_stream;
-      params_stream.open(in_file, std::ios::in);
-      std::string line;
-
-      while (std::getline(params_stream, line))
-	{
-	  std::stringstream ss(line);
-	  real_t a, b, c;
-	  if (ss >> a >> b >> c)
-	    {
-	      t_v.push_back(a);
-	      T_v.push_back(b);
-	      p_v.push_back(c);
-	    }
-	}
-    }
-    // ******************************************************************************** //
-    
+    //config.initialConditionT = parameters.get_item("initialConditonT",{})
+    config.IniT = parameters.get("IniT");
+    //config.initialConditionp = parameters.get_item("initialConditonp",{})
+    config.Inip	= parameters.get("Inip");
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
@@ -188,23 +160,21 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
 void scaling_sim::initialize() {
 
   Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-  
+   
   int Nx = config.lx;
   int Ny = config.ly;
   int Nz = config.lz;
   
   real_t dx = config.dx;
 
-  real_t ttc = MP.Tcp_mK(Tp[1]);
-  hila::out0 <<"T_AB: "<<MP.tAB_RWS(Tp[1])*ttc<<"\n";
+  real_t ttc = MP.Tcp_mK(config.Inip);
+  hila::out0 <<"T_AB: "<<MP.tAB_RWS(config.Inip)*ttc<<"\n";
   
   switch (config.initialCondition) {
     
   case 0: {
     pi = 0;                            
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     onsites(ALL) {                     
       A[X] = hila::gaussrand();
       A[X] = gap * A[X]/A[X].norm();   
@@ -260,7 +230,7 @@ void scaling_sim::initialize() {
   }
   case 2: {
     pi = 0;
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     hila::out0 <<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
       foralldir(d1)foralldir(d2){
@@ -282,7 +252,7 @@ void scaling_sim::initialize() {
     }
   case 3: {
     pi = 0;
-    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
+    real_t gap = MP.gap_A_td(config.Inip, config.IniT);
     hila::out0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
 
@@ -312,84 +282,48 @@ void scaling_sim::initialize() {
   }
 }
 
-void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
+void scaling_sim::initializeT() {
 
-   
-  if (config.item ==2)
-    {
-      int k1,k2;
-      int size = t_v.size();
+  real_t sig = 5.0;
+  
+  onsites(ALL) {
 
-      if (t == t_v[size -1]) {
-	k1 = size-1;
-	k2 = size-1;}
-      else {
-	for (int i=1; i<size; i++) {
-	  
-	  if (t >= t_v[i-1] && t < t_v[i]) {
-	    k1 = i-1;
-	    k2 = i; }
-	}
-      }
-      
-      if (k1 == k2 && k1 == size-1){
-	Tp[0] = T_v[size-1];
-	Tp[1] = p_v[size-1];}
-      else {
-	Tp[0]= T_v[k1] + ((T_v[k2]-T_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);
-	Tp[1]= p_v[k1] + ((p_v[k2]-p_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);}
-    }
-  else if (config.item == 1)
-    {
-      Tp[0] = config.T;
-      Tp[1] = config.p;
-    }
-  else if (config.item == 0)
-    {
-      Tp[0] = 0.0;
-      Tp[1] = 0.0;
-    }
-
- 
+    auto xcoord = X.coordinate(e_x);
+    auto ycoord = X.coordinate(e_y);
+    auto zcoord = X.coordinate(e_z);
+    
+    T[X] = 0.0;
+    T[X] *= exp(-0.5*(xcoord-64.0)*(xcoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
+    T[X] *= exp(-0.5*(ycoord-64.0)*(ycoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
+    T[X] *= exp(-0.5*(zcoord-64.0)*(zcoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
+    T[X] += config.IniT;
+    
+  }
+  
 }
-void scaling_sim::update_params() {
+
+void scaling_sim::initializep() {
+
+  onsites(ALL) {
+
+    p[X] = config.Inip;
+
+  }
+  
+}
+
+void scaling_sim::point_params(real_t T, real_t p, real_t beta[6]) {
 
   Matep MP;
-  real_t Tp[2];
-  real_t gapa,gapb;
   
-  if (config.item ==1 && t == config.tStart){
-    tc = MP.Tcp_mK(config.p);
-    gapa = MP.gap_A_td(config.p, config.T);
-    gapb = MP.gap_B_td(config.p, config.T);
-    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
-    
-    config.alpha = MP.alpha_td(config.p, config.T);
-    config.beta1 = MP.beta1_td(config.p, config.T);
-    config.beta2 = MP.beta2_td(config.p, config.T);
-    config.beta3 = MP.beta3_td(config.p, config.T);
-    config.beta4 = MP.beta4_td(config.p, config.T);
-    config.beta5 = MP.beta5_td(config.p, config.T);
-
-    hila::out0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5<< "\n";
-
-  }
-  else if (config.item ==2){
-    update_Tp(t, Tp);
-    tc = MP.Tcp_mK(Tp[1]);
-    gapa = MP.gap_A_td(Tp[1], Tp[0]);
-    gapb = MP.gap_B_td(Tp[1], Tp[0]);
-    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
-    
-    config.alpha = MP.alpha_td(Tp[1], Tp[0]);
-    config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
-    config.beta2 = MP.beta2_td(Tp[1], Tp[0]);
-    config.beta3 = MP.beta3_td(Tp[1], Tp[0]);
-    config.beta4 = MP.beta4_td(Tp[1], Tp[0]);
-    config.beta5 = MP.beta5_td(Tp[1], Tp[0]);
-  }
+  beta[0] = MP.alpha_td(p, T);
+  beta[1] = MP.beta1_td(p, T);
+  beta[2] = MP.beta2_td(p, T);
+  beta[3] = MP.beta3_td(p, T);
+  beta[4] = MP.beta4_td(p, T);
+  beta[5] = MP.beta5_td(p, T);
 }
-
+  
 void scaling_sim::write_moduli() {
 
    // real_t a = scaleFactor(t);
@@ -397,7 +331,7 @@ void scaling_sim::write_moduli() {
     double Amod = 0.0;
     double pimod = 0.0;
 
-    real_t Tp[2];
+    //real_t Tp[2];
 
     hila::set_allreduce(false);
     onsites (ALL) {
@@ -406,13 +340,10 @@ void scaling_sim::write_moduli() {
     }
 
         
-    update_Tp(t, Tp);
+    //update_Tp(t, Tp);
     
     if (hila::myrank() == 0) {
         config.stream << t << " "
-	              << tc << " "
-	              << Tp[0] << " " << Tp[1] << " "
-		      << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " " <<	config.beta5 << " "
                       << Amod / lattice.volume() << " " << pimod / lattice.volume()
                       << " ";
     }
@@ -430,11 +361,9 @@ void scaling_sim::write_energies() {
   Complex<double> sumb1_we = 0;
   Complex<double> sumkin(0);
   Complex<double> sumkin_we(0);
-  real_t Tp[2];
 
-  update_Tp(t, Tp);
 
-  real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
+  //real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
   
     hila::set_allreduce(false);
     onsites(ALL) {
@@ -444,21 +373,26 @@ void scaling_sim::write_energies() {
       Complex<double> k1(0), k2(0), k3(0);
       Complex<double> bfe(0);
       double b1 = 0;
+
+      real_t beta[6];
+      point_params(T[X], p[X],beta);
       
-      a = config.alpha * (A[X]*A[X].dagger()).trace();
+      a = beta[0] * (A[X]*A[X].dagger()).trace();
 
-      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+      b1 = beta[1] * ((A[X]*A[X].transpose()).trace()).squarenorm();
 
-      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+      b2 = beta[2] * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
 
-      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+      b3 = beta[3] * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
 
-      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+      b4 = beta[4] * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
 
-      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+      b5 = beta[5] * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
 
-      bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
+      //bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
 
+      bfe=1.0;
+      
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
@@ -524,48 +458,6 @@ void scaling_sim::write_energies() {
 
        hila::out0 << "Energy done \n";
 
-    //   double sumar = 0.0;
-    //   double sumai = 0.0;
-    //   double sumb1 = 0.0;
-    //   double sumb2r = 0.0;
-    //   double sumb2i = 0.0;
-    //   double sumb3r = 0.0;
-    //   double sumb3i = 0.0;
-    //   double sumb4r = 0.0;
-    //   double sumb4i = 0.0;
-    //   double sumb5r = 0.0;
-    //   double sumb5i = 0.0;
-
-    //   hila::set_allreduce(false);
-    //   onsites (ALL) {
-
-    //     sumar += config.alpha * ((A[X]*A[X].dagger()).trace()).re;
-    //     sumai += config.alpha * ((A[X]*A[X].dagger()).trace()).im;
-        
-    //     sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-
-    //     sumb2r += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).re;
-    //     sumb2i += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).im;
-
-    //     sumb3r += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).re;
-    //     sumb3i += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).im;
-
-    //     sumb4r += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).re;
-    //     sumb4i += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).im;
-
-    //     sumb5r += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).re;
-    //     sumb5i += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).im;
-    //   }
-
-    //   if (hila::myrank() == 0) {
-    //     double vol = (double)config.l * config.l * config.l;
-    //     config.stream << sumar / vol << " "<< sumai / vol << " "
-    // 		  << sumb1 / vol << " "
-    // 		  << sumb2r / vol << " " << sumb2i / vol << " "
-    // 		  << sumb3r / vol << " " << sumb3i / vol << " "
-    //  		  << sumb4r / vol << " " << sumb4i / vol << " "
-    // 		  << sumb5r / vol << " " << sumb5i / vol << "\n";
-    //   }
 }
 
 void scaling_sim::write_phases() {
@@ -658,13 +550,7 @@ void scaling_sim::write_phases() {
 }
 void scaling_sim::write_positions() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-  
+    
   hila::set_allreduce(false);
 
   if (config.write_phases==1)
@@ -731,11 +617,7 @@ void scaling_sim::write_positions() {
 
 void scaling_sim::write_A_matrix_positions() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-
-  std::ofstream stream_out;
+   std::ofstream stream_out;
   
   const std::string fname = "A_matrix_output/t"+std::to_string(int(t/config.dt))+".dat";
   stream_out.open(fname, std::ios::out);
@@ -779,15 +661,13 @@ void scaling_sim::latticeCoordinate_output()
 void scaling_sim::next() {
 
   Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-  
+   
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+  real_t gapa = MP.gap_A_td(config.Inip, config.IniT);
+  real_t gapb = MP.gap_B_td(config.Inip, config.IniT);
 
 
   int bc=config.boundary_conditions;
@@ -847,16 +727,19 @@ void scaling_sim::next() {
   }
 
   onsites (ALL) {
+
+    real_t beta[6];
+    point_params(T[X], p[X],beta);
       
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
     
-    deltaPi[X] = - config.alpha*A[X]
-      - 2.0*config.beta1*A[X].conj()*AxAt.trace() 
-      - 2.0*config.beta2*A[X]*AxAd.trace()
-      - 2.0*config.beta3*AxAt*A[X].conj()
-      - 2.0*config.beta4*AxAd*A[X] 
-      - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta[0]*A[X]
+      - 2.0*beta[1]*A[X].conj()*AxAt.trace() 
+      - 2.0*beta[2]*A[X]*AxAd.trace()
+      - 2.0*beta[3]*AxAt*A[X].conj()
+      - 2.0*beta[4]*AxAd*A[X] 
+      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
 
   }
 
@@ -878,21 +761,13 @@ void scaling_sim::next() {
   }
 
   onsites (ALL) {
-    // deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x + e_x] + A[X - e_x - e_x]
-    // 						     + A[X + e_y + e_y] + A[X - e_y - e_y]
-    // 						     + A[X + e_z + e_z] + A[X - e_z - e_z]
-    // 						     - 6.0*A[X]);
 
-    /*
-     * debug gradient updates: 
-     */
     deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]
 						      + A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
   }
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
 
   if (t < config.tdif)
     {
@@ -918,17 +793,15 @@ void scaling_sim::next() {
 void scaling_sim::next_bath() {
 
   Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
 
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+  real_t gapa = MP.gap_A_td(config.Inip, config.IniT);
+  real_t gapb = MP.gap_B_td(config.Inip, config.IniT);
 
-  real_t tb = Tp[0]/tc;
+  real_t tb = config.Tbath/tc;
   real_t sig = sqrt(2.0*tb*config.gamma);
   real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
 
@@ -990,15 +863,18 @@ void scaling_sim::next_bath() {
 
   onsites (ALL) {
 
+    real_t beta[6];
+    point_params(T[X], p[X],beta);
+
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - config.alpha*A[X]
-      - 2.0*config.beta1*A[X].conj()*AxAt.trace()
-      - 2.0*config.beta2*A[X]*AxAd.trace()
-      - 2.0*config.beta3*AxAt*A[X].conj()
-      - 2.0*config.beta4*AxAd*A[X]
-      - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta[0]*A[X]
+      - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+      - 2.0*beta[2]*A[X]*AxAd.trace()
+      - 2.0*beta[3]*AxAt*A[X].conj()
+      - 2.0*beta[4]*AxAd*A[X]
+      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
 
   }
 
@@ -1047,15 +923,18 @@ void scaling_sim::next_bath() {
 
       onsites (ALL) {
 
+	real_t beta[6];
+	point_params(T[X], p[X],beta);
+	
         auto AxAt = A[X]*A[X].transpose();
         auto AxAd = A[X]*A[X].dagger();
 
-        deltaPi[X] = - config.alpha*A[X]
-          - 2.0*config.beta1*A[X].conj()*AxAt.trace()
-          - 2.0*config.beta2*A[X]*AxAd.trace()
-          - 2.0*config.beta3*AxAt*A[X].conj()
-          - 2.0*config.beta4*AxAd*A[X]
-          - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+        deltaPi[X] = - beta[0]*A[X]
+          - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+          - 2.0*beta[2]*A[X]*AxAd.trace()
+          - 2.0*beta[3]*AxAt*A[X].conj()
+          - 2.0*beta[4]*AxAd*A[X]
+          - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
       }
 
       onsites(ALL) {
@@ -1102,8 +981,9 @@ void scaling_sim::next_bath() {
 int main(int argc, char **argv) {
     scaling_sim sim;
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
-    sim.update_params();
     sim.initialize();
+    sim.initializeT();
+    sim.initializep();
     
     int steps =
         (sim.config.tEnd - sim.config.tStats) /
@@ -1160,7 +1040,6 @@ int main(int argc, char **argv) {
             }
             stat_counter++;
         }
-	sim.update_params();
 	if (sim.config.useTbath == 1)
 	  {
 	    sim.next_bath();}
