@@ -83,8 +83,8 @@ public:
       real_t nOutputs;
       std::fstream stream;
       int positions;
+      int npositionout;
       int boundary_conditions;
-      int Tbath;
       int useTbath;
       int write_phases;
       int write_eigen;
@@ -160,16 +160,12 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.positions = parameters.get_item("out_points",{"no", "yes"});
     if(config.positions==1)
       {
+	config.npositionout = parameters.get("npositionout");
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
       }
     config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-    if(config.useTbath==1)
-      { 
-        config.Tbath = parameters.get("Tbath");
-      }
-
 
     
     config.dt = config.dx * config.dtdxRatio;
@@ -357,12 +353,19 @@ void scaling_sim::update_params() {
   Matep MP;
   real_t Tp[2];
   real_t gapa,gapb;
+  real_t fa,fb;
   
   if (config.item ==1 && t == config.tStart){
     tc = MP.Tcp_mK(config.p);
     gapa = MP.gap_A_td(config.p, config.T);
     gapb = MP.gap_B_td(config.p, config.T);
-    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    fa = MP.f_A_td(config.p, config.T);
+    fb = MP.f_B_td(config.p, config.T);
+    
+    hila::out0<<"T: "<<config.T<<" p:"<<config.p<<"\n";
+    hila::out0<<"Tc: "<<tc<<"\n";
+    hila::out0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    hila::out0<<"Bulk_A: "<<fa<<" Bulk_B: "<<fb<<"\n";
     
     config.alpha = MP.alpha_td(config.p, config.T);
     config.beta1 = MP.beta1_td(config.p, config.T);
@@ -379,7 +382,14 @@ void scaling_sim::update_params() {
     tc = MP.Tcp_mK(Tp[1]);
     gapa = MP.gap_A_td(Tp[1], Tp[0]);
     gapb = MP.gap_B_td(Tp[1], Tp[0]);
-    hila::out0 <<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    fa = MP.f_A_td(Tp[1], Tp[0]);
+    fb = MP.f_B_td(Tp[1], Tp[0]);
+
+    hila::out0<<"t="<<t<<"\n";
+    hila::out0<<"T: "<<Tp[0]<<" p:"<<Tp[1]<<"\n";
+    hila::out0<<"Tc: "<<tc<<"\n";
+    hila::out0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
+    hila::out0<<"Bulk_A: "<<fa<<" Bulk_B: "<<fb<<"\n";
     
     config.alpha = MP.alpha_td(Tp[1], Tp[0]);
     config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
@@ -723,7 +733,7 @@ void scaling_sim::write_positions() {
       }
 
       eval.write("points/eigenvalues-t"+std::to_string(int(t/config.dt)),false);
-      //evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
+      evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
       
     }
       
@@ -1110,6 +1120,9 @@ int main(int argc, char **argv) {
         (sim.config.dt * sim.config.nOutputs); // number of steps between printing stats
     if (steps == 0)
         steps = 1;
+
+    int stepspos =  (sim.config.tEnd - sim.config.tStats) /
+        (sim.config.dt * sim.config.npositionout);
         
     int stat_counter = 0;
 
@@ -1147,17 +1160,18 @@ int main(int argc, char **argv) {
                          << ", t point is " << sim.t/sim.config.dt
 			 << ", steps is " << steps
 			 << "\n";
-	      // if (sim.config.positions == 1){sim.write_positions();}
-	      if (sim.config.positions == 1)
-		 {
-		   //sim.write_A_matrix_positions();
-		   sim.write_positions();    // uncomment this line to get sim.write_positions() called
-		 }
 	      sim.write_moduli();
 	      sim.write_energies();
 	      sim.write_phases();
 	      meas_timer.stop();
             }
+	    if (stat_counter % stepspos == 0) {
+	      if (sim.config.positions == 1)
+                 {
+                   //sim.write_A_matrix_positions();
+                   sim.write_positions();
+                 }
+	    }
             stat_counter++;
         }
 	sim.update_params();
