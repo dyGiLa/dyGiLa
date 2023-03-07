@@ -1114,6 +1114,7 @@ int main(int argc, char **argv) {
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
     sim.update_params();
     sim.initialize();
+    int stepspos;
     
     int steps =
         (sim.config.tEnd - sim.config.tStats) /
@@ -1121,9 +1122,14 @@ int main(int argc, char **argv) {
     if (steps == 0)
         steps = 1;
 
-    int stepspos =  (sim.config.tEnd - sim.config.tStats) /
-        (sim.config.dt * sim.config.npositionout);
-        
+    if (sim.config.positions == 1)
+      {
+	stepspos =  (sim.config.tEnd - sim.config.tStats) /
+	  (sim.config.dt * sim.config.npositionout);
+	if (stepspos == 0)
+        stepspos = 1;
+      }
+	
     int stat_counter = 0;
 
     if (hila::myrank() == 0) {
@@ -1165,13 +1171,14 @@ int main(int argc, char **argv) {
 	      sim.write_phases();
 	      meas_timer.stop();
             }
-	    if (stat_counter % stepspos == 0) {
-	      if (sim.config.positions == 1)
-                 {
-                   //sim.write_A_matrix_positions();
+	    if (sim.config.positions == 1)
+	      {
+		if (stat_counter % stepspos == 0)
+		  {
+		  //sim.write_A_matrix_positions();
                    sim.write_positions();
-                 }
-	    }
+		  }
+	      }
             stat_counter++;
         }
 	sim.update_params();
