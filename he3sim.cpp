@@ -363,8 +363,7 @@ void scaling_sim::write_energies() {
   Complex<double> sumkin_we(0);
 
 
-  //real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
-  
+    
     hila::set_allreduce(false);
     onsites(ALL) {
 
@@ -374,6 +373,8 @@ void scaling_sim::write_energies() {
       Complex<double> bfe(0);
       double b1 = 0;
 
+      real_t ebfe=fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X])); 
+      
       real_t beta[6];
       point_params(T[X], p[X],beta);
       
@@ -389,10 +390,9 @@ void scaling_sim::write_energies() {
 
       b5 = beta[5] * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
 
-      //bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
+      bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
 
-      bfe=1.0;
-      
+            
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
@@ -676,6 +676,8 @@ void scaling_sim::next() {
 
   onsites (ALL) {
 
+    //make consistent with the T in the boundary
+    
     A[X] += config.dt * pi[X];
 
     if (bc ==1)
