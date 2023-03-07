@@ -34,6 +34,7 @@ public:
   void write_phases();
   void next();
   void next_bath();
+  void nextT();
 
 
   void write_A_matrix_positions();             // output A-matrix after certain time interval
@@ -74,7 +75,11 @@ public:
       real_t Inilc;
       
       int item;
+      int initialConditionT;
       real_t IniT;
+      real_t ampT;
+      real_t sigT;
+      int initialConditionp;
       real_t Inip;
       //real_t T;
       //real_t p;
@@ -94,6 +99,8 @@ public:
       int useTbath;
       int write_phases;
       int write_eigen;
+      int evolveT;
+      real_t diffT;
     } config;
 };
 
@@ -119,9 +126,23 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
-    //config.initialConditionT = parameters.get_item("initialConditonT",{})
-    config.IniT = parameters.get("IniT");
-    //config.initialConditionp = parameters.get_item("initialConditonp",{})
+    config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
+    if(config.initialConditionT == 0)
+      {
+	config.IniT = parameters.get("IniT");
+      }
+    else if (config.initialConditionT == 1)
+      {
+	config.IniT = parameters.get("IniT");
+	config.ampT = parameters.get("ampT");
+      }
+    else if (config.initialConditionT == 2)
+      {
+	config.IniT = parameters.get("IniT");
+        config.ampT = parameters.get("ampT");
+	config.sigT = parameters.get("sigT");
+      }
+    config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     config.Inip	= parameters.get("Inip");
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
@@ -138,7 +159,11 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
       }
     config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-   
+    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
+    if(config.evolveT ==1)
+      {
+	config.diffT = parameters.get("diffT");
+      }
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
@@ -280,32 +305,58 @@ void scaling_sim::initialize() {
 
 void scaling_sim::initializeT() {
 
-  real_t sig = 5.0;
-  
-  onsites(ALL) {
+  switch (config.initialCondition) {
 
-    auto xcoord = X.coordinate(e_x);
-    auto ycoord = X.coordinate(e_y);
-    auto zcoord = X.coordinate(e_z);
+  case 0: {
     
-    T[X] = 0.0;
-    T[X] *= exp(-0.5*(xcoord-64.0)*(xcoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
-    T[X] *= exp(-0.5*(ycoord-64.0)*(ycoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
-    T[X] *= exp(-0.5*(zcoord-64.0)*(zcoord-64.0)/(sig*sig))/(sqrt(2.0*3.14)*sig);
-    T[X] += config.IniT;
-    
+    onsites(ALL) {
+      T[X] = config.IniT;
+    }
+    break;
   }
-  
+   
+  case 1: {
+
+    onsites(ALL){
+      
+      auto xcoord = X.coordinate(e_x);
+
+      T[X] = config.IniT + config.ampT*sin(2.0*M_PI*xcoord/config.lx);
+    
+    }
+    break;
+  }
+
+  case 2: {
+
+    onsites(ALL){
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
+
+      real_t r = sqrt((xcoord-config.lx/2.0)*(xcoord-config.lx/2.0)+(ycoord-config.ly/2.0)*(ycoord-config.ly/2.0)+(zcoord-config.lz/2.0)*(zcoord-config.lz/2.0));
+
+      real_t expr=exp(-0.5*(r/config.sigT)*(r/config.sigT));
+
+      T[X] = config.IniT + config.ampT*expr;
+    }
+    break;
+  } 
+  }
 }
 
 void scaling_sim::initializep() {
 
-  onsites(ALL) {
+  switch (config.initialCondition) {
 
-    p[X] = config.Inip;
+  case 0: {
+    onsites(ALL) {
 
+      p[X] = config.Inip;
+
+    }
   }
-  
+  } 
 }
 
 void scaling_sim::point_params(real_t T, real_t p, real_t beta[6]) {
@@ -343,11 +394,11 @@ void scaling_sim::write_moduli() {
                       << Amod / lattice.volume() << " " << pimod / lattice.volume()
                       << " ";
     }
+
+    hila::out0 << "Moduli done \n";
 }
 
 void scaling_sim::write_energies() {
-
-  Matep MP;
   
   Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
   Complex<double> suma_we(0),sumb2_we(0),sumb3_we(0),sumb4_we(0),sumb5_we(0);
@@ -363,6 +414,7 @@ void scaling_sim::write_energies() {
     hila::set_allreduce(false);
     onsites(ALL) {
 
+      Matep MP;
       Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
       Complex<double> kin(0);
       Complex<double> k1(0), k2(0), k3(0);
@@ -543,6 +595,8 @@ void scaling_sim::write_phases() {
       config.stream << ph0/vol << " " << ph1/vol << " " << ph2/vol << " " << ph3/vol << " " << ph4/vol << " " << ph5/vol << " " << ph6/vol << " " << ph7/vol << " " << ph8/vol << " " << ph9/vol << "\n";
     }
 
+  hila::out0 << "Phases done \n";
+  
 }
 void scaling_sim::write_positions() {
 
@@ -605,7 +659,7 @@ void scaling_sim::write_positions() {
       }
 
       eval.write("points/eigenvalues-t"+std::to_string(int(t/config.dt)),false);
-      //evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
+      evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
       
     }
       
@@ -655,16 +709,10 @@ void scaling_sim::latticeCoordinate_output()
 }
 
 void scaling_sim::next() {
-
-  Matep MP;
    
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
-
-  real_t gapa = MP.gap_A_td(config.Inip, config.IniT);
-  real_t gapb = MP.gap_B_td(config.Inip, config.IniT);
-
 
   int bc=config.boundary_conditions;
   
@@ -672,7 +720,10 @@ void scaling_sim::next() {
 
   onsites (ALL) {
 
-    //make consistent with the T in the boundary
+    Matep MP;
+    real_t gapa = MP.gap_A_td(p[X], T[X]);
+    real_t gapb = MP.gap_B_td(p[X], T[X]);
+
     
     A[X] += config.dt * pi[X];
 
@@ -790,14 +841,9 @@ void scaling_sim::next() {
 
 void scaling_sim::next_bath() {
 
-  Matep MP;
-
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
-
-  real_t gapa = MP.gap_A_td(config.Inip, config.IniT);
-  real_t gapb = MP.gap_B_td(config.Inip, config.IniT);
 
   real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
 
@@ -806,6 +852,10 @@ void scaling_sim::next_bath() {
     next_timer.start();
 
   onsites (ALL) {
+
+    Matep MP;
+    real_t gapa = MP.gap_A_td(p[X], T[X]);
+    real_t gapb = MP.gap_B_td(p[X], T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -982,12 +1032,35 @@ void scaling_sim::next_bath() {
 
 }
 
+void scaling_sim::nextT() {
+
+  real_t te = t/config.tStart;
+  
+  onsites(ALL) {
+
+    auto xcoord = X.coordinate(e_x);
+    auto ycoord = X.coordinate(e_y);
+    auto zcoord = X.coordinate(e_z);
+
+    real_t r = sqrt((xcoord-config.lx/2.0)*(xcoord-config.lx/2.0)+(ycoord-config.ly/2.0)*(ycoord-config.ly/2.0)+(zcoord-config.lz/2.0)*(zcoord-config.lz/2.0));
+
+    real_t expr=exp(-1.0*r*r/(config.diffT*te));
+
+    T[X] = config.IniT + config.ampT*expr*pow(te,-3.0/2.0); //this is okay if diffT=sigT*sigT
+    
+  }
+  
+}
+
+
 int main(int argc, char **argv) {
     scaling_sim sim;
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
     sim.initialize();
     sim.initializeT();
     sim.initializep();
+
+    int stepspos;
     
     int steps =
         (sim.config.tEnd - sim.config.tStats) /
@@ -996,7 +1069,7 @@ int main(int argc, char **argv) {
         steps = 1;
 
     if (sim.config.positions == 1) {
-      int stepspos = (sim.config.tEnd - sim.config.tStats) /
+      stepspos = (sim.config.tEnd - sim.config.tStats) /
         (sim.config.dt * sim.config.npositionout);
       if (stepspos == 0)
         stepspos = 1;
@@ -1058,6 +1131,10 @@ int main(int argc, char **argv) {
 	else
 	  {
 	    sim.next();}
+	if(sim.config.evolveT == 1)
+	  {
+	    sim.nextT();
+	  }
     }
     run_timer.stop();
 
