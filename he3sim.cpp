@@ -89,8 +89,8 @@ public:
       real_t nOutputs;
       std::fstream stream;
       int positions;
+      int npositionout;
       int boundary_conditions;
-      int Tbath;
       int useTbath;
       int write_phases;
       int write_eigen;
@@ -132,17 +132,13 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.positions = parameters.get_item("out_points",{"no", "yes"});
     if(config.positions==1)
       {
+	config.npositionout = parameters.get("npositionout");
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
       }
     config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-    if(config.useTbath==1)
-      { 
-        config.Tbath = parameters.get("Tbath");
-      }
-
-
+   
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
@@ -803,8 +799,6 @@ void scaling_sim::next_bath() {
   real_t gapa = MP.gap_A_td(config.Inip, config.IniT);
   real_t gapb = MP.gap_B_td(config.Inip, config.IniT);
 
-  real_t tb = config.Tbath/tc;
-  real_t sig = sqrt(2.0*tb*config.gamma);
   real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
 
   int bc=config.boundary_conditions;
@@ -898,6 +892,10 @@ void scaling_sim::next_bath() {
   }
 
   onsites (ALL) {
+
+    real_t tb = T[X]/tc;
+    real_t sig = sqrt(2.0*tb*config.gamma);
+      
     deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
@@ -957,6 +955,10 @@ void scaling_sim::next_bath() {
       }
 
       onsites (ALL) {
+
+	real_t tb = T[X]/tc;
+	real_t sig = sqrt(2.0*tb*config.gamma);
+	
         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
@@ -992,6 +994,13 @@ int main(int argc, char **argv) {
         (sim.config.dt * sim.config.nOutputs); // number of steps between printing stats
     if (steps == 0)
         steps = 1;
+
+    if (sim.config.positions == 1) {
+      int stepspos = (sim.config.tEnd - sim.config.tStats) /
+        (sim.config.dt * sim.config.npositionout);
+      if (stepspos == 0)
+        stepspos = 1;
+    }
         
     int stat_counter = 0;
 
@@ -1029,17 +1038,18 @@ int main(int argc, char **argv) {
                          << ", t point is " << sim.t/sim.config.dt
 			 << ", steps is " << steps
 			 << "\n";
-	      // if (sim.config.positions == 1){sim.write_positions();}
-	      if (sim.config.positions == 1)
-		 {
-		   //sim.write_A_matrix_positions();
-		   sim.write_positions();    // uncomment this line to get sim.write_positions() called
-		 }
 	      sim.write_moduli();
 	      sim.write_energies();
 	      sim.write_phases();
 	      meas_timer.stop();
             }
+	    if (sim.config.positions == 1)
+	      {
+		if (stat_counter % stepspos == 0)
+		  {
+		    sim.write_positions();
+		  }
+	      }
             stat_counter++;
         }
 	if (sim.config.useTbath == 1)
