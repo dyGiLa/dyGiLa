@@ -359,6 +359,7 @@ void scaling_sim::initializep() {
   switch (config.initialConditionp) {
 
   case 0: {
+
     onsites(ALL) {
 
       p[X] = config.Inip;
@@ -616,6 +617,7 @@ void scaling_sim::write_phases() {
 }
 void scaling_sim::write_positions() {
 
+  hila::out0 << "Writting positions \n";
     
   hila::set_allreduce(false);
 
@@ -678,6 +680,8 @@ void scaling_sim::write_positions() {
       evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
       
     }
+
+  hila::out0 << "Writting positions done \n";
       
 }
 
@@ -959,7 +963,8 @@ void scaling_sim::next_bath() {
 
   onsites (ALL) {
 
-    real_t tb = T[X]/tc;
+    Matep MP;
+    real_t tb = T[X]/ MP.Tcp_mK(p[X]);
     real_t sig = sqrt(2.0*tb*config.gamma);
       
     deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
@@ -1022,7 +1027,8 @@ void scaling_sim::next_bath() {
 
       onsites (ALL) {
 
-	real_t tb = T[X]/tc;
+	Matep MP;
+	real_t tb = T[X]/ MP.Tcp_mK(p[X]);
 	real_t sig = sqrt(2.0*tb*config.gamma);
 	
         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
