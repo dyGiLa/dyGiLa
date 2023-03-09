@@ -593,7 +593,14 @@ void scaling_sim::write_phases() {
     real_t p;
     phi_t Ac;
 
-    Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+    if (real((A[X]*A[X].dagger()).trace()) > 0.0)
+      {
+	Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+      }
+    else
+      {
+	Ac=A[X];
+      }
 
     R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
 
@@ -686,8 +693,15 @@ void scaling_sim::write_positions() {
 	real_t R1,R2,R3,R4,R5;
 	phi_t Ac;
 
-	Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
-
+	if (real((A[X]*A[X].dagger()).trace()) > 0.0)
+	  {
+	    Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+	  }
+	else
+	  {
+	    Ac=A[X];
+	  }
+	    
 	R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
 
 	R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
