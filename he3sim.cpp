@@ -305,13 +305,16 @@ void scaling_sim::initialize() {
 
 void scaling_sim::initializeT() {
 
-  switch (config.initialCondition) {
+  switch (config.initialConditionT) {
 
   case 0: {
     
     onsites(ALL) {
       T[X] = config.IniT;
     }
+
+     hila::out0 << "COnstant T \n";
+    
     break;
   }
    
@@ -324,6 +327,9 @@ void scaling_sim::initializeT() {
       T[X] = config.IniT + config.ampT*sin(2.0*M_PI*xcoord/config.lx);
     
     }
+
+     hila::out0 << "Sine T \n";
+    
     break;
   }
 
@@ -340,6 +346,9 @@ void scaling_sim::initializeT() {
 
       T[X] = config.IniT + config.ampT*expr;
     }
+
+     hila::out0 << "Hot Spot \n";
+    
     break;
   } 
   }
@@ -347,7 +356,7 @@ void scaling_sim::initializeT() {
 
 void scaling_sim::initializep() {
 
-  switch (config.initialCondition) {
+  switch (config.initialConditionp) {
 
   case 0: {
     onsites(ALL) {
@@ -355,6 +364,10 @@ void scaling_sim::initializep() {
       p[X] = config.Inip;
 
     }
+
+     hila::out0 << "Constant p \n";
+
+     break;
   }
   } 
 }
@@ -409,8 +422,6 @@ void scaling_sim::write_energies() {
   Complex<double> sumkin(0);
   Complex<double> sumkin_we(0);
 
-
-    
     hila::set_allreduce(false);
     onsites(ALL) {
 
@@ -422,10 +433,15 @@ void scaling_sim::write_energies() {
       double b1 = 0;
 
       real_t ebfe=fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X])); 
+
+      //real_t ebfe=fmin(MP.f_A_td(20.0, 2.2),MP.f_B_td(20.0, 2.2));
+      
+      //real_t ebfe = 1.0;
       
       real_t beta[6];
       point_params(T[X], p[X],beta);
-      
+
+            
       a = beta[0] * (A[X]*A[X].dagger()).trace();
 
       b1 = beta[1] * ((A[X]*A[X].transpose()).trace()).squarenorm();
