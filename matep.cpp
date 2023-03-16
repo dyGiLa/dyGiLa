@@ -166,17 +166,30 @@ Matep::beta_B_td(real_t p, real_t T){
 // A-phase gap energy, in unit of Kb * Tc
 real_t
 Matep::gap_A_td(real_t p, real_t T){
-  real_t gap2 =-alpha_td(p, T)/(2.f*beta_A_td(p, T)); // (kb Tc)^2
 
-  return std::sqrt(gap2);
+  if (T <= Tcp_mK(p))
+    {
+      real_t gap2 =-alpha_td(p, T)/(2.f*beta_A_td(p, T)); // (kb Tc)^2
+
+      return std::sqrt(gap2);    
+    }
+  else //if (T > Tcp_mK(p))
+    return 0.;
+
 }
 
 // B-phase gap energy, in unit of Kb * Tc
 real_t
 Matep::gap_B_td(real_t p, real_t T){
-  real_t gap2 =-alpha_td(p, T)/(2.f*beta_B_td(p, T)); // (kb Tc)^2
 
-  return std::sqrt(gap2);
+  if (T <= Tcp_mK(p))
+    {
+      real_t gap2 =-alpha_td(p, T)/(2.f*beta_B_td(p, T)); // (kb Tc)^2
+
+      return std::sqrt(gap2);
+    }
+  else //if (T > Tcp_mK(p))
+    return 0.;
 }
 
 // A general gap function with message of equlibrium phase
@@ -198,14 +211,22 @@ Matep::gap_td(real_t p, real_t T){
 
   } else {
 
-    if (f_A_td(p, T) == f_B_td(p, T)){
+    if (
+	// (f_A_td(p, T) == f_B_td(p, T))
+	// && (T < Tcp_mK(p))
+	T < Tcp_mK(p)
+       ){
 
        std::cout << " \nnow p, T are: " << p << ", " << T
                  << ", and A and B degenerate, return as -1. "
                  << std::endl;
        return -1.f;
 
-    } else {
+    } else  //(
+        	// (f_A_td(p, T) == f_B_td(p, T))
+	        // && (T > Tcp_mK(p))
+            // )
+	  {
 
             std::cout << " \nnow p, T are: " << p << ", " << T
 	            << ", system is in normal phase. "
@@ -230,11 +251,29 @@ Matep::tAB_RWS(real_t p){
 
 // A-Phase free energy density in unit of (1/3)(Kb Tc)^2 N(0)
 real_t
-Matep::f_A_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_A_td(p, T); }
+Matep::f_A_td(real_t p, real_t T)
+{
+  if (T <= Tcp_mK(p))
+    {
+     return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_A_td(p, T);    
+    }
+  else //if (T > Tcp_mK(p))
+    return 0.;
+    
+}
 
 // B-Phase free energy density in unit of (1/3)(Kb Tc)^2 N(0)
 real_t
-Matep::f_B_td(real_t p, real_t T){ return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_B_td(p, T); }
+Matep::f_B_td(real_t p, real_t T)
+{
+  if (T <= Tcp_mK(p))
+    {
+     return (-1.f/4.f)*(std::pow(alpha_td(p, T),2.f))/beta_B_td(p, T);
+    }
+  else //if (T > Tcp_mK(p))
+    return 0.;
+
+}
 
 
 
