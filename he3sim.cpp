@@ -35,7 +35,7 @@ public:
   void next();
   void next_bath();
   void nextT();
-
+  void heatbloob();
 
   void write_A_matrix_positions();             // output A-matrix after certain time interval
   void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
@@ -78,7 +78,9 @@ public:
       int initialConditionT;
       real_t IniT;
       real_t ampT;
-      real_t sigT;
+      real_t sigTx;
+      real_t sigTy;
+      real_t sigTz;
       int initialConditionp;
       real_t Inip;
       //real_t T;
@@ -100,7 +102,11 @@ public:
       int write_phases;
       int write_eigen;
       int evolveT;
+      int Tevolvetype;
+      real_t startdiffT;
       real_t diffT;
+      int bloob_after;
+      real_t theat;
     } config;
 };
 
@@ -140,7 +146,9 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
       {
 	config.IniT = parameters.get("IniT");
         config.ampT = parameters.get("ampT");
-	config.sigT = parameters.get("sigT");
+	config.sigTx = parameters.get("sigTx");
+	config.sigTy = parameters.get("sigTy");
+	config.sigTz = parameters.get("sigTz");
       }
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     config.Inip	= parameters.get("Inip");
@@ -162,9 +170,16 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.evolveT = parameters.get_item("evolveT",{"no","yes"});
     if(config.evolveT ==1)
       {
+	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave"});
+	config.startdiffT = parameters.get("startdiffT");
 	config.diffT = parameters.get("diffT");
       }
-    
+    config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
+    if(config.bloob_after== 1)
+      {
+	config.theat = parameters.get("theat");
+      }
+	
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 
@@ -303,6 +318,23 @@ void scaling_sim::initialize() {
   }
 }
 
+void scaling_sim::heatbloob() {
+
+  onsites(ALL){
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
+
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
+
+      T[X] = config.IniT + config.ampT*expx*expy*expz;
+    }
+
+  hila::out0 << "Hot Spot created at t="<<t<<" \n";
+}
+
 void scaling_sim::initializeT() {
 
   switch (config.initialConditionT) {
@@ -340,11 +372,11 @@ void scaling_sim::initializeT() {
       auto ycoord = X.coordinate(e_y);
       auto zcoord = X.coordinate(e_z);
 
-      real_t r = sqrt((xcoord-config.lx/2.0)*(xcoord-config.lx/2.0)+(ycoord-config.ly/2.0)*(ycoord-config.ly/2.0)+(zcoord-config.lz/2.0)*(zcoord-config.lz/2.0));
-
-      real_t expr=exp(-0.5*(r/config.sigT)*(r/config.sigT));
-
-      T[X] = config.IniT + config.ampT*expr;
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
+      
+      T[X] = config.IniT + config.ampT*expx*expy*expz;
     }
 
      hila::out0 << "Hot Spot \n";
@@ -1056,20 +1088,53 @@ void scaling_sim::next_bath() {
 
 void scaling_sim::nextT() {
 
-  real_t te = t/config.tStart;
+  real_t t0=config.startdiffT;
   
-  onsites(ALL) {
+  switch (config.Tevolvetype){
+  case 0: {
 
-    auto xcoord = X.coordinate(e_x);
-    auto ycoord = X.coordinate(e_y);
-    auto zcoord = X.coordinate(e_z);
+    onsites (ALL) {
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
 
-    real_t r = sqrt((xcoord-config.lx/2.0)*(xcoord-config.lx/2.0)+(ycoord-config.ly/2.0)*(ycoord-config.ly/2.0)+(zcoord-config.lz/2.0)*(zcoord-config.lz/2.0));
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
 
-    real_t expr=exp(-1.0*r*r/(config.diffT*te));
+      real_t diff0=exp((-pow(xcoord-config.lx/2.0,2.0)-pow(ycoord-config.ly/2.0,2.0)-pow(zcoord-config.lz/2.0,2.0))/(4.0*config.diffT*t0))/pow(t0,3.0/2.0);
+      real_t diff = exp((-pow(xcoord-config.lx/2.0,2.0)-pow(ycoord-config.ly/2.0,2.0)-pow(zcoord-config.lz/2.0,2.0))/(4.0*config.diffT*t))/pow(t,3.0/2.0);
+      real_t a0 = config.ampT*expx*expy*expz/diff0;
 
-    T[X] = config.IniT + config.ampT*expr*pow(te,-3.0/2.0); //this is okay if diffT=sigT*sigT
+      T[X] = a0 * diff;
+      
+    }
     
+   
+    break;
+  }
+  case 1: {
+  
+    onsites (ALL) {
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
+
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
+
+      real_t diff0=exp(-(xcoord-config.lx/2.0)/sqrt(3.0)-(ycoord-config.ly/2.0)/sqrt(3.0)-(zcoord-config.lz/2.0)/sqrt(3)-t0);
+      real_t diff=exp(-(xcoord-config.lx/2.0)/sqrt(3.0)-(ycoord-config.ly/2.0)/sqrt(3.0)-(zcoord-config.lz/2.0)/sqrt(3)-t);
+      real_t a0 = config.ampT*expx*expy*expz/diff0;
+
+      T[X] = a0 * diff;
+
+    }
+    
+    break;
+  }
+
   }
   
 }
@@ -1082,6 +1147,8 @@ int main(int argc, char **argv) {
     sim.initializeT();
     sim.initializep();
 
+    int bloob_created=0;
+    
     int stepspos;
     
     int steps =
@@ -1147,13 +1214,20 @@ int main(int argc, char **argv) {
 	      }
             stat_counter++;
         }
+	if (sim.config.bloob_after==1 && sim.t>sim.config.theat && bloob_created==0)
+	  {
+	    sim.heatbloob();
+	    bloob_created=1;
+	  }
+	    
 	if (sim.config.useTbath == 1)
 	  {
 	    sim.next_bath();}
 	else
 	  {
 	    sim.next();}
-	if(sim.config.evolveT == 1)
+	
+	if(sim.t > sim.config.startdiffT && sim.config.evolveT == 1)
 	  {
 	    sim.nextT();
 	  }
