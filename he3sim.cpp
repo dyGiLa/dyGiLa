@@ -742,7 +742,7 @@ void scaling_sim::write_positions() {
 
       onsites(ALL){
 
-	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X]);
+	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X],hila::sort::ascending);
 
       }
 
