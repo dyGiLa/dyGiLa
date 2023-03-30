@@ -1106,7 +1106,7 @@ void scaling_sim::nextT() {
       real_t diff = exp((-pow(xcoord-config.lx/2.0,2.0)-pow(ycoord-config.ly/2.0,2.0)-pow(zcoord-config.lz/2.0,2.0))/(4.0*config.diffT*t))/pow(t,3.0/2.0);
       real_t a0 = config.ampT*expx*expy*expz/diff0;
 
-      T[X] = a0 * diff;
+      T[X] =sim.initT + a0 * diff;
       
     }
     
