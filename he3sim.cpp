@@ -6,35 +6,35 @@
 //#include <math.h>
 #include <assert.h>
 
-
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
-
 #include "matep.hpp"
 
-// Definition of the fieldthat we will use
+// Definition of the field that we will use
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
-
-
 
 // Container for simulation parameters and methods
 class scaling_sim{
 
 public:
-  scaling_sim() = default;
+  scaling_sim() = default;                     // default constructor
+
+  // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
+  
   void initialize();
   void update_params();
   void update_Tp (real_t t, real_t Tp[2]);
+
+  void next();
+  void next_bath();
+  
   void write_moduli();
   void write_energies();
   void write_positions();
   void write_phases();
-  void next();
-  void next_bath();
-
-
+  
   void write_A_matrix_positions();             // output A-matrix after certain time interval
   void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
   
@@ -93,7 +93,6 @@ public:
 
 const std::string scaling_sim::allocate(const std::string &fname, int argc, char **argv)
 {
-
     Matep MP;
     hila::initialize(argc, argv);
     hila::input parameters(fname);
@@ -283,8 +282,10 @@ void scaling_sim::initialize() {
     onsites(ALL) {
 
         A[X] = 0;
-        A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
-        A[X].e(1,2).im = 1.0;
+	//    A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
+        //   A[X].e(1,2).im = 1.0;
+	A[X].e(0,0).re = 1.0;
+	A[X].e(0,1).im = 1.0;
       
       A[X] = gap * A[X]/sqrt(2.0);
     }
@@ -673,6 +674,7 @@ void scaling_sim::write_phases() {
     }
 
 }
+
 void scaling_sim::write_positions() {
 
   Matep MP;
@@ -755,9 +757,9 @@ void scaling_sim::write_positions() {
 
 void scaling_sim::write_A_matrix_positions() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
+  /*Matep MP;
+    real_t Tp[2];
+    update_Tp(t, Tp);*/
 
   std::ofstream stream_out;
   
@@ -812,7 +814,6 @@ void scaling_sim::next() {
 
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-
 
   int bc=config.boundary_conditions;
   
@@ -958,7 +959,7 @@ void scaling_sim::next_bath() {
 
   int bc=config.boundary_conditions;
 
-    next_timer.start();
+  next_timer.start();
 
   onsites (ALL) {
 
@@ -1052,9 +1053,7 @@ void scaling_sim::next_bath() {
 
   }
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt                                                                                      \
-                                                                                                                                                                                                            
-
+    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt                                                                                                                                                                                         
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);

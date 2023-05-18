@@ -5,6 +5,7 @@
 
 # don't add build directory
 build/
+build/0hilapp_incl_dirs
 *.cpt
 
 # Node artifact files

@@ -26,9 +26,11 @@ using real_t = float; // or double
 class Matep {
 public:
         Matep():
-	  Switch("OFF") {};                    // default constructor
+	  Switch("OFF") {};                                                  // default constructor
+  /*Matep(const std::string &tempScale):
+    Switch("OFF"), temperature_scale(tempScale) {};*/                    // constructor with temperature scale option  
         Matep(const std::string &S):
-	  Switch(S) {};                        // metap with fudge exponent switch
+	  Switch(S) {};                                                      // metap with fudge exponent switch
 
   // ************************************************************************** //
   // >>>>>>>>>>>        interfaces of dimensional qualities        <<<<<<<<<<<< //
@@ -75,8 +77,11 @@ private:
         static constexpr real_t Kelvin =1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f
                          	,pi = 3.14159265358979323846264338328f, p_pcp = 21.22f;
 
+        // temperature switch Greywall or PLTS2000
+        std::string temperature_scale;
+        
         // fudge Switch, "ON" or "OFF"
-        std::string Switch = "OFF"; 
+        std::string Switch /*= "OFF"*/; 
 
         // physical constants for he3
         static const real_t u, m3, nm, hbar, kb
@@ -91,7 +96,6 @@ private:
         static const real_t c5_arr[18];
 
         // ***************************************************
-
         static const real_t Tc_arr[18];
         static const real_t Ms_arr[18];
         static const real_t VF_arr[18];
@@ -101,7 +105,7 @@ private:
         static const std::vector<real_t> coef4;
         // static const std::vector<real_t> coef6;
 
-        // linear interpolation member:
+        // linear interpolation function:
         real_t lininterp(const real_t *cX_arr, real_t p);
 
         // fudge expotent calculator
