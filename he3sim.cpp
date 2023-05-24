@@ -10,6 +10,17 @@
 #include "plumbing/fft.h"
 #include "matep.hpp"
 
+/*--------------------------------------------------*/
+// include Ascent & Canduit macro for in situ rank rendering
+#if defined USE_ASCENT
+
+#include "ascent.hpp"
+#include "conduit_blueprint.hpp"
+
+#endif
+/*--------------------------------------------------*/
+
+
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
@@ -36,7 +47,31 @@ public:
   void write_phases();
   
   void write_A_matrix_positions();             // output A-matrix after certain time interval
-  void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
+  void write_gapA_rankOut();
+  void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write()
+
+#if defined USE_ASCENT
+    // In-Situ via Ascent
+    void insitu_createMesh();
+    void insitu_defineActions();
+    void insitu_initialize();
+  
+    void insitu_execute();
+    void insitu_close();
+
+    Field<real_t> gapA;
+  
+    std::vector<real_t> gapAOrdered;
+  
+    long long ghostVolume;
+    long long latticeVolumeWithGhost;
+    long long latticeVolume;
+    unsigned char *ghostCellsMask;
+    ascent::Ascent insitu;
+    conduit::Node ascent_options;
+    conduit::Node actions;
+    conduit::Node mesh;
+#endif
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -71,6 +106,7 @@ public:
       
       int item;
       real_t T;
+      real_t dT_from_TAB;
       real_t p;
       real_t alpha;
       real_t beta1;
@@ -81,10 +117,16 @@ public:
 
       real_t tStats;
       real_t nOutputs;
+
       std::fstream stream;
+
+      // rank stream and its switch
+      std::fstream rank_Output;
+      int rank_stream_switch;
+
       int positions;
       int npositionout;
-      int boundary_conditions;
+      int boundaryConditions;
       int useTbath;
       int write_phases;
       int write_eigen;
@@ -125,9 +167,11 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
       config.beta5 = parameters.get("beta5");
     }
     else if (config.item == 1) {
-      config.T = parameters.get("T");
+      //config.T = parameters.get("T");
+      config.dT_from_TAB = parameters.get("dT_from_TAB");
       config.p = parameters.get("p");
-      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p);
+      config.T = MP.tAB_RWS(config.p) + config.dT_from_TAB;
+      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p) << "\n";;
     }
     else {
       const std::string in_file = parameters.get("params_file"); // where is params_file ???
@@ -156,16 +200,15 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     // output_file is the saving path of output file, which offered in congigration file
     const std::string output_file = parameters.get("output_file");
 
-    config.positions = parameters.get_item("out_points",{"no", "yes"});
-    if(config.positions==1)
+    config.rank_stream_switch = parameters.get_item("rank_output_stream",{"no", "yes"});
+    /*if(config.positions==1)
       {
 	config.npositionout = parameters.get("npositionout");
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
-      }
-    config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
+	}*/
+    config.boundaryConditions = parameters.get_item("boundaryConditions",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
@@ -238,8 +281,6 @@ void scaling_sim::initialize() {
     }
 
         FFT_field(kA, A, fft_direction::back);
-
-
 	
 	onsites (ALL)
 	  {
@@ -405,27 +446,27 @@ void scaling_sim::write_moduli() {
 
    // real_t a = scaleFactor(t);
 
-    double Amod = 0.0;
+  double Amod = 0.0/*, AGap = 0.0*/;
     double pimod = 0.0;
-
+    
     real_t Tp[2];
 
     hila::set_allreduce(false);
     onsites (ALL) {
         Amod += A[X].norm();
         pimod += pi[X].norm();
-    }
 
+    }
         
     update_Tp(t, Tp);
     
     if (hila::myrank() == 0) {
-        config.stream << t << " "
-	              << tc << " "
-	              << Tp[0] << " " << Tp[1] << " "
-		      << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " " <<	config.beta5 << " "
-                      << Amod / lattice.volume() << " " << pimod / lattice.volume()
-                      << " ";
+        config.stream << t << ", "
+	              << tc << ", "
+	              << Tp[0] << ", " << Tp[1] << ", "
+	              << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " "    <<	config.beta5 << " "
+	    << Amod / lattice.volume() << " " << pimod / lattice.volume()
+	              << std::endl;
     }
 }
 
@@ -535,48 +576,6 @@ void scaling_sim::write_energies() {
 
        hila::out0 << "Energy done \n";
 
-    //   double sumar = 0.0;
-    //   double sumai = 0.0;
-    //   double sumb1 = 0.0;
-    //   double sumb2r = 0.0;
-    //   double sumb2i = 0.0;
-    //   double sumb3r = 0.0;
-    //   double sumb3i = 0.0;
-    //   double sumb4r = 0.0;
-    //   double sumb4i = 0.0;
-    //   double sumb5r = 0.0;
-    //   double sumb5i = 0.0;
-
-    //   hila::set_allreduce(false);
-    //   onsites (ALL) {
-
-    //     sumar += config.alpha * ((A[X]*A[X].dagger()).trace()).re;
-    //     sumai += config.alpha * ((A[X]*A[X].dagger()).trace()).im;
-        
-    //     sumb1 += config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-
-    //     sumb2r += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).re;
-    //     sumb2i += config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace()).im;
-
-    //     sumb3r += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).re;
-    //     sumb3i += config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace()).im;
-
-    //     sumb4r += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).re;
-    //     sumb4i += config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace()).im;
-
-    //     sumb5r += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).re;
-    //     sumb5i += config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace()).im;
-    //   }
-
-    //   if (hila::myrank() == 0) {
-    //     double vol = (double)config.l * config.l * config.l;
-    //     config.stream << sumar / vol << " "<< sumai / vol << " "
-    // 		  << sumb1 / vol << " "
-    // 		  << sumb2r / vol << " " << sumb2i / vol << " "
-    // 		  << sumb3r / vol << " " << sumb3i / vol << " "
-    //  		  << sumb4r / vol << " " << sumb4i / vol << " "
-    // 		  << sumb5r / vol << " " << sumb5i / vol << "\n";
-    //   }
 }
 
 void scaling_sim::write_phases() {
@@ -775,6 +774,19 @@ void scaling_sim::write_A_matrix_positions() {
 
 }
 
+void scaling_sim::write_gapA_rankOut()
+{
+  onsites(ALL){
+	if(config.rank_stream_switch == 1)
+	  {
+	    config.rank_Output << t << ", "
+			       << X.coordinate(e_x) << ", " << X.coordinate(e_y) << ", " << X.coordinate(e_z) << ", "
+	                       << sqrt((A[X]*A[X].dagger()).trace())
+	                       << std::endl;
+	  }
+  }	
+}  
+
 void scaling_sim::latticeCoordinate_output()
 {
   std::ofstream stream_out;
@@ -802,6 +814,218 @@ void scaling_sim::latticeCoordinate_output()
 
 }
 
+/*--------------------------------------------------------------------------------*/
+/*   >>>>>>>>>>>>>>>>>>    in-situ rank render functrions       <<<<<<<<<<<<<<<<< */
+/*--------------------------------------------------------------------------------*/
+
+#if defined USE_ASCENT
+void axhila::insitu_createMesh() {
+
+    // Create a 3D mesh defined on a uniform grid of points
+    // with a single vertex associated field named `gapA`
+   
+    // conduit::Node mesh;
+    mesh["state/time"].set_external(&t);
+    // mesh["state/cycle"].set_external(&step);
+#if defined USE_MPI
+    mesh["state/domain_id"] = lattice.mynode.rank;
+#endif
+    mesh["state/software"] = "He3Sim";
+    mesh["state/title"] = "Bulk TDGL equation simulator";
+    mesh["state/info"] = "In Situ rendering of scalar field gapA from He3Sim";
+
+    // create the coordinate set
+    mesh["coordsets/coords/type"] = "uniform";
+    mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
+    mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
+    mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
+    // create a second coordinate set (without ghosts)
+    mesh["coordsets/coords2/type"] = "uniform";
+    mesh["coordsets/coords2/dims/i"] = lattice.mynode.size[0] + 2;
+    mesh["coordsets/coords2/dims/j"] = lattice.mynode.size[1] + 2;
+    mesh["coordsets/coords2/dims/k"] = lattice.mynode.size[2] + 2;
+
+    // add the topology
+    // this case is simple b/c it's implicitly derived from the coordinate set
+    mesh["topologies/topo/type"] = "uniform";
+    // reference the coordinate set by name
+    mesh["topologies/topo/coordset"] = "coords";
+
+    // this case is simple b/c it's implicitly derived from the coordinate set
+    // note that for the second coordinate set we will use a second topology
+    mesh["topologies/topo2/type"] = "uniform";
+    // reference the coordinate set by name
+    mesh["topologies/topo2/coordset"] = "coords2";
+
+    // create an vertex associated field named gapA
+    mesh["fields/gapAOrdered/association"] = "vertex";
+    mesh["fields/gapAOrdered/topology"] = "topo";
+    mesh["fields/gapAOrdered/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
+
+    // // create an element associated field named ghostCells
+    mesh["fields/ascent_ghosts/association"] = "element";
+    mesh["fields/ascent_ghosts/topology"] = "topo";
+    mesh["fields/ascent_ghosts/values"].set_external(ghostCellsMask, ghostVolume);
+
+    // make sure the mesh we created conforms to the blueprint
+    conduit::Node verify_info;
+    if (!conduit::blueprint::mesh::verify(mesh, verify_info)) {
+        hila::out0 << "Mesh Verify failed!\n";
+        hila::out0 << verify_info.to_yaml() << '\n';
+    } else {
+        hila::out0 << "Mesh verify success!\n";
+    }
+};
+
+void axhila::insitu_defineActions() {
+
+    // setup actions
+    // conduit::Node actions;
+    conduit::Node &add_act = actions.append();
+    add_act["action"] = "add_pipelines";
+    conduit::Node &pipelines = add_act["pipelines"];
+
+
+
+    
+    /* OK , here is questional part, I don' want contour */
+    
+    // create our first pipeline (pl1)
+    // with a contour filter (f1)
+    pipelines["pl1/f1/type"] = "contour";
+    // extract contours where absPhiOrdered variable
+    // equals 0.5
+    conduit::Node &contour_params = pipelines["pl1/f1/params"];
+    contour_params["field"] = "absPhiOrdered";
+    double iso_vals[1] = {0.5};
+    contour_params["iso_values"].set(iso_vals, 1);
+
+    /*--------------------------------------------------*/
+
+
+    // declare a scene to render our pipeline results
+    conduit::Node &add_act2 = actions.append();
+    add_act2["action"] = "add_scenes";
+    conduit::Node &scenes = add_act2["scenes"];
+
+    // add a scene (s1) with two pseudocolor plots
+    // (p1 and p2) that will render the results
+    // of our pipelines (pl1 and pl2)
+
+    // plot (p1) to render our first pipeline (pl1)
+    scenes["s1/plots/p1/type"] = "pseudocolor";
+    scenes["s1/plots/p1/pipeline"] = "pl1";
+    scenes["s1/plots/p1/field"] = "absPhiOrdered";
+    scenes["s1/plots/p1/color_table/name"] = "Green";
+    scenes["s1/plots/p1/min_value"] = 1.0;
+    scenes["s1/plots/p1/max_value"] = 0.0;
+    scenes["s1/plots/p1/color_table/annotation"] = "false";
+
+    /* This also questinalble ....*/
+
+
+    
+
+    // Add a control point for transparency at zero
+    conduit::Node control_points;
+    conduit::Node &point1 = control_points.append();
+    point1["type"] = "alpha";
+    point1["position"] = 1.0;
+    point1["alpha"] = 0.8;
+
+    conduit::Node &point2 = control_points.append();
+    ...
+
+    // plot (p2) to render Volume plot of Jiim2
+    scenes["s1/plots/p2/type"] = "volume";
+    scenes["s1/plots/p2/field"] = "Jiim2";
+    scenes["s1/plots/p2/min_value"] = 0.0;
+    scenes["s1/plots/p2/max_value"] = 0.2;
+    scenes["s1/plots/p2/color_table/name"] = "Jet";
+    scenes["s1/plots/p2/color_table/control_points"] = control_points;
+
+    scenes["s1/renders/r1/image_prefix"] = "ascentOutput/contourJi_%05d";
+    scenes["s1/renders/r1/camera/azimuth"] = 90.0;
+
+    // Add another scene to render isosurface of phi
+    //  Plus abs(J0.im)
+    //  plot (p1) to render our first pipeline (pl1)
+    scenes["s2/plots/p1/type"] = "pseudocolor";
+    scenes["s2/plots/p1/pipeline"] = "pl1";
+    scenes["s2/plots/p1/field"] = "absPhiOrdered";
+    scenes["s2/plots/p1/color_table/name"] = "Green";
+    scenes["s2/plots/p1/min_value"] = 1.0;
+    scenes["s2/plots/p1/max_value"] = 0.0;
+    scenes["s2/plots/p1/color_table/annotation"] = "false";
+    ...
+
+    // print our full actions tree
+    hila::out0 << actions.to_yaml() << '\n';
+};
+
+void axhila::insitu_execute() {
+
+  gapA[ALL] = /*phi[X].abs();*/ // A.degger() A. Trace() stuff......
+
+
+    gapA.copy_local_data_with_halo(gapAOrdered);
+
+    insitu.execute(actions);
+}
+
+void axhila::insitu_initialize() {
+
+    latticeVolumeWithGhost =
+        (lattice.mynode.size[0] + 2) * (lattice.mynode.size[1] + 2) * (lattice.mynode.size[2] + 2);
+    latticeVolume = (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
+    gapAOrdered.reserve(latticeVolumeWithGhost);
+
+
+    
+    // One more point in each direction, but cell data (Npts - 1 cells)
+    auto ghostNX = lattice.mynode.size[0] + 2 - 1;
+    auto ghostNY = lattice.mynode.size[1] + 2 - 1;
+    auto ghostNZ = lattice.mynode.size[2] + 2 - 1;
+
+    ghostVolume = ghostNX * ghostNY * ghostNZ;
+    ghostCellsMask = (unsigned char *)memalloc(ghostVolume * sizeof(unsigned char));
+
+    long long counter = 0;
+    unsigned char Mask = 0;
+    for (auto k = 0; k < ghostNZ; k++) {
+        for (auto j = 0; j < ghostNY; j++) {
+            for (auto i = 0; i < ghostNX; i++) {
+                bool kGhostFlag = (k == 0);
+                bool jGhostFlag = (j == 0);
+                bool iGhostFlag = (i == 0);
+                Mask = (iGhostFlag || jGhostFlag || kGhostFlag);
+                ghostCellsMask[counter] = Mask;
+                counter++;
+            }
+        }
+    }
+    insitu_createMesh();
+    ascent_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
+    ascent_options["runtime/type"] = "ascent";
+#if defined CUDA
+    ascent_options["runtime/vtkm/backend"] = "cuda";
+    ascent_options["cuda/init"] = "false";
+#endif
+    ascent_options["timings"] = "false";
+    insitu.open(ascent_options);
+    insitu.publish(mesh);
+    insitu_defineActions();
+}
+
+void axhila::insitu_close() {
+    insitu.close();
+}
+#endif
+
+/* In situ functions end at here */
+/*--------------------------------------------------------------------------------*/
+
+
 void scaling_sim::next() {
 
   Matep MP;
@@ -815,7 +1039,8 @@ void scaling_sim::next() {
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
-  int bc=config.boundary_conditions;
+  int bc=config.boundaryConditions;
+  //std::string bc=config.boundaryConditions;
   
   next_timer.start();
 
@@ -823,7 +1048,7 @@ void scaling_sim::next() {
 
     A[X] += config.dt * pi[X];
 
-    if (bc ==1)
+    if (bc == 1)
       {
 	if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
 	  {	
@@ -857,7 +1082,7 @@ void scaling_sim::next() {
 	    A[X] = gapa * A[X]/sqrt(2.0);
 	  }
       }
-    else if (bc==2)
+    else if (bc == 2)
       {
 	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
 	    X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
@@ -957,7 +1182,8 @@ void scaling_sim::next_bath() {
   real_t sig = sqrt(2.0*tb*config.gamma);
   real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
 
-  int bc=config.boundary_conditions;
+  int bc=config.boundaryConditions;
+  //std::string bc=config.boundaryConditions;
 
   next_timer.start();
 
@@ -965,7 +1191,7 @@ void scaling_sim::next_bath() {
 
     A[X] += config.dt * pi[X];
 
-    if (bc ==1)
+    if (bc == 1)
       {
         if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
           {
@@ -999,7 +1225,7 @@ void scaling_sim::next_bath() {
             A[X] = gapa * A[X]/sqrt(2.0);
           }
         }
-    else if (bc==2)
+    else if (bc == 2)
       {
         if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
             X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
@@ -1135,13 +1361,18 @@ int main(int argc, char **argv) {
     if (steps == 0)
         steps = 1;
 
-    if (sim.config.positions == 1)
+    /*if (sim.config.positions == 1)
       {
 	stepspos =  (sim.config.tEnd - sim.config.tStats) /
 	  (sim.config.dt * sim.config.npositionout);
 	if (stepspos == 0)
         stepspos = 1;
-      }
+	}*/
+    /*if(sim.config.rank_stream_switch == 1) 
+      {
+       const std::string rankOut_fname = "rank-Output/AGap_rank_" + std::to_string(hila::myrank()) + ".dat";
+       sim.config.rank_Output.open(rankOut_fname, std::ios::out);
+       }*/
 	
     int stat_counter = 0;
 
@@ -1149,6 +1380,10 @@ int main(int argc, char **argv) {
         sim.config.stream.open(output_fname, std::ios::out);
     }
 
+    
+#if defined USE_ASCENT
+    sim.insitu_initialize();
+#endif    
       
     // on gpu the simulation timer is fake, because there's no sync here.  
     // BUt we want to avoid unnecessary sync anyway.
@@ -1164,15 +1399,14 @@ int main(int argc, char **argv) {
     //auto tildephi = sim.phi;
     while (sim.t < sim.config.tEnd) {
         if (sim.t >= sim.config.tStats) {
-
-	    // hila::out0 << "Writing output at time " << sim.t
-	    //            << "stat_counter is " << stat_counter
-            //            << "t point is " << sim.t/sim.config.dt
-	    // 	       << "steps is " << steps
-	    // 	       << "\n";
-            
 	  
             if (stat_counter % steps == 0) {
+
+              if(sim.config.rank_stream_switch == 1) 
+               {
+		 const std::string rankOut_fname = "rank-Output/AGap_rank_" + std::to_string(hila::myrank()) + "_t" + std::to_string(sim.t) + ".dat";
+                 sim.config.rank_Output.open(rankOut_fname, std::ios::out);
+               }            	      
 	      meas_timer.start();
 	      hila::out0 << "Writing output at time " << sim.t 
 			 << ", stat_counter is " << stat_counter
@@ -1180,9 +1414,18 @@ int main(int argc, char **argv) {
 			 << ", steps is " << steps
 			 << "\n";
 	      sim.write_moduli();
-	      sim.write_energies();
-	      sim.write_phases();
+	      //sim.write_energies();
+	      //sim.write_phases();
+	      sim.write_gapA_rankOut();
+
+#if defined USE_ASCENT
+              sim.insitu_execute();
+#endif
+	      
 	      meas_timer.stop();
+
+	      /* close rank-output :*/
+              sim.config.rank_Output.close();
             }
 	    if (sim.config.positions == 1)
 	      {
@@ -1204,9 +1447,15 @@ int main(int argc, char **argv) {
     }
     run_timer.stop();
 
+#if defined USE_ASCENT
+    sim.insitu_close();
+#endif    
+
     if (hila::myrank() == 0) {
         sim.config.stream.close();
     }
+
+    //    sim.config.rank_Output.close();
 
     hila::finishrun();
     return 0;
