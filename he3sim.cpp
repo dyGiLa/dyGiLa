@@ -54,8 +54,7 @@ public:
     // In-Situ via Ascent
     void insitu_createMesh();
     void insitu_defineActions();
-    void insitu_initialize();
-  
+    void insitu_initialize();  
     void insitu_execute();
     void insitu_close();
 
@@ -839,23 +838,20 @@ void axhila::insitu_createMesh() {
     mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
     mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
     mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
-    // create a second coordinate set (without ghosts)
-    mesh["coordsets/coords2/type"] = "uniform";
-    mesh["coordsets/coords2/dims/i"] = lattice.mynode.size[0] + 2;
-    mesh["coordsets/coords2/dims/j"] = lattice.mynode.size[1] + 2;
-    mesh["coordsets/coords2/dims/k"] = lattice.mynode.size[2] + 2;
 
+    // add origin and spacing to the coordset (optional)
+    mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * config.dx);
+    mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * config.dx);
+    mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * config.dx);
+    mesh["coordsets/coords/spacing/dx"] = config.dx;
+    mesh["coordsets/coords/spacing/dy"] = config.dx;
+    mesh["coordsets/coords/spacing/dz"] = config.dx;
+    
     // add the topology
     // this case is simple b/c it's implicitly derived from the coordinate set
     mesh["topologies/topo/type"] = "uniform";
     // reference the coordinate set by name
     mesh["topologies/topo/coordset"] = "coords";
-
-    // this case is simple b/c it's implicitly derived from the coordinate set
-    // note that for the second coordinate set we will use a second topology
-    mesh["topologies/topo2/type"] = "uniform";
-    // reference the coordinate set by name
-    mesh["topologies/topo2/coordset"] = "coords2";
 
     // create an vertex associated field named gapA
     mesh["fields/gapAOrdered/association"] = "vertex";
@@ -882,92 +878,27 @@ void axhila::insitu_defineActions() {
     // setup actions
     // conduit::Node actions;
     conduit::Node &add_act = actions.append();
-    add_act["action"] = "add_pipelines";
-    conduit::Node &pipelines = add_act["pipelines"];
-
-
-
+    //add_act["action"] = "add_pipelines";
+    //conduit::Node &pipelines = add_act["pipelines"];
+    add_act["action"] = "add_scenes";
+    Node &scenes = add_act["scenes"];
     
-    /* OK , here is questional part, I don' want contour */
-    
-    // create our first pipeline (pl1)
-    // with a contour filter (f1)
-    pipelines["pl1/f1/type"] = "contour";
-    // extract contours where absPhiOrdered variable
-    // equals 0.5
-    conduit::Node &contour_params = pipelines["pl1/f1/params"];
-    contour_params["field"] = "absPhiOrdered";
-    double iso_vals[1] = {0.5};
-    contour_params["iso_values"].set(iso_vals, 1);
-
-    /*--------------------------------------------------*/
-
-
-    // declare a scene to render our pipeline results
-    conduit::Node &add_act2 = actions.append();
-    add_act2["action"] = "add_scenes";
-    conduit::Node &scenes = add_act2["scenes"];
-
-    // add a scene (s1) with two pseudocolor plots
-    // (p1 and p2) that will render the results
-    // of our pipelines (pl1 and pl2)
-
-    // plot (p1) to render our first pipeline (pl1)
+    // our first scene (named 's1') will render the field 'var1'
+    // to the file out_scene_ex1_render_var1.png
     scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/pipeline"] = "pl1";
-    scenes["s1/plots/p1/field"] = "absPhiOrdered";
-    scenes["s1/plots/p1/color_table/name"] = "Green";
-    scenes["s1/plots/p1/min_value"] = 1.0;
-    scenes["s1/plots/p1/max_value"] = 0.0;
-    scenes["s1/plots/p1/color_table/annotation"] = "false";
+    scenes["s1/plots/p1/field"] = "gapA";
+    scenes["s1/image_prefix"] = "ascent_output_render_gapA";
 
-    /* This also questinalble ....*/
-
-
-    
-
-    // Add a control point for transparency at zero
-    conduit::Node control_points;
-    conduit::Node &point1 = control_points.append();
-    point1["type"] = "alpha";
-    point1["position"] = 1.0;
-    point1["alpha"] = 0.8;
-
-    conduit::Node &point2 = control_points.append();
-    ...
-
-    // plot (p2) to render Volume plot of Jiim2
-    scenes["s1/plots/p2/type"] = "volume";
-    scenes["s1/plots/p2/field"] = "Jiim2";
-    scenes["s1/plots/p2/min_value"] = 0.0;
-    scenes["s1/plots/p2/max_value"] = 0.2;
-    scenes["s1/plots/p2/color_table/name"] = "Jet";
-    scenes["s1/plots/p2/color_table/control_points"] = control_points;
-
-    scenes["s1/renders/r1/image_prefix"] = "ascentOutput/contourJi_%05d";
-    scenes["s1/renders/r1/camera/azimuth"] = 90.0;
-
-    // Add another scene to render isosurface of phi
-    //  Plus abs(J0.im)
-    //  plot (p1) to render our first pipeline (pl1)
-    scenes["s2/plots/p1/type"] = "pseudocolor";
-    scenes["s2/plots/p1/pipeline"] = "pl1";
-    scenes["s2/plots/p1/field"] = "absPhiOrdered";
-    scenes["s2/plots/p1/color_table/name"] = "Green";
-    scenes["s2/plots/p1/min_value"] = 1.0;
-    scenes["s2/plots/p1/max_value"] = 0.0;
-    scenes["s2/plots/p1/color_table/annotation"] = "false";
-    ...
-
+    // print our full actions tree
+    //std::cout << actions.to_yaml() << std::endl;    
     // print our full actions tree
     hila::out0 << actions.to_yaml() << '\n';
 };
 
 void axhila::insitu_execute() {
 
-  gapA[ALL] = /*phi[X].abs();*/ // A.degger() A. Trace() stuff......
-
-
+  //gapA[ALL] = /*phi[X].abs();*/ // A.degger() A. Trace() stuff......
+    gapA[ALL] = sqrt((A[X]*A[X].dagger()).trace());  
     gapA.copy_local_data_with_halo(gapAOrdered);
 
     insitu.execute(actions);
@@ -977,10 +908,11 @@ void axhila::insitu_initialize() {
 
     latticeVolumeWithGhost =
         (lattice.mynode.size[0] + 2) * (lattice.mynode.size[1] + 2) * (lattice.mynode.size[2] + 2);
-    latticeVolume = (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
+    
+    latticeVolume =
+      (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
+
     gapAOrdered.reserve(latticeVolumeWithGhost);
-
-
     
     // One more point in each direction, but cell data (Npts - 1 cells)
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
@@ -1004,7 +936,9 @@ void axhila::insitu_initialize() {
             }
         }
     }
+
     insitu_createMesh();
+
     ascent_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
     ascent_options["runtime/type"] = "ascent";
 #if defined CUDA
@@ -1012,6 +946,8 @@ void axhila::insitu_initialize() {
     ascent_options["cuda/init"] = "false";
 #endif
     ascent_options["timings"] = "false";
+
+    // *************************
     insitu.open(ascent_options);
     insitu.publish(mesh);
     insitu_defineActions();
@@ -1022,6 +958,7 @@ void axhila::insitu_close() {
 }
 #endif
 
+/*--------------------------------------------------------------------------------*/
 /* In situ functions end at here */
 /*--------------------------------------------------------------------------------*/
 
