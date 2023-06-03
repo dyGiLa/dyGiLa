@@ -10,6 +10,9 @@
 #include "plumbing/fft.h"
 #include "matep.hpp"
 
+#define USE_ASCENT "ON"
+#define USE_MPI "ON"
+
 /*--------------------------------------------------*/
 // include Ascent & Canduit macro for in situ rank rendering
 #if defined USE_ASCENT
@@ -26,10 +29,10 @@ using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
 // Container for simulation parameters and methods
-class scaling_sim{
+class he3sim{
 
 public:
-  scaling_sim() = default;                     // default constructor
+  he3sim() = default;                     // default constructor
 
   // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
@@ -132,7 +135,7 @@ public:
     } config;
 };
 
-const std::string scaling_sim::allocate(const std::string &fname, int argc, char **argv)
+const std::string he3sim::allocate(const std::string &fname, int argc, char **argv)
 {
     Matep MP;
     hila::initialize(argc, argv);
@@ -222,7 +225,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
 }
 
 
-void scaling_sim::initialize() {
+void he3sim::initialize() {
 
   Matep MP;
   real_t Tp[2];
@@ -349,7 +352,7 @@ void scaling_sim::initialize() {
   }
 }
 
-void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
+void he3sim::update_Tp (real_t t, real_t Tp[2]) {
 
    
   if (config.item ==2)
@@ -389,7 +392,7 @@ void scaling_sim::update_Tp (real_t t, real_t Tp[2]) {
 
  
 }
-void scaling_sim::update_params() {
+void he3sim::update_params() {
 
   Matep MP;
   real_t Tp[2];
@@ -441,7 +444,7 @@ void scaling_sim::update_params() {
   }
 }
 
-void scaling_sim::write_moduli() {
+void he3sim::write_moduli() {
 
    // real_t a = scaleFactor(t);
 
@@ -469,7 +472,7 @@ void scaling_sim::write_moduli() {
     }
 }
 
-void scaling_sim::write_energies() {
+void he3sim::write_energies() {
 
   Matep MP;
   
@@ -577,7 +580,7 @@ void scaling_sim::write_energies() {
 
 }
 
-void scaling_sim::write_phases() {
+void he3sim::write_phases() {
 
   real_t ph0(0),ph1(0),ph2(0),ph3(0),ph4(0),ph5(0),ph6(0),ph7(0),ph8(0),ph9(0);
 
@@ -673,7 +676,7 @@ void scaling_sim::write_phases() {
 
 }
 
-void scaling_sim::write_positions() {
+void he3sim::write_positions() {
 
   Matep MP;
   real_t Tp[2];
@@ -753,7 +756,7 @@ void scaling_sim::write_positions() {
       
 }
 
-void scaling_sim::write_A_matrix_positions() {
+void he3sim::write_A_matrix_positions() {
 
   /*Matep MP;
     real_t Tp[2];
@@ -773,7 +776,7 @@ void scaling_sim::write_A_matrix_positions() {
 
 }
 
-void scaling_sim::write_gapA_rankOut()
+void he3sim::write_gapA_rankOut()
 {
   onsites(ALL){
 	if(config.rank_stream_switch == 1)
@@ -786,7 +789,7 @@ void scaling_sim::write_gapA_rankOut()
   }	
 }  
 
-void scaling_sim::latticeCoordinate_output()
+void he3sim::latticeCoordinate_output()
 {
   std::ofstream stream_out;
   
@@ -818,7 +821,7 @@ void scaling_sim::latticeCoordinate_output()
 /*--------------------------------------------------------------------------------*/
 
 #if defined USE_ASCENT
-void axhila::insitu_createMesh() {
+void he3sim::insitu_createMesh() {
 
     // Create a 3D mesh defined on a uniform grid of points
     // with a single vertex associated field named `gapA`
@@ -873,7 +876,7 @@ void axhila::insitu_createMesh() {
     }
 };
 
-void axhila::insitu_defineActions() {
+void he3sim::insitu_defineActions() {
 
     // setup actions
     // conduit::Node actions;
@@ -881,13 +884,16 @@ void axhila::insitu_defineActions() {
     //add_act["action"] = "add_pipelines";
     //conduit::Node &pipelines = add_act["pipelines"];
     add_act["action"] = "add_scenes";
-    Node &scenes = add_act["scenes"];
+    conduit::Node &scenes = add_act["scenes"];
     
     // our first scene (named 's1') will render the field 'var1'
     // to the file out_scene_ex1_render_var1.png
     scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = "gapA";
-    scenes["s1/image_prefix"] = "ascent_output_render_gapA";
+    scenes["s1/plots/p1/field"] = "gapAOrdered";
+    //scenes["s1/image_prefix"] = "ascent_output_render_gapA";
+    scenes["s1/renders/r1/image_name"] = "ascent_output_render_gapA";
+    scenes["s1/renders/r1/camera/azimuth"] = 35.0;
+    scenes["s1/renders/r1/camera/elevation"] = 30.0;
 
     // print our full actions tree
     //std::cout << actions.to_yaml() << std::endl;    
@@ -895,16 +901,25 @@ void axhila::insitu_defineActions() {
     hila::out0 << actions.to_yaml() << '\n';
 };
 
-void axhila::insitu_execute() {
+void he3sim::insitu_execute() {
 
   //gapA[ALL] = /*phi[X].abs();*/ // A.degger() A. Trace() stuff......
-    gapA[ALL] = sqrt((A[X]*A[X].dagger()).trace());  
+    gapA[ALL] = real(sqrt((A[X]*A[X].dagger()).trace()));  
     gapA.copy_local_data_with_halo(gapAOrdered);
 
+  /* ToDo list :
+   * > orbital vectors;
+   * > spin vectors;
+   * > mass current;
+   * > spin currents;
+   * > free energy density
+   * > ...
+   */
+    
     insitu.execute(actions);
 }
 
-void axhila::insitu_initialize() {
+void he3sim::insitu_initialize() {
 
     latticeVolumeWithGhost =
         (lattice.mynode.size[0] + 2) * (lattice.mynode.size[1] + 2) * (lattice.mynode.size[2] + 2);
@@ -953,7 +968,7 @@ void axhila::insitu_initialize() {
     insitu_defineActions();
 }
 
-void axhila::insitu_close() {
+void he3sim::insitu_close() {
     insitu.close();
 }
 #endif
@@ -963,7 +978,7 @@ void axhila::insitu_close() {
 /*--------------------------------------------------------------------------------*/
 
 
-void scaling_sim::next() {
+void he3sim::next() {
 
   Matep MP;
   real_t Tp[2];
@@ -1102,7 +1117,7 @@ void scaling_sim::next() {
 
 }
 
-void scaling_sim::next_bath() {
+void he3sim::next_bath() {
 
   Matep MP;
   real_t Tp[2];
@@ -1286,7 +1301,7 @@ void scaling_sim::next_bath() {
 }
 
 int main(int argc, char **argv) {
-    scaling_sim sim;
+    he3sim sim;
     const std::string output_fname = sim.allocate("sim_params.txt", argc, argv);
     sim.update_params();
     sim.initialize();
@@ -1319,6 +1334,7 @@ int main(int argc, char **argv) {
 
     
 #if defined USE_ASCENT
+    hila::out0 << "using ascent" << "\n\n\n";
     sim.insitu_initialize();
 #endif    
       
@@ -1353,7 +1369,7 @@ int main(int argc, char **argv) {
 	      sim.write_moduli();
 	      //sim.write_energies();
 	      //sim.write_phases();
-	      sim.write_gapA_rankOut();
+	      //sim.write_gapA_rankOut();
 
 #if defined USE_ASCENT
               sim.insitu_execute();
@@ -1385,6 +1401,7 @@ int main(int argc, char **argv) {
     run_timer.stop();
 
 #if defined USE_ASCENT
+    hila::out0 << "ascent closed" << "\n\n\n";
     sim.insitu_close();
 #endif    
 
