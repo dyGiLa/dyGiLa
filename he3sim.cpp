@@ -1,4 +1,6 @@
 #define _USE_MATH_DEFINES
+#define USE_ASCENT "ON"
+#define USE_MPI "ON"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -9,9 +11,6 @@
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 #include "matep.hpp"
-
-#define USE_ASCENT "ON"
-#define USE_MPI "ON"
 
 /*--------------------------------------------------*/
 // include Ascent & Canduit macro for in situ rank rendering
@@ -834,7 +833,7 @@ void he3sim::insitu_createMesh() {
 #endif
     mesh["state/software"] = "He3Sim";
     mesh["state/title"] = "Bulk TDGL equation simulator";
-    mesh["state/info"] = "In Situ rendering of scalar field gapA from He3Sim";
+    mesh["state/info"] = "In Situ rendering of order parameter field from He3Sim";
 
     // create the coordinate set
     mesh["coordsets/coords/type"] = "uniform";
@@ -856,7 +855,7 @@ void he3sim::insitu_createMesh() {
     // reference the coordinate set by name
     mesh["topologies/topo/coordset"] = "coords";
 
-    // create an vertex associated field named gapA
+    // create an vertex associated field named gapAOrdered
     mesh["fields/gapAOrdered/association"] = "vertex";
     mesh["fields/gapAOrdered/topology"] = "topo";
     mesh["fields/gapAOrdered/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
@@ -885,20 +884,46 @@ void he3sim::insitu_defineActions() {
     //conduit::Node &pipelines = add_act["pipelines"];
     add_act["action"] = "add_scenes";
     conduit::Node &scenes = add_act["scenes"];
+
+    /* >>>>>>>>>>>>>>   1st scene    <<<<<<<<<<<<< */
     
-    // our first scene (named 's1') will render the field 'var1'
+    // our first scene (named 's1') will render the field 'gapAOrdered'
     // to the file out_scene_ex1_render_var1.png
     scenes["s1/plots/p1/type"] = "pseudocolor";
     scenes["s1/plots/p1/field"] = "gapAOrdered";
     //scenes["s1/image_prefix"] = "ascent_output_render_gapA";
-    scenes["s1/renders/r1/image_name"] = "ascent_output_render_gapA";
+    scenes["s1/renders/r1/image_prefix"] = "gapA_t-%03d";
     scenes["s1/renders/r1/camera/azimuth"] = 35.0;
     scenes["s1/renders/r1/camera/elevation"] = 30.0;
 
+
+    /* >>>>>>>>>>>>>> pipleline clip <<<<<<<<<<<<< */
+    
+    conduit::Node &add_act2 = actions.append();
+    add_act2["action"] = "add_pipelines";
+    conduit::Node &pipelines = add_act2["pipelines"];
+    
+    // pipeline 1
+    pipelines["pl1/f1/type"] = "clip";
+    conduit::Node &clip_params = pipelines["pl1/f1/params"];
+    //clip_params["field"] = "gapAOrdered";
+    clip_params["topology"] = "topo";
+    clip_params["plane/point/x"] = 40.;
+    clip_params["plane/point/y"] = 20.;
+    clip_params["plane/point/z"] = 20.;
+    clip_params["plane/normal/x"] = 0.;
+    clip_params["plane/normal/y"] = 0.;
+    clip_params["plane/normal/z"] = 1.;
+
+    scenes["s2/plots/p1/type"] = "pseudocolor";
+    scenes["s2/plots/p1/pipeline"] = "pl1";
+    scenes["s2/plots/p1/field"] = "gapAOrdered";
+    scenes["s2/renders/r1/image_prefix"] = "gapA-clip_t-%03d";
+    scenes["s2/renders/r1/camera/azimuth"] = 35.0;
+    scenes["s2/renders/r1/camera/elevation"] = 30.0;
+    
     // print our full actions tree
-    //std::cout << actions.to_yaml() << std::endl;    
-    // print our full actions tree
-    hila::out0 << actions.to_yaml() << '\n';
+    hila::out0 << actions.to_yaml() << '\n' << std::endl;
 };
 
 void he3sim::insitu_execute() {
