@@ -151,7 +151,12 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
     config.gamma = parameters.get("gamma");
-    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
+    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"
+								      ,"kgaussrand"
+								      ,"normal_phase"
+								      ,"Bphase"
+								      ,"Aphase"
+                                                                      ,"BinA"});
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
@@ -295,7 +300,20 @@ void he3sim::initialize() {
 
         break;
   }
+
   case 2: {
+    pi = 0;                            
+    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    onsites(ALL) {                     
+      A[X] = sqrt(0.1) * hila::gaussrand();
+    }
+
+    hila::out0 << " nNormal phase created \n";
+
+    break;    
+
+  }    
+  case 3: {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     hila::out0 <<"Gap B: "<<gap<<"\n";
@@ -317,7 +335,7 @@ void he3sim::initialize() {
 
     break;
     }
-  case 3: {
+  case 4: {
     pi = 0;
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
     hila::out0<<"Gap A: "<<gap<<"\n";
@@ -336,6 +354,63 @@ void he3sim::initialize() {
 
     break;
     }
+
+  case 5: {
+    pi = 0;
+    real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
+    real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);    
+    // hila::out0<<"Gap A: "<<gap<<"\n";
+    // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
+    
+    onsites (ALL) {
+    if (
+	(X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
+	&& (X.coordinate(e_y) <= 32 and X.coordinate(e_z) <= 32)
+       )
+      {	
+	    foralldir(d1)foralldir(d2){
+	      if (d1==d2){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;}
+              }
+	    A[X] = gapb * A[X]/sqrt(3.0);
+       }
+    //else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
+    else if (
+	     (X.coordinate(e_x) > 10 and X.coordinate(e_x) < (config.lx - 10))
+	     || (
+    	         (X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
+		 && (!(X.coordinate(e_y) <= 32 and X.coordinate(e_z) <= 32))
+                )
+	    )    
+	  {
+	    foralldir(d1)foralldir(d2){
+	      if (d1==0 && d2==0){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else if (d1==0 && d2==1){
+		A[X].e(d1,d2).re = 0.0;  
+		A[X].e(d1,d2).im = 1.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	    }
+	    A[X] = gapa * A[X]/sqrt(2.0);
+	  }
+    }
+
+    hila::out0 << "B domain in supercooling A \n";
+
+    break;
+    }
+    
   default: {
 
     // #pragma hila ast_dump
