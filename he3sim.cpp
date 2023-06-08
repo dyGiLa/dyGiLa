@@ -32,7 +32,8 @@ class he3sim{
 
 public:
   he3sim() = default;                     // default constructor
-
+  //he3sim(): matep {};
+  
   // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
   
@@ -77,6 +78,7 @@ public:
   Field<phi_t> A;
   Field<phi_t> pi;
 
+  Matep matep;
   real_t t;
   real_t tc = 0;
 
@@ -104,7 +106,7 @@ public:
       int seed;
       real_t IniMod;
       real_t Inilc;
-      
+
       int item;
       real_t T;
       real_t dT_from_TAB;
@@ -129,6 +131,13 @@ public:
       int npositionout;
       int boundaryConditions;
       int useTbath;
+
+      /* >>>>>>> insitu contral parameter <<<<<<<< */
+      real_t clamp_bias_gapMin, clamp_bias_gapMax;
+      real_t camera_azi, camera_ele;
+      
+      /* *******************************************/
+      
       int write_phases;
       int write_eigen;
     } config;
@@ -176,8 +185,11 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
       //config.T = parameters.get("T");
       config.dT_from_TAB = parameters.get("dT_from_TAB");
       config.p = parameters.get("p");
-      config.T = MP.tAB_RWS(config.p) + config.dT_from_TAB;
-      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p) << "\n";;
+      config.T = (MP.tAB_RWS(config.p) * MP.Tcp_mK(config.p)) + config.dT_from_TAB;
+      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p)
+	         << ", p:" << config.p
+	         << ", T:" << config.T
+	         << ", dT_from_TAB:" << config.dT_from_TAB << "\n";
     }
     else {
       const std::string in_file = parameters.get("params_file"); // where is params_file ???
@@ -215,6 +227,12 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 	}*/
     config.boundaryConditions = parameters.get_item("boundaryConditions",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
+
+    /********************************************************************************/
+    /* >>>>>>>>>>>>>          insitu randering parameters             <<<<<<<<<<<<<<*/
+
+    
+    /**********************************************************************************/
     
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
@@ -365,7 +383,8 @@ void he3sim::initialize() {
     onsites (ALL) {
     if (
 	(X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-	&& (X.coordinate(e_y) <= 32 and X.coordinate(e_z) <= 32)
+	&& ((X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54))
+	&& ((X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54))
        )
       {	
 	    foralldir(d1)foralldir(d2){
@@ -384,7 +403,10 @@ void he3sim::initialize() {
 	     (X.coordinate(e_x) > 10 and X.coordinate(e_x) < (config.lx - 10))
 	     || (
     	         (X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-		 && (!(X.coordinate(e_y) <= 32 and X.coordinate(e_z) <= 32))
+		 && (!(
+                        (X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54)
+  	                && (X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54)
+                      ))
                 )
 	    )    
 	  {
@@ -966,10 +988,15 @@ void he3sim::insitu_defineActions() {
     // to the file out_scene_ex1_render_var1.png
     scenes["s1/plots/p1/type"] = "pseudocolor";
     scenes["s1/plots/p1/field"] = "gapAOrdered";
+
+    // color map clamping
+    scenes["s1/plots/p1/min_value"] = matep.gap_A_td(config.p, config.T) + config.clamp_bias_gapMin;
+    scenes["s1/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
+    
     //scenes["s1/image_prefix"] = "ascent_output_render_gapA";
-    scenes["s1/renders/r1/image_prefix"] = "gapA_t-%03d";
-    scenes["s1/renders/r1/camera/azimuth"] = 35.0;
-    scenes["s1/renders/r1/camera/elevation"] = 30.0;
+    scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";
+    scenes["s1/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
+    scenes["s1/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
 
 
     /* >>>>>>>>>>>>>> pipleline clip <<<<<<<<<<<<< */
@@ -984,18 +1011,23 @@ void he3sim::insitu_defineActions() {
     //clip_params["field"] = "gapAOrdered";
     clip_params["topology"] = "topo";
     clip_params["plane/point/x"] = 40.;
-    clip_params["plane/point/y"] = 20.;
-    clip_params["plane/point/z"] = 20.;
+    clip_params["plane/point/y"] = 64.;
+    clip_params["plane/point/z"] = 64.;
     clip_params["plane/normal/x"] = 0.;
     clip_params["plane/normal/y"] = 0.;
-    clip_params["plane/normal/z"] = 1.;
+    clip_params["plane/normal/z"] = -1.;
 
     scenes["s2/plots/p1/type"] = "pseudocolor";
     scenes["s2/plots/p1/pipeline"] = "pl1";
     scenes["s2/plots/p1/field"] = "gapAOrdered";
-    scenes["s2/renders/r1/image_prefix"] = "gapA-clip_t-%03d";
-    scenes["s2/renders/r1/camera/azimuth"] = 35.0;
-    scenes["s2/renders/r1/camera/elevation"] = 30.0;
+
+    // color map clamping
+    scenes["s2/plots/p1/min_value"] = matep.gap_A_td(config.p, config.T) + config.clamp_bias_gapMin;
+    scenes["s2/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
+    
+    scenes["s2/renders/r1/image_prefix"] = "gapA-clip_t-%04d";
+    scenes["s2/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
+    scenes["s2/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
     
     // print our full actions tree
     hila::out0 << actions.to_yaml() << '\n' << std::endl;
