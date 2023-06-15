@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT "ON"
-#define USE_MPI "ON"
+#define USE_ASCENT 
+#define USE_MPI 
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -12,16 +12,15 @@
 #include "plumbing/fft.h"
 #include "matep.hpp"
 
-/*--------------------------------------------------*/
-// include Ascent & Canduit macro for in situ rank rendering
+/*----------------------------------------------------------------------*/
+/***  include Ascent & Canduit macro for in situ rank rendering      ****/
 #if defined USE_ASCENT
 
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
 #endif
-/*--------------------------------------------------*/
-
+/*----------------------------------------------------------------------*/
 
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
@@ -32,7 +31,7 @@ class he3sim{
 
 public:
   he3sim() = default;                     // default constructor
-  //he3sim(): matep {};
+  //he3sim(): matep {};                   // constructor for PLTS-2000 scale
   
   // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
@@ -135,7 +134,7 @@ public:
       /* >>>>>>> insitu contral parameter <<<<<<<< */
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t camera_azi, camera_ele;
-      
+            
       /* *******************************************/
       
       int write_phases;
@@ -230,7 +229,10 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 
     /********************************************************************************/
     /* >>>>>>>>>>>>>          insitu randering parameters             <<<<<<<<<<<<<<*/
-
+    config.clamp_bias_gapMin = parameters.get("clamp_bias_gapMin");
+    config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
+    config.camera_azi = parameters.get("camera_azi");
+    config.camera_ele = parameters.get("camera_ele");
     
     /**********************************************************************************/
     
@@ -321,7 +323,7 @@ void he3sim::initialize() {
 
   case 2: {
     pi = 0;                            
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    //real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     onsites(ALL) {                     
       A[X] = sqrt(0.1) * hila::gaussrand();
     }
@@ -989,9 +991,9 @@ void he3sim::insitu_defineActions() {
     scenes["s1/plots/p1/type"] = "pseudocolor";
     scenes["s1/plots/p1/field"] = "gapAOrdered";
 
-    // color map clamping
-    scenes["s1/plots/p1/min_value"] = matep.gap_A_td(config.p, config.T) + config.clamp_bias_gapMin;
-    scenes["s1/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
+    // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
+    scenes["s1/plots/p1/min_value"] = (config.initialCondition == 2) ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
+    scenes["s1/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) * (1. + config.clamp_bias_gapMax);
     
     //scenes["s1/image_prefix"] = "ascent_output_render_gapA";
     scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";
@@ -1021,14 +1023,37 @@ void he3sim::insitu_defineActions() {
     scenes["s2/plots/p1/pipeline"] = "pl1";
     scenes["s2/plots/p1/field"] = "gapAOrdered";
 
-    // color map clamping
-    scenes["s2/plots/p1/min_value"] = matep.gap_A_td(config.p, config.T) + config.clamp_bias_gapMin;
+    // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
+    scenes["s2/plots/p1/min_value"] = (config.initialCondition == 2) ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
     scenes["s2/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
     
     scenes["s2/renders/r1/image_prefix"] = "gapA-clip_t-%04d";
     scenes["s2/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
     scenes["s2/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
-    
+
+    /* >>>>>>>>>>> pipleline isosurfece <<<<<<<<<<<<< */
+
+    /*Node &add_act3 = actions.append();
+    add_act3["action"] = "add_pipelines";
+    Node &pipelines2 = add_act3["pipelines"];
+    // create a  pipeline (pl1) with a contour filter (f1)
+    pipelines2["pl1/f1/type"] = "contour";*/
+    pipelines["pl2/f1/type"] = "contour";
+
+    // extract contours where gapAOrdered equals 2.0 to 3.0
+    conduit::Node &contour_params = pipelines["pl2/f1/params"];
+    contour_params["field"] = "gapAOrdered";
+    //double iso_vals[11] = {2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0};
+    double iso_vals[12] = {2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9};
+    contour_params["iso_values"].set(iso_vals,12);
+
+    scenes["s3/plots/p1/type"] = "pseudocolor";
+    scenes["s3/plots/p1/pipeline"] = "pl2";
+    scenes["s3/plots/p1/field"] = "gapAOrdered";
+    scenes["s3/renders/r1/image_prefix"] = "gapA-iso_t-%04d";
+    scenes["s3/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
+    scenes["s3/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
+
     // print our full actions tree
     hila::out0 << actions.to_yaml() << '\n' << std::endl;
 };
