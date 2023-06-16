@@ -472,9 +472,13 @@ void scaling_sim::write_energies() {
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
-	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
-	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
-	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+          k1 += squarenorm(A[X + k].e(al,j) - A[X - k].e(al,j)) / (4.0*sqr(config.dx));
+          k2 += (A[X + j].e(al,j) - A[X - j].e(al,j)) * (A[X + k].e(al,k) - A[X - k].e(al,k)).conj() / (4.0*sqr(config.dx));
+          k3 += (A[X + k].e(al,j) - A[X - k].e(al,j)) * (A[X + j].e(al,k) - A[X - j].e(al,k)).conj() / (4.0*sqr(config.dx));
+
+	      // k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
+	      // k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+	      // k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
       }
 
       sumkin += kin;
