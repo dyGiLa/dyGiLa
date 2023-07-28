@@ -3,6 +3,7 @@
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 //#include <math.h>
@@ -47,6 +48,7 @@ public:
   void write_energies();
   void write_positions();
   void write_phases();
+  void write_xdmf();
   
   void write_A_matrix_positions();             // output A-matrix after certain time interval
   void write_gapA_rankOut();
@@ -56,13 +58,20 @@ public:
     // In-Situ via Ascent
     void insitu_createMesh();
     void insitu_defineActions();
+    void insitu_hdf5xdmf();
     void insitu_initialize();  
     void insitu_execute();
     void insitu_close();
 
+    /*------------------------------*/
     Field<real_t> gapA;
-  
+    Field<real_t> feDensity;
+    Field<real_t> u11;
+   
     std::vector<real_t> gapAOrdered;
+    std::vector<real_t> feDensityOrdered;
+    std::vector<real_t> u11Ordered;  
+    /*------------------------------*/
   
     long long ghostVolume;
     long long latticeVolumeWithGhost;
@@ -102,6 +111,8 @@ public:
       real_t gamma;
 
       int initialCondition;
+      real_t variance_sigma;
+      
       int seed;
       real_t IniMod;
       real_t Inilc;
@@ -121,9 +132,11 @@ public:
       real_t nOutputs;
 
       std::fstream stream;
-
-      // rank stream and its switch
       std::fstream rank_Output;
+      
+      // xdmf file fstream
+      std::fstream xdmf_out;
+      std::string xmf2_fname;;
       int rank_stream_switch;
 
       int positions;
@@ -134,7 +147,8 @@ public:
       /* >>>>>>> insitu contral parameter <<<<<<<< */
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t camera_azi, camera_ele;
-            
+      //unsigned int number_of_hdf;
+      
       /* *******************************************/
       
       int write_phases;
@@ -165,6 +179,8 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 								      ,"Bphase"
 								      ,"Aphase"
                                                                       ,"BinA"});
+    config.variance_sigma = parameters.get("sigma");
+    
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
@@ -217,6 +233,9 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     // output_file is the saving path of output file, which offered in congigration file
     const std::string output_file = parameters.get("output_file");
 
+    // xdmf file name, which is provided through config file
+    config.xmf2_fname = parameters.get("xmf2_file");
+
     config.rank_stream_switch = parameters.get_item("rank_output_stream",{"no", "yes"});
     /*if(config.positions==1)
       {
@@ -224,7 +243,11 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
 	}*/
-    config.boundaryConditions = parameters.get_item("boundaryConditions",{"periodic", "AB", "PairBreaking"});
+    config.boundaryConditions = parameters.get_item("boundaryConditions",{"periodic",
+									  "AB",
+									  "PairBreaking",
+                                                                          "PB_y",
+                                                                          "PairB_yz"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
     /********************************************************************************/
@@ -233,6 +256,7 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
     config.camera_azi = parameters.get("camera_azi");
     config.camera_ele = parameters.get("camera_ele");
+    //config.number_of_hdf = parameters.get("number_of_hdf");
     
     /**********************************************************************************/
     
@@ -361,13 +385,11 @@ void he3sim::initialize() {
     hila::out0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
 
-        A[X] = 0;
-	//    A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
-        //   A[X].e(1,2).im = 1.0;
-	A[X].e(0,0).re = 1.0;
-	A[X].e(0,1).im = 1.0;
+        A[X] = sqrt(config.variance_sigma) * hila::gaussrand();
+	A[X].e(0,0).re = 1.0 + sqrt(config.variance_sigma) * hila::gaussrand();
+	A[X].e(0,1).im = 1.0 + sqrt(config.variance_sigma) * hila::gaussrand();
       
-      A[X] = gap * A[X]/sqrt(2.0);
+        A[X] = gap * A[X]/sqrt(2.0);
     }
 
     hila::out0 << "Pure A phase \n";
@@ -598,15 +620,10 @@ void he3sim::write_energies() {
       double b1 = 0;
       
       a = config.alpha * (A[X]*A[X].dagger()).trace();
-
       b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-
       b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
-
       b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
-
       b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
-
       b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
 
       bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
@@ -614,9 +631,12 @@ void he3sim::write_energies() {
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
-	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
-	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al) * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
-	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al) * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al)
+	      * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
+	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al)
+	      * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al)
+	      * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
       }
 
       sumkin += kin;
@@ -854,6 +874,36 @@ void he3sim::write_positions() {
       
 }
 
+void he3sim::write_xdmf(){
+
+    unsigned int rank_no = hila::myrank();
+    std::ifstream xml_file;
+    config.xdmf_out.open(config.xmf2_fname, std::ios::out);
+
+    config.xdmf_out << "<?xml version=\"1.0\" ?>\n"
+                    << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
+                    << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
+                    << "\n"
+                    << "<Domain>\n"
+                    << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
+                    << "\n";
+    while(rank_no < hila::number_of_nodes()){
+
+      xml_file.open("rank_xmls/" + config.xmf2_fname + "_" + std::to_string(rank_no) + ".xml");
+      config.xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
+      xml_file.close();
+      
+      ++rank_no;
+    }
+
+    config.xdmf_out << "</Grid>"
+                    << "\n"
+                    << "</Domain>\n"
+                    << "</Xdmf>"
+                    << std::endl;
+    config.xdmf_out.close();
+}
+
 void he3sim::write_A_matrix_positions() {
 
   /*Matep MP;
@@ -959,6 +1009,16 @@ void he3sim::insitu_createMesh() {
     mesh["fields/gapAOrdered/topology"] = "topo";
     mesh["fields/gapAOrdered/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
 
+    // create an vertex associated field named feDensityOrdered
+    mesh["fields/feDensityOrdered/association"] = "vertex";
+    mesh["fields/feDensityOrdered/topology"] = "topo";
+    mesh["fields/feDensityOrdered/values"].set_external(feDensityOrdered.data(), latticeVolumeWithGhost);
+
+    // create an vertex associated field named uxxOrdered
+    mesh["fields/u11Ordered/association"] = "vertex";
+    mesh["fields/u11Ordered/topology"] = "topo";
+    mesh["fields/u11Ordered/values"].set_external(u11Ordered.data(), latticeVolumeWithGhost);   
+    
     // // create an element associated field named ghostCells
     mesh["fields/ascent_ghosts/association"] = "element";
     mesh["fields/ascent_ghosts/topology"] = "topo";
@@ -992,7 +1052,8 @@ void he3sim::insitu_defineActions() {
     scenes["s1/plots/p1/field"] = "gapAOrdered";
 
     // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
-    scenes["s1/plots/p1/min_value"] = (config.initialCondition == 2) ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
+    scenes["s1/plots/p1/min_value"] = (config.initialCondition == 2 || config.initialCondition == 0)
+                                       ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
     scenes["s1/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) * (1. + config.clamp_bias_gapMax);
     
     //scenes["s1/image_prefix"] = "ascent_output_render_gapA";
@@ -1000,6 +1061,22 @@ void he3sim::insitu_defineActions() {
     scenes["s1/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
     scenes["s1/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
 
+    /* >>>>>>>>>>>>>>   2nd scene    <<<<<<<<<<<<< */
+    
+    // our 2nd scene (named 's5') will render the field 'feDensityOrdered'
+    // to the file out_scene_ex1_render_var1.png
+    scenes["s5/plots/p1/type"] = "pseudocolor";
+    scenes["s5/plots/p1/field"] = "feDensityOrdered";
+
+    // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
+    scenes["s5/plots/p1/min_value"] = 0.0 /*(config.initialCondition == 2 || config.initialCondition == 0)
+					     ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin)*/;
+    scenes["s5/plots/p1/max_value"] = 5.0;/*matep.gap_B_td(config.p, config.T) * (1. + config.clamp_bias_gapMax)*/;
+    
+    scenes["s5/renders/r1/image_prefix"] = "feDensity_t-%04d";
+    scenes["s5/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
+    scenes["s5/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
+    
 
     /* >>>>>>>>>>>>>> pipleline clip <<<<<<<<<<<<< */
     
@@ -1013,18 +1090,30 @@ void he3sim::insitu_defineActions() {
     //clip_params["field"] = "gapAOrdered";
     clip_params["topology"] = "topo";
     clip_params["plane/point/x"] = 40.;
-    clip_params["plane/point/y"] = 64.;
-    clip_params["plane/point/z"] = 64.;
+    clip_params["plane/point/y"] = 32.;
+    clip_params["plane/point/z"] = 32.;
     clip_params["plane/normal/x"] = 0.;
     clip_params["plane/normal/y"] = 0.;
     clip_params["plane/normal/z"] = -1.;
+
+    /*--------------------------------------------------*/
+    /*conduit::Node &add_act3 = actions.append();
+    add_act3["action"] = "add_extracts";
+
+    conduit::Node &extracts = add_act3["extracts"];
+    extracts["e1/type"] = "relay";
+    extracts["e1/pipeline"]  = "pl1";
+    extracts["e1/params/path"] = "gapA_clip";
+    extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";*/
+    /*--------------------------------------------------*/
 
     scenes["s2/plots/p1/type"] = "pseudocolor";
     scenes["s2/plots/p1/pipeline"] = "pl1";
     scenes["s2/plots/p1/field"] = "gapAOrdered";
 
     // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
-    scenes["s2/plots/p1/min_value"] = (config.initialCondition == 2) ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
+    scenes["s2/plots/p1/min_value"] = (config.initialCondition == 2 || config.initialCondition == 0)
+                                       ? 0.0 :  matep.gap_A_td(config.p, config.T) * (1. + config.clamp_bias_gapMin);
     scenes["s2/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
     
     scenes["s2/renders/r1/image_prefix"] = "gapA-clip_t-%04d";
@@ -1043,62 +1132,189 @@ void he3sim::insitu_defineActions() {
     // extract contours where gapAOrdered equals 2.0 to 3.0
     conduit::Node &contour_params = pipelines["pl2/f1/params"];
     contour_params["field"] = "gapAOrdered";
+    //double iso_vals[21] = {3.7, 3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1, 4.15, 4.2, 4.25, 4.3, 4.35, 4.4, 4.45, 4.5, 4.55, 4.6, 4.65, 4.7};
+    double iso_vals[2] = {3.45, 3.55};
     //double iso_vals[11] = {2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0};
     //double iso_vals[12] = {2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9};
-    double iso_vals[201] = {3.1  , 3.101, 3.102, 3.103,
-       3.104, 3.105, 3.106, 3.107, 3.108, 3.109, 3.11 , 3.111, 3.112,
-       3.113, 3.114, 3.115, 3.116, 3.117, 3.118, 3.119, 3.12 , 3.121,
-       3.122, 3.123, 3.124, 3.125, 3.126, 3.127, 3.128, 3.129, 3.13 ,
-       3.131, 3.132, 3.133, 3.134, 3.135, 3.136, 3.137, 3.138, 3.139,
-       3.14 , 3.141, 3.142, 3.143, 3.144, 3.145, 3.146, 3.147, 3.148,
-       3.149, 3.15 , 3.151, 3.152, 3.153, 3.154, 3.155, 3.156, 3.157,
-       3.158, 3.159, 3.16 , 3.161, 3.162, 3.163, 3.164, 3.165, 3.166,
-       3.167, 3.168, 3.169, 3.17 , 3.171, 3.172, 3.173, 3.174, 3.175,
-       3.176, 3.177, 3.178, 3.179, 3.18 , 3.181, 3.182, 3.183, 3.184,
-       3.185, 3.186, 3.187, 3.188, 3.189, 3.19 , 3.191, 3.192, 3.193,
-       3.194, 3.195, 3.196, 3.197, 3.198, 3.199, 3.2  , 3.201, 3.202,
-       3.203, 3.204, 3.205, 3.206, 3.207, 3.208, 3.209, 3.21 , 3.211,
-       3.212, 3.213, 3.214, 3.215, 3.216, 3.217, 3.218, 3.219, 3.22 ,
-       3.221, 3.222, 3.223, 3.224, 3.225, 3.226, 3.227, 3.228, 3.229,
-       3.23 , 3.231, 3.232, 3.233, 3.234, 3.235, 3.236, 3.237, 3.238,
-       3.239, 3.24 , 3.241, 3.242, 3.243, 3.244, 3.245, 3.246, 3.247,
-       3.248, 3.249, 3.25 , 3.251, 3.252, 3.253, 3.254, 3.255, 3.256,
-       3.257, 3.258, 3.259, 3.26 , 3.261, 3.262, 3.263, 3.264, 3.265,
-       3.266, 3.267, 3.268, 3.269, 3.27 , 3.271, 3.272, 3.273, 3.274,
-       3.275, 3.276, 3.277, 3.278, 3.279, 3.28 , 3.281, 3.282, 3.283,
-       3.284, 3.285, 3.286, 3.287, 3.288, 3.289, 3.29 , 3.291, 3.292,
-       3.293, 3.294, 3.295, 3.296, 3.297, 3.298, 3.299, 3.3};
 
-
-    contour_params["iso_values"].set(iso_vals,201);
+    contour_params["iso_values"].set(iso_vals,2);
 
     scenes["s3/plots/p1/type"] = "pseudocolor";
     scenes["s3/plots/p1/pipeline"] = "pl2";
     scenes["s3/plots/p1/field"] = "gapAOrdered";
     scenes["s3/renders/r1/image_prefix"] = "gapA-iso_t-%04d";
+
+    double box_bounds[6] = {0.0, config.lx * config.dx, 0.0, config.ly * config.dx, 0.0, config.lz * config.dx};
+    scenes["s3/renders/r1/dataset_bounds"].set(box_bounds,6);
+    scenes["s3/renders/r1/render_bg"] = "true";
+    
     scenes["s3/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
     scenes["s3/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
 
+    /* >>>>>>>>>>>>> extract hdf5 <<<<<<<<<<<<<< */
+    
+    conduit::Node &add_act3 = actions.append();
+    add_act3["action"] = "add_extracts";
+
+    conduit::Node &extracts = add_act3["extracts"];
+    extracts["e1/type"] = "relay";
+    extracts["e1/params/path"] = "gapA_field";
+    extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+    // extracts["e1/params/num_files"] = config.number_of_hdf;;
+
+    extracts["e1/params/fields"].append().set("gapAOrdered");
+    //extracts["e1/params/fields"].append("gapAOrdered");
+    extracts["e1/params/fields"].append().set("feDensityOrdered");    
+    extracts["e1/params/fields"].append().set("u11Ordered");
+
+    /* >>>>>>>>>>>>>>   3slice  <<<<<<<<<<<<<<<< */
+    pipelines["pl3/f1/type"] = "3slice";
+
+    conduit::Node &slice3_params = pipelines["pl3/f1/params"];
+    slice3_params["x_offset"] = -0.531f;
+    slice3_params["y_offset"] = -0.6875f;
+    slice3_params["z_offset"] = -0.21f;
+
+    scenes["s4/plots/p1/type"] = "pseudocolor";
+    scenes["s4/plots/p1/pipeline"] = "pl3";
+    scenes["s4/plots/p1/field"] = "gapAOrdered";
+    scenes["s4/renders/r1/image_prefix"] = "gapA-3slice_t-%04d";
+
+    scenes["s4/plots/p1/min_value"] = 0.;
+    scenes["s4/plots/p1/max_value"] = matep.gap_B_td(config.p, config.T) + config.clamp_bias_gapMax;
+  
+    scenes["s4/renders/r1/camera/azimuth"] = config.camera_azi/*35.0*/;
+    scenes["s4/renders/r1/camera/elevation"] = config.camera_ele/*30.0*/;
+  
+
     // print our full actions tree
     hila::out0 << actions.to_yaml() << '\n' << std::endl;
-};
+}
+
+void he3sim::insitu_hdf5xdmf(){
+
+  const std::string fname = "rank_xmls/" + config.xmf2_fname + "_" + std::to_string(hila::myrank()) + ".xml";
+  //config.xdmf_out.open(config.xmf2_fname, std::ios::out);
+  config.xdmf_out.open(fname, std::ios::out);
+  const long dim_0 = lattice.mynode.size[0] + 2,
+             dim_1 = lattice.mynode.size[1] + 2,
+             dim_2 = lattice.mynode.size[2] + 2;
+
+    config.xdmf_out   << "<Grid Name=\"gapA\" Type=\"Uniform\">\n"
+                      << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
+		      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+                      << "  </Topology>\n"
+                      << "  <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"
+                      << "    <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">"
+		      << "\n"
+                      << "      "
+                      << ((lattice.mynode.min[0] - 1) * config.dx) << " "
+                      << ((lattice.mynode.min[1] - 1) * config.dx) << " "
+                      << ((lattice.mynode.min[2] - 1) * config.dx) << "\n"
+                      << "    </DataItem>\n"
+                      << "    <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"
+                      << "      "
+                      << config.dx << " " << config.dx << " " << config.dx << "\n"
+                      << "    </DataItem>\n"
+                      << "  </Geometry>\n"
+                      << "  <Attribute Name=\"gapA\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/gapAOrdered/values"
+		      << "\n"
+                      << "   </DataItem>\n"
+                      << "  </Attribute>\n"
+                      << "  <Attribute Name=\"feDensity\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/feDensityOrdered/values"
+		      << "\n"
+                      << "   </DataItem>\n"
+                      << "  </Attribute>\n"
+                      << "  <Attribute Name=\"u11\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/u11Ordered/values"
+		      << "\n"
+                      << "   </DataItem>\n"
+                      << "  </Attribute>\n"      
+                      << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
+                      << "   <DataItem Format=\"HDF\" DataType=\"UChar\" Dimensions=\""
+                      << dim_0 - 1 << " " << dim_1 - 1 << " " << dim_2 - 1 << "\"" << ">" << "\n"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/ascent_ghosts/values"
+		      << "\n"   
+                      << "   </DataItem>\n"
+                      << "  </Attribute>\n"
+                      << "</Grid>"
+                      << "\n";
+
+  config.xdmf_out.close();
+
+}
 
 void he3sim::insitu_execute() {
 
   //gapA[ALL] = /*phi[X].abs();*/ // A.degger() A. Trace() stuff......
     gapA[ALL] = real(sqrt((A[X]*A[X].dagger()).trace()));  
-    gapA.copy_local_data_with_halo(gapAOrdered);
+
+    /*------------------------------------------------------------*/
+    /*--------------------     feDensity      --------------------*/
+    real_t ebfe=fmin(matep.f_A_td(config.p, config.T), matep.f_B_td(config.p, config.T));
+    feDensity[ALL] = 0;
+    onsites(ALL) {
+      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+      //Complex<double> kin(0);
+      Complex<double> k1(0), k2(0), k3(0);
+      Complex<double> bfe(0);
+      double b1 = 0;
+      
+      a = config.alpha * (A[X]*A[X].dagger()).trace();
+      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
+      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+
+      bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
+      //kin = (pi[X]*pi[X].dagger()).trace();
+      
+      foralldir(j) foralldir (k) foralldir(al){
+	k1 += (A[X + k].column(j) - A[X - k].column(j)).e(al)
+	      * (A[X + k].conj().column(j) - A[X - k].conj().column(j)).e(al)/(4.0*config.dx*config.dx);
+	k2 += (A[X + j].column(j) - A[X - j].column(j)).e(al)
+	      * (A[X + k].conj().column(k) - A[X - k].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+	k3 += (A[X + k].column(j) - A[X - k].column(j)).e(al)
+	      * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
+      }
+    // question here : how about imagnary part of k1 + k2 + k3 +bfe
+      feDensity[X] = real(k1 + k2 + k3 + bfe);
+    } //onsite(All) end here
+    
+    /*------------------------------------------------------------*/
+
+    /*------------------------------------------------------------*/
+    /*----------------     A matrix elements ---------------------*/
+
+    u11[ALL] = A[X].e(0,0).re;
+
+    /*------------------------------------------------------------*/
+    
+    
+
+  gapA.copy_local_data_with_halo(gapAOrdered);
+  feDensity.copy_local_data_with_halo(feDensityOrdered);
+  u11.copy_local_data_with_halo(u11Ordered);
 
   /* ToDo list :
    * > orbital vectors;
    * > spin vectors;
    * > mass current;
    * > spin currents;
-   * > free energy density
+   * x free energy density (done)
    * > ...
    */
     
-    insitu.execute(actions);
+  insitu.execute(actions);
 }
 
 void he3sim::insitu_initialize() {
@@ -1110,6 +1326,8 @@ void he3sim::insitu_initialize() {
       (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
 
     gapAOrdered.reserve(latticeVolumeWithGhost);
+    feDensityOrdered.reserve(latticeVolumeWithGhost);
+    u11Ordered.reserve(latticeVolumeWithGhost);
     
     // One more point in each direction, but cell data (Npts - 1 cells)
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
@@ -1182,52 +1400,70 @@ void he3sim::next() {
 
     A[X] += config.dt * pi[X];
 
-    if (bc == 1)
+    if(bc < 3)
       {
-	if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
-	  {	
-	    foralldir(d1)foralldir(d2){
-	      if (d1==d2){
+        if (bc == 1)
+          {
+	    if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
+	      {	
+	       foralldir(d1)foralldir(d2){
+	       if (d1==d2){
 		A[X].e(d1,d2).re = 1.0;
 		A[X].e(d1,d2).im = 0.0;
-	      }
-	      else {
+	       }
+	       else {
 		A[X].e(d1,d2).re = 0.0;
 		A[X].e(d1,d2).im = 0.0;}
-	    }
-	    A[X] = gapb * A[X]/sqrt(3.0);
-	  }
-	else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-	  {
-	    foralldir(d1)foralldir(d2){
-	      if (d1==2 && d2==0){
-		A[X].e(d1,d2).re = 1.0;
-		A[X].e(d1,d2).im = 0.0;
+	       }
+	       A[X] = gapb * A[X]/sqrt(3.0);
 	      }
-	      else if (d1==2 && d2==1){
-		A[X].e(d1,d2).re = 0.0;  // this A-order parameter same with GL-theory note eq.46
-		A[X].e(d1,d2).im = 1.0;
-	      }
-	      else {
-		A[X].e(d1,d2).re = 0.0;
-		A[X].e(d1,d2).im = 0.0;
-	      }
-	    }
-	    A[X] = gapa * A[X]/sqrt(2.0);
-	  }
+	    else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
+	        {
+	         foralldir(d1)foralldir(d2){
+	         if (d1==2 && d2==0){
+		   A[X].e(d1,d2).re = 1.0;
+		   A[X].e(d1,d2).im = 0.0;
+	         }
+	         else if (d1==2 && d2==1){
+		   A[X].e(d1,d2).re = 0.0;  // this A-order parameter same with GL-theory note eq.46
+		   A[X].e(d1,d2).im = 1.0;
+	         }
+	         else {
+		   A[X].e(d1,d2).re = 0.0;
+		   A[X].e(d1,d2).im = 0.0;
+	         }
+	        }
+	        A[X] = gapa * A[X]/sqrt(2.0);
+	        }
+           }
+         else if (bc == 2)
+             {
+	       if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
+	           X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
+	           X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
+	           X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
+	           X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
+	           X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
+                 {
+	          A[X]=0.0;
+	         }
+              }
+
       }
-    else if (bc == 2)
+    else if(bc == 3)
       {
-	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
-	    X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
-	    X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
-	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
-	    X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
-	    X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
-          {
-	    A[X]=0.0;
-	  }
+       	if (X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
+	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2))
+            {A[X]=0.0;}
       }
+    else if(bc == 4)
+      {
+       	if (X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
+	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
+            X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
+            X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
+            {A[X]=0.0;}
+      }    
   }
 
   onsites (ALL) {
@@ -1513,7 +1749,9 @@ int main(int argc, char **argv) {
     if (hila::myrank() == 0) {
         sim.config.stream.open(output_fname, std::ios::out);
     }
-
+    
+    sim.insitu_hdf5xdmf();
+    if (hila::myrank() == 0) {sim.write_xdmf();}
     
 #if defined USE_ASCENT
     hila::out0 << "using ascent" << "\n\n\n";
@@ -1527,7 +1765,7 @@ int main(int argc, char **argv) {
 
     // lattice coordinates output
     sim.latticeCoordinate_output();
-
+    sim.insitu_hdf5xdmf();
     // output steps just before while loop
     // std::cout << "\n" << "steps is " << steps << " with nOutput " << sim.config.nOutputs << "\n";
     
@@ -1592,6 +1830,7 @@ int main(int argc, char **argv) {
     }
 
     //    sim.config.rank_Output.close();
+
 
     hila::finishrun();
     return 0;
