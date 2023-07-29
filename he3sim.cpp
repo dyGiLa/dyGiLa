@@ -31,7 +31,7 @@ using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing t
 class he3sim{
 
 public:
-  he3sim() = default;                     // default constructor
+  he3sim() = default;                   // default constructor
   //he3sim(): matep {};                   // constructor for PLTS-2000 scale
   
   // read configration file and initiate scaling_sim.config 
@@ -66,11 +66,13 @@ public:
     /*------------------------------*/
     Field<real_t> gapA;
     Field<real_t> feDensity;
-    Field<real_t> u11;
+    Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
+    Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
    
     std::vector<real_t> gapAOrdered;
     std::vector<real_t> feDensityOrdered;
-    std::vector<real_t> u11Ordered;  
+    std::vector<real_t> u11Ordered, u12Ordered, u13Ordered, u21Ordered, u22Ordered, u23Ordered, u31Ordered, u32Ordered, u33Ordered;
+    std::vector<real_t> v11Ordered, v12Ordered, v13Ordered, v21Ordered, v22Ordered, v23Ordered, v31Ordered, v32Ordered, v33Ordered;
     /*------------------------------*/
   
     long long ghostVolume;
@@ -1014,10 +1016,80 @@ void he3sim::insitu_createMesh() {
     mesh["fields/feDensityOrdered/topology"] = "topo";
     mesh["fields/feDensityOrdered/values"].set_external(feDensityOrdered.data(), latticeVolumeWithGhost);
 
-    // create an vertex associated field named uxxOrdered
+    /*----------------------------------------------------------------------*/
+    /*---create an vertex associated field named of uxxOrdered vxxOrdered --*/
     mesh["fields/u11Ordered/association"] = "vertex";
     mesh["fields/u11Ordered/topology"] = "topo";
-    mesh["fields/u11Ordered/values"].set_external(u11Ordered.data(), latticeVolumeWithGhost);   
+    mesh["fields/u11Ordered/values"].set_external(u11Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u12Ordered/association"] = "vertex";
+    mesh["fields/u12Ordered/topology"] = "topo";
+    mesh["fields/u12Ordered/values"].set_external(u12Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u13Ordered/association"] = "vertex";
+    mesh["fields/u13Ordered/topology"] = "topo";
+    mesh["fields/u13Ordered/values"].set_external(u13Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u21Ordered/association"] = "vertex";
+    mesh["fields/u21Ordered/topology"] = "topo";
+    mesh["fields/u21Ordered/values"].set_external(u21Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u22Ordered/association"] = "vertex";
+    mesh["fields/u22Ordered/topology"] = "topo";
+    mesh["fields/u22Ordered/values"].set_external(u22Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u23Ordered/association"] = "vertex";
+    mesh["fields/u23Ordered/topology"] = "topo";
+    mesh["fields/u23Ordered/values"].set_external(u23Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u31Ordered/association"] = "vertex";
+    mesh["fields/u31Ordered/topology"] = "topo";
+    mesh["fields/u31Ordered/values"].set_external(u31Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u32Ordered/association"] = "vertex";
+    mesh["fields/u32Ordered/topology"] = "topo";
+    mesh["fields/u32Ordered/values"].set_external(u32Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/u33Ordered/association"] = "vertex";
+    mesh["fields/u33Ordered/topology"] = "topo";
+    mesh["fields/u33Ordered/values"].set_external(u33Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v11Ordered/association"] = "vertex";
+    mesh["fields/v11Ordered/topology"] = "topo";
+    mesh["fields/v11Ordered/values"].set_external(v11Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v12Ordered/association"] = "vertex";
+    mesh["fields/v12Ordered/topology"] = "topo";
+    mesh["fields/v12Ordered/values"].set_external(v12Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v13Ordered/association"] = "vertex";
+    mesh["fields/v13Ordered/topology"] = "topo";
+    mesh["fields/v13Ordered/values"].set_external(v13Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v21Ordered/association"] = "vertex";
+    mesh["fields/v21Ordered/topology"] = "topo";
+    mesh["fields/v21Ordered/values"].set_external(v21Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v22Ordered/association"] = "vertex";
+    mesh["fields/v22Ordered/topology"] = "topo";
+    mesh["fields/v22Ordered/values"].set_external(v22Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v23Ordered/association"] = "vertex";
+    mesh["fields/v23Ordered/topology"] = "topo";
+    mesh["fields/v23Ordered/values"].set_external(v23Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v31Ordered/association"] = "vertex";
+    mesh["fields/v31Ordered/topology"] = "topo";
+    mesh["fields/v31Ordered/values"].set_external(v31Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v32Ordered/association"] = "vertex";
+    mesh["fields/v32Ordered/topology"] = "topo";
+    mesh["fields/v32Ordered/values"].set_external(v32Ordered.data(), latticeVolumeWithGhost);
+
+    mesh["fields/v33Ordered/association"] = "vertex";
+    mesh["fields/v33Ordered/topology"] = "topo";
+    mesh["fields/v33Ordered/values"].set_external(v33Ordered.data(), latticeVolumeWithGhost);        
+    /*----------------------------------------------------------------------*/
     
     // // create an element associated field named ghostCells
     mesh["fields/ascent_ghosts/association"] = "element";
@@ -1160,13 +1232,31 @@ void he3sim::insitu_defineActions() {
     extracts["e1/type"] = "relay";
     extracts["e1/params/path"] = "gapA_field";
     extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
-    // extracts["e1/params/num_files"] = config.number_of_hdf;;
 
     extracts["e1/params/fields"].append().set("gapAOrdered");
     //extracts["e1/params/fields"].append("gapAOrdered");
-    extracts["e1/params/fields"].append().set("feDensityOrdered");    
+    extracts["e1/params/fields"].append().set("feDensityOrdered");
+    
     extracts["e1/params/fields"].append().set("u11Ordered");
+    extracts["e1/params/fields"].append().set("u12Ordered");
+    extracts["e1/params/fields"].append().set("u13Ordered");
+    extracts["e1/params/fields"].append().set("u21Ordered");
+    extracts["e1/params/fields"].append().set("u22Ordered");
+    extracts["e1/params/fields"].append().set("u23Ordered");
+    extracts["e1/params/fields"].append().set("u31Ordered");
+    extracts["e1/params/fields"].append().set("u32Ordered");
+    extracts["e1/params/fields"].append().set("u33Ordered");
 
+    extracts["e1/params/fields"].append().set("v11Ordered");
+    extracts["e1/params/fields"].append().set("v12Ordered");
+    extracts["e1/params/fields"].append().set("v13Ordered");
+    extracts["e1/params/fields"].append().set("v21Ordered");
+    extracts["e1/params/fields"].append().set("v22Ordered");
+    extracts["e1/params/fields"].append().set("v23Ordered");
+    extracts["e1/params/fields"].append().set("v31Ordered");
+    extracts["e1/params/fields"].append().set("v32Ordered");
+    extracts["e1/params/fields"].append().set("v33Ordered");
+   
     /* >>>>>>>>>>>>>>   3slice  <<<<<<<<<<<<<<<< */
     pipelines["pl3/f1/type"] = "3slice";
 
@@ -1200,6 +1290,8 @@ void he3sim::insitu_hdf5xdmf(){
              dim_1 = lattice.mynode.size[1] + 2,
              dim_2 = lattice.mynode.size[2] + 2;
 
+  unsigned int n;
+  
     config.xdmf_out   << "<Grid Name=\"gapA\" Type=\"Uniform\">\n"
                       << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
 		      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
@@ -1230,15 +1322,42 @@ void he3sim::insitu_hdf5xdmf(){
  	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/feDensityOrdered/values"
 		      << "\n"
                       << "   </DataItem>\n"
-                      << "  </Attribute>\n"
-                      << "  <Attribute Name=\"u11\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                      << "  </Attribute>"
+                      << "\n";
+
+    for (n = 0; n<=8; ++n){
+    config.xdmf_out   << "  <Attribute Name=\"u"
+	              << std::to_string(n/3u + 1)
+		      << std::to_string(n%3u + 1) << "\""
+		      << " AttributeType=\"Scalar\" Center=\"Node\">\n"
                       << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
                       << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/u11Ordered/values"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		      << ".hdf5:/fields/u"
+		      << std::to_string(n/3u + 1)
+		      << std::to_string(n%3u + 1) << "Ordered/values"
 		      << "\n"
                       << "   </DataItem>\n"
-                      << "  </Attribute>\n"      
-                      << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
+                      << "  </Attribute>"
+	              << "\n"
+	              << "  <Attribute Name=\"v"
+	              << std::to_string(n/3u + 1)
+		      << std::to_string(n%3u + 1) << "\""
+		      << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		      << ".hdf5:/fields/v"
+		      << std::to_string(n/3u + 1)
+		      << std::to_string(n%3u + 1) << "Ordered/values"
+		      << "\n"
+                      << "   </DataItem>\n"
+                      << "  </Attribute>"
+	              << "\n";
+    }
+
+     
+    config.xdmf_out   << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
                       << "   <DataItem Format=\"HDF\" DataType=\"UChar\" Dimensions=\""
                       << dim_0 - 1 << " " << dim_1 - 1 << " " << dim_2 - 1 << "\"" << ">" << "\n"
  	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/ascent_ghosts/values"
@@ -1294,16 +1413,29 @@ void he3sim::insitu_execute() {
 
     /*------------------------------------------------------------*/
     /*----------------     A matrix elements ---------------------*/
-
-    u11[ALL] = A[X].e(0,0).re;
+    u11[ALL] = A[X].e(0,0).re; v11[ALL] = A[X].e(0,0).im;
+    u12[ALL] = A[X].e(0,1).re; v12[ALL] = A[X].e(0,1).im;
+    u13[ALL] = A[X].e(0,2).re; v13[ALL] = A[X].e(0,2).im;
+    u21[ALL] = A[X].e(1,0).re; v21[ALL] = A[X].e(1,0).im;
+    u22[ALL] = A[X].e(1,1).re; v22[ALL] = A[X].e(1,1).im;
+    u23[ALL] = A[X].e(1,2).re; v23[ALL] = A[X].e(1,2).im;
+    u31[ALL] = A[X].e(2,0).re; v31[ALL] = A[X].e(2,0).im;
+    u32[ALL] = A[X].e(2,1).re; v32[ALL] = A[X].e(2,1).im;
+    u33[ALL] = A[X].e(2,2).re; v33[ALL] = A[X].e(2,2).im;       
 
     /*------------------------------------------------------------*/
-    
-    
-
+        
   gapA.copy_local_data_with_halo(gapAOrdered);
   feDensity.copy_local_data_with_halo(feDensityOrdered);
-  u11.copy_local_data_with_halo(u11Ordered);
+  u11.copy_local_data_with_halo(u11Ordered); v11.copy_local_data_with_halo(v11Ordered);
+  u12.copy_local_data_with_halo(u12Ordered); v12.copy_local_data_with_halo(v12Ordered);
+  u13.copy_local_data_with_halo(u13Ordered); v13.copy_local_data_with_halo(v13Ordered);
+  u21.copy_local_data_with_halo(u21Ordered); v21.copy_local_data_with_halo(v21Ordered);
+  u22.copy_local_data_with_halo(u22Ordered); v22.copy_local_data_with_halo(v22Ordered);
+  u23.copy_local_data_with_halo(u23Ordered); v23.copy_local_data_with_halo(v23Ordered);
+  u31.copy_local_data_with_halo(u31Ordered); v31.copy_local_data_with_halo(v31Ordered);
+  u32.copy_local_data_with_halo(u32Ordered); v32.copy_local_data_with_halo(v32Ordered);
+  u33.copy_local_data_with_halo(u33Ordered); v33.copy_local_data_with_halo(v33Ordered);       
 
   /* ToDo list :
    * > orbital vectors;
@@ -1327,7 +1459,16 @@ void he3sim::insitu_initialize() {
 
     gapAOrdered.reserve(latticeVolumeWithGhost);
     feDensityOrdered.reserve(latticeVolumeWithGhost);
-    u11Ordered.reserve(latticeVolumeWithGhost);
+
+    u11Ordered.reserve(latticeVolumeWithGhost); v11Ordered.reserve(latticeVolumeWithGhost);
+    u12Ordered.reserve(latticeVolumeWithGhost); v12Ordered.reserve(latticeVolumeWithGhost);
+    u13Ordered.reserve(latticeVolumeWithGhost); v13Ordered.reserve(latticeVolumeWithGhost);
+    u21Ordered.reserve(latticeVolumeWithGhost); v21Ordered.reserve(latticeVolumeWithGhost);
+    u22Ordered.reserve(latticeVolumeWithGhost); v22Ordered.reserve(latticeVolumeWithGhost);
+    u23Ordered.reserve(latticeVolumeWithGhost); v23Ordered.reserve(latticeVolumeWithGhost);
+    u31Ordered.reserve(latticeVolumeWithGhost); v31Ordered.reserve(latticeVolumeWithGhost);
+    u32Ordered.reserve(latticeVolumeWithGhost); v32Ordered.reserve(latticeVolumeWithGhost);
+    u33Ordered.reserve(latticeVolumeWithGhost); v33Ordered.reserve(latticeVolumeWithGhost);    
     
     // One more point in each direction, but cell data (Npts - 1 cells)
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
