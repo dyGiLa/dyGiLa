@@ -878,7 +878,7 @@ void he3sim::write_positions() {
 
 void he3sim::write_xdmf(){
 
-    unsigned int rank_no = hila::myrank();
+    unsigned int rank_no = 0/*hila::myrank()*/;
     std::ifstream xml_file;
     config.xdmf_out.open(config.xmf2_fname, std::ios::out);
 
@@ -1230,7 +1230,7 @@ void he3sim::insitu_defineActions() {
 
     conduit::Node &extracts = add_act3["extracts"];
     extracts["e1/type"] = "relay";
-    extracts["e1/params/path"] = "gapA_field";
+    extracts["e1/params/path"] = "sim-data";
     extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
     extracts["e1/params/fields"].append().set("gapAOrdered");
@@ -1292,9 +1292,9 @@ void he3sim::insitu_hdf5xdmf(){
 
   unsigned int n;
   
-    config.xdmf_out   << "<Grid Name=\"gapA\" Type=\"Uniform\">\n"
+    config.xdmf_out   << "<Grid Name=\"sim-data\" Type=\"Uniform\">\n"
                       << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
-		      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+		      << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
                       << "  </Topology>\n"
                       << "  <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"
                       << "    <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">"
