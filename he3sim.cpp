@@ -83,6 +83,7 @@ public:
       real_t nOutputs;
       std::fstream stream;
       int positions;
+      std::string end_name;
       int npositionout;
       int boundary_conditions;
       int useTbath;
@@ -160,6 +161,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.positions = parameters.get_item("out_points",{"no", "yes"});
     if(config.positions==1)
       {
+	config.end_name = parameters.get("end_name");
 	config.npositionout = parameters.get("npositionout");
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
@@ -211,7 +213,8 @@ void scaling_sim::initialize() {
     break;
     }
   case 1: {
-    auto kA = A;
+    //auto kA = A;
+    Field<phi_t> kA;
     real_t gap = config.IniMod;        //MP.gap_B_td(Tp[1], Tp[0]);
     real_t lc = config.Inilc;          //1.0/sqrt(abs(config.alpha));
 
@@ -283,8 +286,8 @@ void scaling_sim::initialize() {
     onsites(ALL) {
 
         A[X] = 0;
-        A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
-        A[X].e(1,2).im = 1.0;
+        A[X].e(2,0).re = 1.0;         // what indice of e means? Is this A-phase?
+        A[X].e(2,1).im = 1.0;
       
       A[X] = gap * A[X]/sqrt(2.0);
     }
@@ -588,7 +591,7 @@ void scaling_sim::write_phases() {
 
     real_t R1,R2,R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
-    real_t error=1.0/5.0;
+    real_t error=1.0/3.0;
     int phase;
     real_t p;
     phi_t Ac;
@@ -730,7 +733,7 @@ void scaling_sim::write_positions() {
 
       }
 
-      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);
+      data.write("points/phase-distances-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
 
     }
 
@@ -743,11 +746,11 @@ void scaling_sim::write_positions() {
       onsites(ALL){
 
 	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X],hila::sort::ascending);
-
+	evec[X]=evec[X].transpose();
       }
 
-      eval.write("points/eigenvalues-t"+std::to_string(int(t/config.dt)),false);
-      evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
+      eval.write("points/eigenvalues-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
+      evec.write("points/eigenvectors-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
       
     }
       
