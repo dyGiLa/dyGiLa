@@ -76,11 +76,13 @@ public:
   
     Field<real_t> gapA;
     Field<real_t> feDensity;
+    Field<real_t> trA_re, trA_im;
     Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
     Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
    
     std::vector<real_t> gapAOrdered;
     std::vector<real_t> feDensityOrdered;
+    std::vector<real_t> trA_reOrdered, trA_imOrdered;
     std::vector<real_t> u11Ordered, u12Ordered, u13Ordered,
                         u21Ordered, u22Ordered, u23Ordered,
                         u31Ordered, u32Ordered, u33Ordered;
@@ -130,7 +132,10 @@ public:
       real_t tdis;
       //real_t gamma;
       Complex<real_t> gamma;
-
+      Complex<real_t> gamma1;
+      Complex<real_t> gamma2;
+      int gammaoffc;
+      
       int initialCondition;
       real_t variance_sigma;
       
@@ -156,6 +161,7 @@ public:
       
       // xdmf file fstream
       std::fstream xdmf_out;
+      std::fstream xml_out;      
       std::string  xmf2_fname;
 
       /*----------------------------------------*/
@@ -180,7 +186,8 @@ public:
                    do_fe_slice,
                    do_gapA_slice;
 
-      unsigned int hdf5_A_matrix_output;
+      unsigned int hdf5_A_matrix_output,
+                   hdf5_trA_output;
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t clamp_fed_Min, clamp_fed_Max;      
@@ -213,27 +220,47 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 
     /*----   gamma as a complex number   -----*/
     //config.gamma = parameters.get("gamma");
-    std::vector<real_t> tmp = parameters.get("gamma");
+    std::vector<real_t> tmp1 = parameters.get("gamma1");
+    std::vector<real_t> tmp2 = parameters.get("gamma2");    
 
-    if (tmp.size() < 1 || tmp.size() >2)
+    if (tmp1.size() < 1 || tmp1.size() >2)
+      {
+	hila::out0 << "error: gamma1 must be initialized by at least one real or imagnary parts" << std::endl;
+	hila::error("\n");
+      }
+    else if (tmp1.size() == 1)
+      {
+	hila::out0 << " tmp1.size() = " << tmp1.size() << "\n";
+        config.gamma1.real() = tmp1[0];
+        config.gamma1.imag() = 0.;
+      }
+    else  // tmp.size() == 2
+      {
+        hila::out0 << " tmp1.size() = " << tmp1.size() << "\n";
+        config.gamma1.real() = tmp1[0];
+        config.gamma1.imag() = tmp1[1];
+      }
+
+    if (tmp2.size() < 1 || tmp2.size() >2)
       {
 	hila::out0 << "error: gamma must be initialized by at least one real or imagnary parts" << std::endl;
 	hila::error("\n");
       }
-    else if (tmp.size() == 1)
+    else if (tmp2.size() == 1)
       {
-	hila::out0 << " tmp.size() = " << tmp.size() << "\n";
-        config.gamma.real() = tmp[0];
-        config.gamma.imag() = 0.;
+	hila::out0 << " tmp2.size() = " << tmp2.size() << "\n";
+        config.gamma2.real() = tmp2[0];
+        config.gamma2.imag() = 0.;
       }
     else  // tmp.size() == 2
       {
-        hila::out0 << " tmp.size() = " << tmp.size() << "\n";
-        config.gamma.real() = tmp[0];
-        config.gamma.imag() = tmp[1];
+        hila::out0 << " tmp2.size() = " << tmp2.size() << "\n";
+        config.gamma2.real() = tmp2[0];
+        config.gamma2.imag() = tmp2[1];
       }
-
-    /*---- gamma as a complex number ends-----*/    
+    
+    /*---- gamma as a complex number ends-----*/
+    config.gammaoffc = parameters.get("gammaoffc");
 
     config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"
 								      ,"kgaussrand"
@@ -320,6 +347,7 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     /*----------------------------------------*/
     config.A_matrix_output      = parameters.get_item("A_matrix_output",{"no","yes"});
     config.hdf5_A_matrix_output = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
+    config.hdf5_trA_output      = parameters.get_item("hdf5_trA_output",{"no","yes"});
 
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
@@ -954,7 +982,7 @@ void he3sim::write_positions() {
 void he3sim::write_xdmf(){
 
     unsigned int rank_no = 0/*hila::myrank()*/;
-    std::ofstream xml_file;
+    std::fstream xml_file;
     config.xdmf_out.open(config.xmf2_fname, std::ios::out);
 
     config.xdmf_out << "<?xml version=\"1.0\" ?>\n"
@@ -964,9 +992,10 @@ void he3sim::write_xdmf(){
                     << "<Domain>\n"
                     << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
                     << "\n";
+    
     while(rank_no < hila::number_of_nodes()){
-
-      xml_file.open("rank_xmls/" + config.xmf2_fname + "_" + std::to_string(rank_no) + ".xml", std::ios::out);
+      const std::string fname = "rank_xmls/" + config.xmf2_fname + "_" + std::to_string(rank_no) + ".xml";  
+      xml_file.open(fname, std::ios::in);
       config.xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
       xml_file.close();
       
@@ -1044,6 +1073,16 @@ void he3sim::insitu_createMesh() {
     mesh["fields/feDensityOrdered/topology"] = "topo";
     mesh["fields/feDensityOrdered/values"].set_external(feDensityOrdered.data(), latticeVolumeWithGhost);
 
+    // create an vertex associated field named trAOrdered
+    if (config.hdf5_trA_output == 1){
+      mesh["fields/trA_reOrdered/association"] = "vertex";
+      mesh["fields/trA_reOrdered/topology"] = "topo";
+      mesh["fields/trA_reOrdered/values"].set_external(trA_reOrdered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/trA_imOrdered/association"] = "vertex";
+      mesh["fields/trA_imOrdered/topology"] = "topo";
+      mesh["fields/trA_imOrdered/values"].set_external(trA_imOrdered.data(), latticeVolumeWithGhost);      
+    }
     /*----------------------------------------------------------------------*/
     /*---create vertices associated field named of uxxOrdered vxxOrdered ---*/
     /*----------------------------------------------------------------------*/
@@ -1291,7 +1330,6 @@ void he3sim::insitu_defineActions() {
       scenes["s7/renders/r1/camera/azimuth"] = 0.0/*35.0*/;
       scenes["s7/renders/r1/camera/elevation"] = 0.0/*30.0*/;      
     }
-
     
     /* >>>>>>>>>>>>>>   2nd scene    <<<<<<<<<<<<< */    
     scenes["s5/plots/p1/type"] = "pseudocolor";
@@ -1339,6 +1377,22 @@ void he3sim::insitu_defineActions() {
      extracts["e1/params/fields"].append().set("v33Ordered");
     }
 
+    if (config.hdf5_trA_output == 1){
+     conduit::Node &add_act4 = actions.append();
+     add_act4["action"] = "add_extracts";
+
+     conduit::Node &extracts = add_act4["extracts"];
+     extracts["e1/type"] = "relay";
+     extracts["e1/params/path"] = "sim-data";
+     extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+
+     extracts["e1/params/fields"].append().set("gapAOrdered");
+     extracts["e1/params/fields"].append().set("feDensityOrdered");
+     extracts["e1/params/fields"].append().set("trA_reOrdered");
+     extracts["e1/params/fields"].append().set("trA_imOrdered");     
+ 
+    }
+
     /* >>>>>>>>>>>>> ???????????? <<<<<<<<<<<<<< */
      
     // print our full actions tree
@@ -1348,89 +1402,125 @@ void he3sim::insitu_defineActions() {
 void he3sim::insitu_hdf5xdmf(){
 
   const std::string fname = "rank_xmls/" + config.xmf2_fname + "_" + std::to_string(hila::myrank()) + ".xml";
-  config.xdmf_out.open(fname, std::ios::out);
+  config.xml_out.open(fname, std::ios::out);
+
+  /*hila::out << config.xml_out.good() << "\n";
+  hila::out << config.xml_out.bad() << "\n";
+  hila::out << config.xml_out.fail() << "\n";
+  hila::out << config.xml_out.rdstate() << "\n";
+  hila::out << config.xml_out.is_open() << "\n";*/
+  
   const long dim_0 = lattice.mynode.size[0] + 2,
              dim_1 = lattice.mynode.size[1] + 2,
              dim_2 = lattice.mynode.size[2] + 2;
 
   unsigned int n;
-  
-    config.xdmf_out   << "<Grid Name=\"sim-data\" Type=\"Uniform\">\n"
-                      << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
-		      << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
-                      << "  </Topology>\n"
-                      << "  <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"
-                      << "    <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">"
-		      << "\n"
-                      << "      "
-                      << ((lattice.mynode.min[0] - 1) * config.dx) << " "
-                      << ((lattice.mynode.min[1] - 1) * config.dx) << " "
-                      << ((lattice.mynode.min[2] - 1) * config.dx) << "\n"
-                      << "    </DataItem>\n"
-                      << "    <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"
-                      << "      "
-                      << config.dx << " " << config.dx << " " << config.dx << "\n"
-                      << "    </DataItem>\n"
-                      << "  </Geometry>\n"
-                      << "  <Attribute Name=\"gapA\" AttributeType=\"Scalar\" Center=\"Node\">\n"
-                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
-                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/gapAOrdered/values"
-		      << "\n"
-                      << "   </DataItem>\n"
-                      << "  </Attribute>\n"
-                      << "  <Attribute Name=\"feDensity\" AttributeType=\"Scalar\" Center=\"Node\">\n"
-                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
-                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/feDensityOrdered/values"
-		      << "\n"
-                      << "   </DataItem>\n"
-                      << "  </Attribute>"
-                      << "\n";
 
-    for (n = 0; n<=8; ++n){
-    config.xdmf_out   << "  <Attribute Name=\"u"
-	              << std::to_string(n/3u + 1)
-		      << std::to_string(n%3u + 1) << "\""
-		      << " AttributeType=\"Scalar\" Center=\"Node\">\n"
-                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
-                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
-		      << ".hdf5:/fields/u"
-		      << std::to_string(n/3u + 1)
-		      << std::to_string(n%3u + 1) << "Ordered/values"
-		      << "\n"
-                      << "   </DataItem>\n"
-                      << "  </Attribute>"
-	              << "\n"
-	              << "  <Attribute Name=\"v"
-	              << std::to_string(n/3u + 1)
-		      << std::to_string(n%3u + 1) << "\""
-		      << " AttributeType=\"Scalar\" Center=\"Node\">\n"
-                      << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
-                      << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
-		      << ".hdf5:/fields/v"
-		      << std::to_string(n/3u + 1)
-		      << std::to_string(n%3u + 1) << "Ordered/values"
-		      << "\n"
-                      << "   </DataItem>\n"
-                      << "  </Attribute>"
-	              << "\n";
+    hila::out << "I'm in hdf5xdmf()" << "\n";
+    config.xml_out << "<Grid Name=\"sim-data\" Type=\"Uniform\">\n"
+                    << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
+		    << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
+                    << "  </Topology>\n"
+                    << "  <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"
+                    << "    <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">"
+		    << "\n"
+                    << "      "
+                    << ((lattice.mynode.min[0] - 1) * config.dx) << " "
+                    << ((lattice.mynode.min[1] - 1) * config.dx) << " "
+                    << ((lattice.mynode.min[2] - 1) * config.dx) << "\n"
+                    << "    </DataItem>\n"
+                    << "    <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"
+                    << "      "
+                    << config.dx << " " << config.dx << " " << config.dx << "\n"
+                    << "    </DataItem>\n"
+                    << "  </Geometry>\n"
+                    << "  <Attribute Name=\"gapA\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                    << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                    << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	            << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/gapAOrdered/values"
+		    << "\n"
+                    << "   </DataItem>\n"
+                    << "  </Attribute>\n"
+                    << "  <Attribute Name=\"feDensity\" AttributeType=\"Scalar\" Center=\"Node\">\n"
+                    << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                    << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	            << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/feDensityOrdered/values"
+		    << "\n"
+                    << "   </DataItem>\n"
+                    << "  </Attribute>"
+ 		    << "\n" << std::flush;
+
+  hila::out << "I'm still in hdf5xdmf()" << "\n";
+    
+    if (config.hdf5_A_matrix_output == 1){
+      for (n = 0; n<=8; ++n){
+         config.xml_out << "  <Attribute Name=\"u"
+	                 << std::to_string(n/3u + 1)
+	         	 << std::to_string(n%3u + 1) << "\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/u"
+		         << std::to_string(n/3u + 1)
+		         << std::to_string(n%3u + 1) << "Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"v"
+	                 << std::to_string(n/3u + 1)
+		         << std::to_string(n%3u + 1) << "\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/v"
+		         << std::to_string(n/3u + 1)
+		         << std::to_string(n%3u + 1) << "Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n" << std::flush;
+      }
+
     }
 
+    if (config.hdf5_trA_output == 1) {
+         config.xml_out << "  <Attribute Name=\"trA_re\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/trA_reOrdered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"trA_im\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/trA_imOrdered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n" << std::flush;
+    }
+    
      
-    config.xdmf_out   << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
-                      << "   <DataItem Format=\"HDF\" DataType=\"UChar\" Dimensions=\""
-                      << dim_0 - 1 << " " << dim_1 - 1 << " " << dim_2 - 1 << "\"" << ">" << "\n"
- 	              << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/ascent_ghosts/values"
-		      << "\n"   
-                      << "   </DataItem>\n"
-                      << "  </Attribute>\n"
-                      << "</Grid>"
-                      << "\n";
+    config.xml_out << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
+                    << "   <DataItem Format=\"HDF\" DataType=\"UChar\" Dimensions=\""
+                    << dim_0 - 1 << " " << dim_1 - 1 << " " << dim_2 - 1 << "\"" << ">" << "\n"
+ 	            << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank() << ".hdf5:/fields/ascent_ghosts/values"
+		    << "\n"   
+                    << "   </DataItem>\n"
+                    << "  </Attribute>\n"
+                    << "</Grid>"
+                    << "\n" << std::flush;
 
-  config.xdmf_out.close();
+  config.xml_out.close();
 
 }
 
@@ -1494,6 +1584,15 @@ void he3sim::insitu_execute() {
      u32.copy_local_data_with_halo(u32Ordered); v32.copy_local_data_with_halo(v32Ordered);
      u33.copy_local_data_with_halo(u33Ordered); v33.copy_local_data_with_halo(v33Ordered);        
     }
+
+    /*----------------------     trace A    ----------------------*/
+    if (config.hdf5_trA_output == 1){
+      trA_re[ALL] = (A[X].trace()).real();
+      trA_im[ALL] = (A[X].trace()).imag();      
+      trA_re.copy_local_data_with_halo(trA_reOrdered);
+      trA_im.copy_local_data_with_halo(trA_imOrdered);      
+    }
+    
     /*------------------------------------------------------------*/
         
     gapA.copy_local_data_with_halo(gapAOrdered);
@@ -1532,6 +1631,11 @@ void he3sim::insitu_initialize() {
      u31Ordered.reserve(latticeVolumeWithGhost); v31Ordered.reserve(latticeVolumeWithGhost);
      u32Ordered.reserve(latticeVolumeWithGhost); v32Ordered.reserve(latticeVolumeWithGhost);
      u33Ordered.reserve(latticeVolumeWithGhost); v33Ordered.reserve(latticeVolumeWithGhost);    
+    }
+
+    if (config.hdf5_trA_output == 1){
+      trA_reOrdered.reserve(latticeVolumeWithGhost);
+      trA_imOrdered.reserve(latticeVolumeWithGhost);      
     }
     
     // One more point in each direction, but cell data (Npts - 1 cells)
@@ -1723,8 +1827,9 @@ void he3sim::next() {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
-  else if (t < config.tdis && /*config.gamma*/ config.gamma.real() > 0 )
+  else if (t < config.tdis && /*config.gamma*/ config.gamma.real() >= 0 )
     {
+      //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
       t += config.dt;
     }
@@ -1950,10 +2055,15 @@ int main(int argc, char **argv) {
     }
 
     // xmf2 file output for paraview.    
-    if (sim.config.hdf5_A_matrix_output == 1){
+    if (
+        (sim.config.hdf5_A_matrix_output == 1)
+	|| (sim.config.hdf5_trA_output == 1)
+       ){
      sim.insitu_hdf5xdmf();
-     if (hila::myrank() == 0) {sim.write_xdmf();}
-    }
+     //hila::synchronize();    
+     }
+
+    if (hila::myrank() == 0) sim.write_xdmf();    
     
 #if defined USE_ASCENT
     hila::out0 << "using ascent" << "\n\n\n";
@@ -1965,8 +2075,11 @@ int main(int argc, char **argv) {
     static hila::timer run_timer("Simulation time"), meas_timer("Measurements");
     run_timer.start();
     
-    //auto tildephi = sim.phi;
+    sim.config.gamma = sim.config.gamma1;
     while (sim.t < sim.config.tEnd) {
+      //sim.config.gamma = (stat_counter < sim.config.gammaoffc) ? sim.config.gamma1 : sim.config.gamma2;
+      //hila::out0 << " sim_config.gamma is " << sim.config.gamma << "\n" << std::endl;
+      
         if (sim.t >= sim.config.tStats) {
 	  
             if (stat_counter % steps == 0) {
@@ -1977,7 +2090,7 @@ int main(int argc, char **argv) {
 	      //sim.write_phases();
 
 #if defined USE_ASCENT
-              sim.insitu_execute();
+                 sim.insitu_execute();
 #endif	      
 	      meas_timer.stop();
 
@@ -1990,6 +2103,7 @@ int main(int argc, char **argv) {
                    sim.write_positions();
 		  }
 	      }
+	    if (stat_counter == (sim.config.gammaoffc)*steps) {sim.config.gamma = sim.config.gamma2;}
             stat_counter++;
         }
 	
