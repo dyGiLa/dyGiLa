@@ -79,6 +79,8 @@ public:
     Field<real_t> trA_re, trA_im;
     Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
     Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
+    Field<real_t> eigAv1, eigAv2, eigAv3;
+    Field<real_t> jm1, jm2, jm3;  
    
     std::vector<real_t> gapAOrdered;
     std::vector<real_t> feDensityOrdered;
@@ -89,6 +91,8 @@ public:
     std::vector<real_t> v11Ordered, v12Ordered, v13Ordered,
                         v21Ordered, v22Ordered, v23Ordered,
                         v31Ordered, v32Ordered, v33Ordered;
+    std::vector<real_t> eigAv1Ordered, eigAv2Ordered, eigAv3Ordered;
+    std::vector<real_t> jm1Ordered, jm2Ordered, jm3Ordered;  
   
     /*--------------------------------*/
   
@@ -174,7 +178,15 @@ public:
 
       int positions;
       int npositionout;
+      
       int boundaryConditions;
+      int BCs1;
+      int BCs2;
+      int Wn;
+      int BCchangec;
+      
+      real_t BLeft_11,BLeft_22,BLeft_33,
+	     BRight_11,BRight_22,BRight_33;
       int useTbath;
 
       /*----------------------------------------*/
@@ -187,7 +199,9 @@ public:
                    do_gapA_slice;
 
       unsigned int hdf5_A_matrix_output,
-                   hdf5_trA_output;
+                   hdf5_trA_output,
+	           hdf5_eigvA_output,
+                   hdf5_mass_current_output;
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t clamp_fed_Min, clamp_fed_Max;      
@@ -264,7 +278,9 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 
     config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"
 								      ,"kgaussrand"
-								      ,"normal_phase"
+								      ,"normal_phase_real1"
+								      ,"normal_phase_real2"
+								      ,"normal_phase_complex"
 								      ,"Bphase"
 								      ,"Aphase"
                                                                       ,"BinA"});
@@ -317,8 +333,7 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     }
     /*----------------------------------------*/
     /* parameters update strategies end here  */
-    /*----------------------------------------*/
-    
+    /*----------------------------------------*/   
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
@@ -334,20 +349,53 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
 	}*/
+
+    /*----------------------------------------*/
+    /* >>>>>>>  boundary conditions  <<<<<<<<<*/
+    /*----------------------------------------*/
+    config.BCs1 = parameters.get_item("BCs1",{"periodic",
+					       "AB",
+					       "PairBreaking",
+                                               "PB_y",
+                                               "PairB_yz",
+                                               "BB",
+                                               "phaseVortices"});
     
-    config.boundaryConditions = parameters.get_item("boundaryConditions",{"periodic",
-									  "AB",
-									  "PairBreaking",
-                                                                          "PB_y",
-                                                                          "PairB_yz"});
+    config.BCs2 = parameters.get_item("BCs2",{"periodic",
+					      "AB",
+					      "PairBreaking",
+                                              "PB_y",
+                                              "PairB_yz",
+                                              "BB",
+                                              "phaseVortices"});
+    
+    config.Wn = parameters.get("BoundaryPhaseWindingNO");
+    
+    config.BCchangec = parameters.get("BCchangec");
+    
+    /*----------------------------------------*/
+    /*       B-B domain wall BC data          */
+    /*----------------------------------------*/
+    std::vector<real_t> tmp3 = parameters.get("BDiagMatrix_Left");
+    std::vector<real_t> tmp4 = parameters.get("BDiagMatrix_Right");    
+    if (tmp3.size() == 3 && tmp4.size() == 3)
+      {
+	config.BLeft_11 = tmp3[0]; config.BLeft_22 = tmp3[1]; config.BLeft_33 = tmp3[2];
+	config.BRight_11 = tmp4[0]; config.BRight_22 = tmp4[1]; config.BRight_33 = tmp4[2];	
+      }
+
+
+    
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
     /*----------------------------------------*/
     /*       insitu randering parameters      */
     /*----------------------------------------*/
-    config.A_matrix_output      = parameters.get_item("A_matrix_output",{"no","yes"});
-    config.hdf5_A_matrix_output = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
-    config.hdf5_trA_output      = parameters.get_item("hdf5_trA_output",{"no","yes"});
+    config.A_matrix_output             = parameters.get_item("A_matrix_output",{"no","yes"});
+    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
+    config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
+    config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
+    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});    
 
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
@@ -450,17 +498,42 @@ void he3sim::initialize() {
   }
 
   case 2: {
-    pi = 0;                            
-    //real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    pi = 0.;                            
     onsites(ALL) {                     
       A[X] = sqrt(0.1) * hila::gaussrand();
     }
 
-    hila::out0 << " Normal phase created \n";
+    hila::out0 << " normal-phase-real-1 created \n";
     break;    
 
-  }    
+  }
   case 3: {
+    pi = 0.;
+    onsites(ALL) {
+      /*foralldir(al) foralldir(i){
+        A[X].e(al,i).real().gaussian_random();
+	}*/
+      A[X].gaussian_random();
+      A[X] = A[X].real();
+    }
+    hila::out0 << " normal-phase-real-2 created \n";
+    break;    
+  }
+
+  case 4: {
+    pi = 0.;
+    onsites(ALL) {
+      foralldir(al) foralldir(i){
+	A[X].e(al,i) = hila::gaussian_random<Complex<real_t>>();
+      } // doralldir end here
+    } // onsites(ALL) end here
+  
+    hila::out0 << " normal-phase-complex created \n";
+    break;
+      
+  }
+    
+  case 5: {
     pi = 0;
     real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
     hila::out0 <<"Gap B: "<<gap<<"\n";
@@ -482,7 +555,7 @@ void he3sim::initialize() {
 
     break;
     }
-  case 4: {
+    case 6: {
     pi = 0;
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
     hila::out0<<"Gap A: "<<gap<<"\n";
@@ -500,7 +573,7 @@ void he3sim::initialize() {
     break;
     }
 
-  case 5: {
+  case 7: {
     pi = 0;
     real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
     real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);    
@@ -1083,6 +1156,35 @@ void he3sim::insitu_createMesh() {
       mesh["fields/trA_imOrdered/topology"] = "topo";
       mesh["fields/trA_imOrdered/values"].set_external(trA_imOrdered.data(), latticeVolumeWithGhost);      
     }
+
+    if (config.hdf5_eigvA_output == 1){
+      mesh["fields/eigAv1Ordered/association"] = "vertex";
+      mesh["fields/eigAv1Ordered/topology"] = "topo";
+      mesh["fields/eigAv1Ordered/values"].set_external(eigAv1Ordered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/eigAv2Ordered/association"] = "vertex";
+      mesh["fields/eigAv2Ordered/topology"] = "topo";
+      mesh["fields/eigAv2Ordered/values"].set_external(eigAv2Ordered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/eigAv3Ordered/association"] = "vertex";
+      mesh["fields/eigAv3Ordered/topology"] = "topo";
+      mesh["fields/eigAv3Ordered/values"].set_external(eigAv3Ordered.data(), latticeVolumeWithGhost);      
+    }
+
+    if (config.hdf5_mass_current_output == 1){
+      mesh["fields/jm1Ordered/association"] = "vertex";
+      mesh["fields/jm1Ordered/topology"] = "topo";
+      mesh["fields/jm1Ordered/values"].set_external(jm1Ordered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/jm2Ordered/association"] = "vertex";
+      mesh["fields/jm2Ordered/topology"] = "topo";
+      mesh["fields/jm2Ordered/values"].set_external(jm2Ordered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/jm3Ordered/association"] = "vertex";
+      mesh["fields/jm3Ordered/topology"] = "topo";
+      mesh["fields/jm3Ordered/values"].set_external(jm3Ordered.data(), latticeVolumeWithGhost);
+    }    
+    
     /*----------------------------------------------------------------------*/
     /*---create vertices associated field named of uxxOrdered vxxOrdered ---*/
     /*----------------------------------------------------------------------*/
@@ -1393,6 +1495,39 @@ void he3sim::insitu_defineActions() {
  
     }
 
+    if (config.hdf5_eigvA_output == 1){
+      conduit::Node &add_act5 = actions.append();
+      add_act5["action"] = "add_extracts";
+
+      conduit::Node &extracts = add_act5["extracts"];
+      extracts["e1/type"] = "relay";
+      extracts["e1/params/path"] = "sim-data";
+      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+
+      extracts["e1/params/fields"].append().set("gapAOrdered");
+      extracts["e1/params/fields"].append().set("feDensityOrdered");
+      extracts["e1/params/fields"].append().set("eigAv1Ordered");
+      extracts["e1/params/fields"].append().set("eigAv2Ordered");
+      extracts["e1/params/fields"].append().set("eigAv3Ordered");           
+    }
+
+    if (config.hdf5_mass_current_output == 1){
+      conduit::Node &add_act6 = actions.append();
+      add_act6["action"] = "add_extracts";
+
+      conduit::Node &extracts = add_act6["extracts"];
+      extracts["e1/type"] = "relay";
+      extracts["e1/params/path"] = "sim-data";
+      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+
+      extracts["e1/params/fields"].append().set("gapAOrdered");
+      extracts["e1/params/fields"].append().set("feDensityOrdered");
+      extracts["e1/params/fields"].append().set("jm1Ordered");
+      extracts["e1/params/fields"].append().set("jm2Ordered");
+      extracts["e1/params/fields"].append().set("jm3Ordered");           
+    }
+    
+    
     /* >>>>>>>>>>>>> ???????????? <<<<<<<<<<<<<< */
      
     // print our full actions tree
@@ -1404,11 +1539,9 @@ void he3sim::insitu_hdf5xdmf(){
   const std::string fname = "rank_xmls/" + config.xmf2_fname + "_" + std::to_string(hila::myrank()) + ".xml";
   config.xml_out.open(fname, std::ios::out);
 
-  /*hila::out << config.xml_out.good() << "\n";
-  hila::out << config.xml_out.bad() << "\n";
+  hila::out << config.xml_out.good() << "\n";
+  hila::out << config.xml_out.is_open() << "\n";
   hila::out << config.xml_out.fail() << "\n";
-  hila::out << config.xml_out.rdstate() << "\n";
-  hila::out << config.xml_out.is_open() << "\n";*/
   
   const long dim_0 = lattice.mynode.size[0] + 2,
              dim_1 = lattice.mynode.size[1] + 2,
@@ -1416,7 +1549,6 @@ void he3sim::insitu_hdf5xdmf(){
 
   unsigned int n;
 
-    hila::out << "I'm in hdf5xdmf()" << "\n";
     config.xml_out << "<Grid Name=\"sim-data\" Type=\"Uniform\">\n"
                     << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
 		    << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
@@ -1449,8 +1581,6 @@ void he3sim::insitu_hdf5xdmf(){
                     << "   </DataItem>\n"
                     << "  </Attribute>"
  		    << "\n" << std::flush;
-
-  hila::out << "I'm still in hdf5xdmf()" << "\n";
     
     if (config.hdf5_A_matrix_output == 1){
       for (n = 0; n<=8; ++n){
@@ -1507,6 +1637,72 @@ void he3sim::insitu_hdf5xdmf(){
                          << "   </DataItem>\n"
                          << "  </Attribute>"
 	                 << "\n" << std::flush;
+    }
+
+    if (config.hdf5_eigvA_output == 1){
+         config.xml_out << "  <Attribute Name=\"eigVal1_A\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/eigAv1Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"eigVal2_A\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/eigAv2Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n"  
+	                 << "  <Attribute Name=\"eigVal3_A\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/eigAv3Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n" << std::flush;
+    }
+
+    if (config.hdf5_mass_current_output == 1){
+         config.xml_out << "  <Attribute Name=\"jm_1\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/jm1Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"jm_2\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/jm2Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n"  
+	                 << "  <Attribute Name=\"jm_3\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/jm3Ordered/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n" << std::flush;
     }
     
      
@@ -1592,6 +1788,57 @@ void he3sim::insitu_execute() {
       trA_re.copy_local_data_with_halo(trA_reOrdered);
       trA_im.copy_local_data_with_halo(trA_imOrdered);      
     }
+
+    /*----------------------  eigen values of A ------------------*/
+    if (config.hdf5_eigvA_output == 1){
+      Field<Vector<3,double>> eval;
+      Field<Matrix<3,3,Complex<double>>> evec;
+
+      onsites(ALL){
+	A[X].eigen_jacobi(eval[X],evec[X]/*,hila::sort::ascending*/);
+      }
+
+      eigAv1[ALL] = eval[X].e(0); 
+      eigAv2[ALL] = eval[X].e(1); 
+      eigAv3[ALL] = eval[X].e(2); 
+
+      eigAv1.copy_local_data_with_halo(eigAv1Ordered);
+      eigAv2.copy_local_data_with_halo(eigAv2Ordered);
+      eigAv3.copy_local_data_with_halo(eigAv3Ordered);
+    }
+
+    /*------------------ mass current components ------------------*/
+    if (config.hdf5_mass_current_output == 1){
+      Field<Vector<3,double>> jmX;
+
+      /*onsites(ALL){
+        foralldir(i) foralldir(j) foralldir(al){
+	  jmX[X].e(i) = ((A[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
+ 	                + (A[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
+			+ (A[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
+
+        } // foralldir() calls end here
+
+	} //onesite(ALL) call ends here*/
+
+      onsites(ALL) {
+	jmX[X] = 0;
+	foralldir(i) foralldir(j) foralldir(al) {
+	  jmX[X].e(i) += (A[X].e(al,j).conj() *(A[X+i].e(al,j) - A[X-i].e(al,j))
+			  + A[X].e(al,j).conj() * (A[X+j].e(al,i) - A[X-j].e(al,i))
+			  + A[X].e(al,i).conj() * (A[X+j].e(al,j) - A[X-j].e(al,j))).imag();
+	} // foralldir end here, outermost foralldir slowest, inner run earier
+	jmX[X] /= 2*config.dx;
+      } // onsites(ALL) end here
+
+      jm1[ALL] = jmX[X].e(0);
+      jm2[ALL] = jmX[X].e(1);
+      jm3[ALL] = jmX[X].e(2);      
+
+      jm1.copy_local_data_with_halo(jm1Ordered);
+      jm2.copy_local_data_with_halo(jm2Ordered);
+      jm3.copy_local_data_with_halo(jm3Ordered);      
+    }
     
     /*------------------------------------------------------------*/
         
@@ -1636,6 +1883,18 @@ void he3sim::insitu_initialize() {
     if (config.hdf5_trA_output == 1){
       trA_reOrdered.reserve(latticeVolumeWithGhost);
       trA_imOrdered.reserve(latticeVolumeWithGhost);      
+    }
+
+    if (config.hdf5_eigvA_output == 1){
+      eigAv1Ordered.reserve(latticeVolumeWithGhost);
+      eigAv2Ordered.reserve(latticeVolumeWithGhost);
+      eigAv3Ordered.reserve(latticeVolumeWithGhost);      
+    }
+
+    if (config.hdf5_mass_current_output == 1){
+      jm1Ordered.reserve(latticeVolumeWithGhost);
+      jm2Ordered.reserve(latticeVolumeWithGhost);
+      jm3Ordered.reserve(latticeVolumeWithGhost);      
     }
     
     // One more point in each direction, but cell data (Npts - 1 cells)
@@ -1771,8 +2030,90 @@ void he3sim::next() {
             X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
             X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
             {A[X]=0.0;}
-      }    
-  }
+      }
+
+    /*-------------- B-B domain wall BC --------------*/
+    else if(bc == 5)
+      {
+	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
+	      {	
+	       foralldir(d1)foralldir(d2)
+		 {
+	          if (d1!=d2)
+		  {
+		   A[X].e(d1,d2).re = 0.0;
+		   A[X].e(d1,d2).im = 0.0;
+	          }
+	          else
+		  {
+		   A[X].e(0,0).re = config.BLeft_11;
+		   A[X].e(0,0).im = 0.0;
+		   A[X].e(1,1).re = config.BLeft_22;
+		   A[X].e(1,1).im = 0.0;
+		   A[X].e(2,2).re = config.BLeft_33;
+		   A[X].e(2,2).im = 0.0;		   
+	          }
+ 	          A[X] = gapb * A[X]/sqrt(3.0); 
+	         } // foralldir ends here
+	      }
+	    else if (X.coordinate(e_x) == (config.lx - 1) or X.coordinate(e_x) == (config.lx - 2))
+	        {
+	         foralldir(d1)foralldir(d2)
+		 {
+	          if (d1!=d2)
+		  {
+		   A[X].e(d1,d2).re = 0.0;
+		   A[X].e(d1,d2).im = 0.0;
+	          }
+	          else
+		  {
+	           A[X].e(0,0).re = config.BRight_11;
+		   A[X].e(0,0).im = 0.0;
+		   A[X].e(1,1).re = config.BRight_22;
+		   A[X].e(1,1).im = 0.0;
+		   A[X].e(2,2).re = config.BRight_33;
+		   A[X].e(2,2).im = 0.0;		   
+	          }
+  	          A[X] = gapb * A[X]/sqrt(3.0);
+	         }
+	        } // foralldir ends here
+      }
+      /*---------- B-B domain wall BC ends here ----------*/
+
+      /*--------- B-phase phaseVortices BC   -------------*/
+    else if(bc==6)
+      {
+        if (
+	    (X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1))
+	    || (X.coordinate(e_y) == 0 || X.coordinate(e_y) == (config.ly - 1))
+	   )
+	  {
+	    real_t mod       = sqrt((X.coordinate(e_x)-(config.lx)/2.) * (X.coordinate(e_x)-(config.lx)/2.)
+			            + (X.coordinate(e_y)-(config.ly)/2.) * (X.coordinate(e_y)-(config.ly)/2.));
+	    Complex<real_t> phaseExp; // exp(i \phi)
+	    phaseExp.re = (X.coordinate(e_x)-(config.lx)/2.)/mod;
+	    phaseExp.im = (X.coordinate(e_y)-(config.ly)/2.)/mod;
+	    
+	    foralldir(i) foralldir(al)
+	      {
+                if (i != al)
+		  A[X].e(i,al) = 0.;
+		else
+		  {
+		    /*A[X].e(i,al).re = (gapb/sqrt(3.)) * ((X.coordinate(e_x)-(config.lx)/2.)/mod);
+		      A[X].e(i,al).im = (gapb/sqrt(3.)) * ((X.coordinate(e_y)-(config.ly)/2.)/mod);*/
+		    A[X].e(i,al).re = gapb/sqrt(3.);
+		    A[X].e(i,al).im = 0.;		    
+		  }
+	      } // SO(3) R of A
+	    
+	    for (unsigned int n = 0; n<config.Wn; ++n) {A[X] = A[X] * phaseExp;} // R e^{Wn\phi}
+	  }
+	  
+      } // bc = 6 block, phase vortices ends here
+    /*------------    phaseVortices BC ends ---------------*/
+    
+  } // onsites(ALL) block ends here
 
   onsites (ALL) {
       
@@ -2037,9 +2378,12 @@ int main(int argc, char **argv) {
     
     int steps = (sim.config.tEnd - sim.config.tStats)
                  / (sim.config.dt * sim.config.nOutputs); // number of steps between out stream.
+
     if (steps == 0)
         steps = 1;
 
+    sim.config.gamma              = sim.config.gamma1;                 // initial gamma parameter
+    sim.config.boundaryConditions = sim.config.BCs1;                   // initial bounaryConstions
     /*if (sim.config.positions == 1)
       {
 	stepspos =  (sim.config.tEnd - sim.config.tStats)
@@ -2056,8 +2400,10 @@ int main(int argc, char **argv) {
 
     // xmf2 file output for paraview.    
     if (
-        (sim.config.hdf5_A_matrix_output == 1)
-	|| (sim.config.hdf5_trA_output == 1)
+        (sim.config.hdf5_A_matrix_output        == 1)
+	|| (sim.config.hdf5_trA_output          == 1)
+	|| (sim.config.hdf5_eigvA_output        == 1)
+	|| (sim.config.hdf5_mass_current_output == 1)
        ){
      sim.insitu_hdf5xdmf();
      //hila::synchronize();    
@@ -2069,13 +2415,17 @@ int main(int argc, char **argv) {
     hila::out0 << "using ascent" << "\n\n\n";
     sim.insitu_initialize();
 #endif    
-      
-    // on gpu the simulation timer is fake, because there's no sync here.  
-    // BUt we want to avoid unnecessary sync anyway.
+    
+    /*-------------------------------------------------------------------*/
+    /* Dynamic simulation starts after below.                            */
+    /*                                                                   */
+    /* on gpu the simulation timer is fake, because there's no sync here.*/  
+    /* BUt we want to avoid unnecessary sync anyway.                     */
+    /*-------------------------------------------------------------------*/
     static hila::timer run_timer("Simulation time"), meas_timer("Measurements");
     run_timer.start();
     
-    sim.config.gamma = sim.config.gamma1;
+
     while (sim.t < sim.config.tEnd) {
       //sim.config.gamma = (stat_counter < sim.config.gammaoffc) ? sim.config.gamma1 : sim.config.gamma2;
       //hila::out0 << " sim_config.gamma is " << sim.config.gamma << "\n" << std::endl;
@@ -2090,7 +2440,7 @@ int main(int argc, char **argv) {
 	      //sim.write_phases();
 
 #if defined USE_ASCENT
-                 sim.insitu_execute();
+              sim.insitu_execute();
 #endif	      
 	      meas_timer.stop();
 
@@ -2104,18 +2454,22 @@ int main(int argc, char **argv) {
 		  }
 	      }
 	    if (stat_counter == (sim.config.gammaoffc)*steps) {sim.config.gamma = sim.config.gamma2;}
+	    //if (stat_counter == (sim.config.gammaoffc + 3)*steps) {sim.config.gamma = sim.config.gamma1;}
+	    if (stat_counter == (sim.config.BCchangec)*steps) {sim.config.boundaryConditions = sim.config.BCs2;}
             stat_counter++;
-        }
-	
+        } //sim.t > sim.config.Stats block	
+
 	sim.update_params();
+	
 	if (sim.config.useTbath == 1)
 	  {
-	    sim.next_bath();}
+	    sim.next_bath();
+	  }
 	else
 	  {
 	    sim.next();
 	  }
-    }
+    } // wile loop sim.t ends here
     run_timer.stop();
 
 #if defined USE_ASCENT
