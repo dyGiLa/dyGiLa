@@ -71,7 +71,13 @@ public:
         real_t f_A_td(real_t p, real_t T);
         real_t f_B_td(real_t p, real_t T);
         
-        
+
+  // >>>>>>>>>>>>>>> menmber funcition Levi_Civita symbol <<<<<<<<<<<<<<<<<<<< //
+
+        real_t epsilon(int al, /*alpha*/
+         	       int be, /*beta*/
+		       int ga /*gamma*/);
+  
 private:
         // SI unit
         static constexpr real_t Kelvin =1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f

@@ -80,7 +80,11 @@ public:
     Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
     Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
     Field<real_t> eigAv1, eigAv2, eigAv3;
-    Field<real_t> jm1, jm2, jm3;  
+    Field<real_t> jm1, jm2, jm3;
+    Field<real_t> phaseExpModulus, phaseExpAngle,/*acosphi, asinphi,*/ phaseExp2Re, phaseExp2Im;
+    Field<real_t> js11, js21, js31,
+                  js12, js22, js32,
+                  js13, js23, js33;
    
     std::vector<real_t> gapAOrdered;
     std::vector<real_t> feDensityOrdered;
@@ -92,7 +96,11 @@ public:
                         v21Ordered, v22Ordered, v23Ordered,
                         v31Ordered, v32Ordered, v33Ordered;
     std::vector<real_t> eigAv1Ordered, eigAv2Ordered, eigAv3Ordered;
-    std::vector<real_t> jm1Ordered, jm2Ordered, jm3Ordered;  
+    std::vector<real_t> jm1Ordered, jm2Ordered, jm3Ordered;
+    std::vector<real_t> phaseExpModulusO, phaseExpAngleO,/*acosphiO, asinphiO,*/ phaseExp2ReO, phaseExp2ImO;
+    std::vector<real_t> js11O, js21O, js31O,
+                        js12O, js22O, js32O,
+                        js13O, js23O, js33O;
   
     /*--------------------------------*/
   
@@ -201,7 +209,9 @@ public:
       unsigned int hdf5_A_matrix_output,
                    hdf5_trA_output,
 	           hdf5_eigvA_output,
-                   hdf5_mass_current_output;
+	           hdf5_mass_current_output,
+	           hdf5_spin_current_output;
+	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t clamp_fed_Min, clamp_fed_Max;      
@@ -276,14 +286,16 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     /*---- gamma as a complex number ends-----*/
     config.gammaoffc = parameters.get("gammaoffc");
 
-    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"
-								      ,"kgaussrand"
-								      ,"normal_phase_real1"
-								      ,"normal_phase_real2"
-								      ,"normal_phase_complex"
-								      ,"Bphase"
-								      ,"Aphase"
-                                                                      ,"BinA"});
+    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"             //0
+								      ,"kgaussrand"           //1
+								      ,"normal_phase_real1"   //2
+								      ,"normal_phase_real2"   //3
+								      ,"normal_phase_complex" //4
+								      ,"Bphase"               //5
+								      ,"Aphase_partial1"      //6
+								      ,"Aphase_full"          //7
+                                                                      ,"BinA"});              //8
+    hila::out0 << "  config.initialCondition is " << config.initialCondition << "\n";
     config.variance_sigma = parameters.get("sigma");
     
     config.seed = parameters.get("seed");
@@ -395,7 +407,8 @@ const std::string he3sim::allocate(const std::string &fname, int argc, char **ar
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
     config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
     config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
-    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});    
+    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
+    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});        
 
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
@@ -524,7 +537,7 @@ void he3sim::initialize() {
     pi = 0.;
     onsites(ALL) {
       foralldir(al) foralldir(i){
-	A[X].e(al,i) = hila::gaussian_random<Complex<real_t>>();
+	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
       } // doralldir end here
     } // onsites(ALL) end here
   
@@ -555,6 +568,7 @@ void he3sim::initialize() {
 
     break;
     }
+    
     case 6: {
     pi = 0;
     real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
@@ -568,12 +582,38 @@ void he3sim::initialize() {
         A[X] = gap * A[X]/sqrt(2.0);
     }
 
-    hila::out0 << "Pure A phase \n";
+    hila::out0 << "Aphase_partial is created \n";
 
     break;
     }
 
   case 7: {
+    pi = 0.;
+    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
+    hila::out0<<"Gap A: "<<gap<<"\n";
+    
+    onsites(ALL) {
+      foralldir(al) foralldir(i){
+	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
+	
+	if ((al==0) && (i==0)) {
+	  A[X].e(al,i).re=A[X].e(al,i).re + 1.;
+	}
+	else if ((al==0) && (i==1)) {
+	  A[X].e(al,i).im=A[X].e(al,i).im + 1.;
+	} // put bulk A-phase elements into random matrix
+
+	A[X].e(al,i)=(A[X].e(al,i)/sqrt(2.)) * gap;	
+      } // doralldir end here
+    } // onsites(ALL) end here
+
+    //A[ALL]=A[x].asArray()
+    hila::out0 << "Aphase_full is created \n";
+
+    break;
+  } // case 7: Aphase_full
+
+  case 8: {
     pi = 0;
     real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
     real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);    
@@ -870,7 +910,7 @@ void he3sim::write_energies() {
 		      << sumb5.re / vol << " " << sumb5.im / vol << " "
 	              << sumb5_we.re / vol << " " << sumb5_we.im / vol << " "
 	              << std::endl;
-    }
+      }
 
        hila::out0 << "Energy done \n";
 
@@ -1183,7 +1223,63 @@ void he3sim::insitu_createMesh() {
       mesh["fields/jm3Ordered/association"] = "vertex";
       mesh["fields/jm3Ordered/topology"] = "topo";
       mesh["fields/jm3Ordered/values"].set_external(jm3Ordered.data(), latticeVolumeWithGhost);
+
+      mesh["fields/phaseExpModulusO/association"] = "vertex";
+      mesh["fields/phaseExpModulusO/topology"] = "topo";
+      mesh["fields/phaseExpModulusO/values"].set_external(phaseExpModulusO.data(), latticeVolumeWithGhost);
+
+      mesh["fields/phaseExpAngleO/association"] = "vertex";
+      mesh["fields/phaseExpAngleO/topology"] = "topo";
+      mesh["fields/phaseExpAngleO/values"].set_external(phaseExpAngleO.data(), latticeVolumeWithGhost);
+
+      mesh["fields/phaseExp2ReO/association"] = "vertex";
+      mesh["fields/phaseExp2ReO/topology"] = "topo";
+      mesh["fields/phaseExp2ReO/values"].set_external(phaseExp2ReO.data(), latticeVolumeWithGhost);
+
+      mesh["fields/phaseExp2ImO/association"] = "vertex";
+      mesh["fields/phaseExp2ImO/topology"] = "topo";
+      mesh["fields/phaseExp2ImO/values"].set_external(phaseExp2ImO.data(), latticeVolumeWithGhost);      
     }    
+
+    if (config.hdf5_spin_current_output == 1){
+      mesh["fields/js11O/association"] = "vertex";
+      mesh["fields/js11O/topology"] = "topo";
+      mesh["fields/js11O/values"].set_external(js11O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js21O/association"] = "vertex";
+      mesh["fields/js21O/topology"] = "topo";
+      mesh["fields/js21O/values"].set_external(js21O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js31O/association"] = "vertex";
+      mesh["fields/js31O/topology"] = "topo";
+      mesh["fields/js31O/values"].set_external(js31O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js12O/association"] = "vertex";
+      mesh["fields/js12O/topology"] = "topo";
+      mesh["fields/js12O/values"].set_external(js12O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js22O/association"] = "vertex";
+      mesh["fields/js22O/topology"] = "topo";
+      mesh["fields/js22O/values"].set_external(js22O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js32O/association"] = "vertex";
+      mesh["fields/js32O/topology"] = "topo";
+      mesh["fields/js32O/values"].set_external(js32O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js13O/association"] = "vertex";
+      mesh["fields/js13O/topology"] = "topo";
+      mesh["fields/js13O/values"].set_external(js13O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js23O/association"] = "vertex";
+      mesh["fields/js23O/topology"] = "topo";
+      mesh["fields/js23O/values"].set_external(js23O.data(), latticeVolumeWithGhost);
+
+      mesh["fields/js33O/association"] = "vertex";
+      mesh["fields/js33O/topology"] = "topo";
+      mesh["fields/js33O/values"].set_external(js33O.data(), latticeVolumeWithGhost);
+   
+    }    
+
     
     /*----------------------------------------------------------------------*/
     /*---create vertices associated field named of uxxOrdered vxxOrdered ---*/
@@ -1524,7 +1620,33 @@ void he3sim::insitu_defineActions() {
       extracts["e1/params/fields"].append().set("feDensityOrdered");
       extracts["e1/params/fields"].append().set("jm1Ordered");
       extracts["e1/params/fields"].append().set("jm2Ordered");
-      extracts["e1/params/fields"].append().set("jm3Ordered");           
+      extracts["e1/params/fields"].append().set("jm3Ordered");
+      extracts["e1/params/fields"].append().set("phaseExpModulusO");
+      extracts["e1/params/fields"].append().set("phaseExpAngleO");
+      extracts["e1/params/fields"].append().set("phaseExp2ReO");
+      extracts["e1/params/fields"].append().set("phaseExp2ImO");                       
+    }
+
+    if (config.hdf5_spin_current_output == 1){
+      conduit::Node &add_act7 = actions.append();
+      add_act7["action"] = "add_extracts";
+
+      conduit::Node &extracts = add_act7["extracts"];
+      extracts["e1/type"] = "relay";
+      extracts["e1/params/path"] = "sim-data";
+      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+
+      extracts["e1/params/fields"].append().set("gapAOrdered");
+      extracts["e1/params/fields"].append().set("feDensityOrdered");
+      extracts["e1/params/fields"].append().set("js11O");
+      extracts["e1/params/fields"].append().set("js21O");
+      extracts["e1/params/fields"].append().set("js31O");
+      extracts["e1/params/fields"].append().set("js12O");
+      extracts["e1/params/fields"].append().set("js22O");
+      extracts["e1/params/fields"].append().set("js32O");
+      extracts["e1/params/fields"].append().set("js13O");
+      extracts["e1/params/fields"].append().set("js23O");
+      extracts["e1/params/fields"].append().set("js33O");      
     }
     
     
@@ -1702,9 +1824,137 @@ void he3sim::insitu_hdf5xdmf(){
 		         << "\n"
                          << "   </DataItem>\n"
                          << "  </Attribute>"
+	                 << "  <Attribute Name=\"phaseExpModulus\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/phaseExpModulusO/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "  <Attribute Name=\"phaseExpAngle\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/phaseExpAngleO/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "  <Attribute Name=\"phaseExp2ReO\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/phaseExp2ReO/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "  <Attribute Name=\"phaseExp2ImO\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/phaseExp2ImO/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"	   	   	   
 			 << "\n" << std::flush;
     }
-    
+
+    if (config.hdf5_spin_current_output == 1){
+          config.xml_out << "  <Attribute Name=\"js_11\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js11O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"js_21\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js21O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n"  
+	                 << "  <Attribute Name=\"js_31\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js31O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+                         << "\n"	    
+                         << "  <Attribute Name=\"js_12\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js12O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"js_22\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js22O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n"  
+	                 << "  <Attribute Name=\"js_32\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js32O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"	    
+                         << "\n"
+                         << "  <Attribute Name=\"js_13\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js13O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+	                 << "\n"
+	                 << "  <Attribute Name=\"js_23\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js23O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"
+			 << "\n"  
+	                 << "  <Attribute Name=\"js_33\""
+		         << " AttributeType=\"Scalar\" Center=\"Node\">\n"
+                         << "   <DataItem Format=\"HDF\" DataType=\"Float\" Precision=\"8\" Dimensions=" << "\""
+                         << dim_0 << " " << dim_1 << " " << dim_2 << "\"" << ">" << "\n"
+ 	                 << "    domain_" << std::setfill('0') << std::setw(6) << hila::myrank()
+		         << ".hdf5:/fields/js33O/values"
+		         << "\n"
+                         << "   </DataItem>\n"
+                         << "  </Attribute>"	    
+			 << "\n" << std::flush;
+    }
      
     config.xml_out << "  <Attribute Name=\"vtkGhostType\" AttributeType=\"Scalar\" Center=\"Cell\">\n"
                     << "   <DataItem Format=\"HDF\" DataType=\"UChar\" Dimensions=\""
@@ -1810,6 +2060,7 @@ void he3sim::insitu_execute() {
     /*------------------ mass current components ------------------*/
     if (config.hdf5_mass_current_output == 1){
       Field<Vector<3,double>> jmX;
+      Field<Complex<real_t>>  phaseExp;
 
       /*onsites(ALL){
         foralldir(i) foralldir(j) foralldir(al){
@@ -1833,11 +2084,69 @@ void he3sim::insitu_execute() {
 
       jm1[ALL] = jmX[X].e(0);
       jm2[ALL] = jmX[X].e(1);
-      jm3[ALL] = jmX[X].e(2);      
+      jm3[ALL] = jmX[X].e(2);
+
+      /* >>>>>>>> Modulus, phase angle, phaseExp   <<<<<<< */
+      phaseExp[ALL]        = ((A[X].transpose()) * A[X]).trace();
+      phaseExp2Re[ALL]    = phaseExp[X].real();
+      phaseExp2Im[ALL]    = phaseExp[X].imag();      
+      
+      phaseExpModulus[ALL] = phaseExp[X].abs();
+      //phaseExpAngle[ALL]   = phaseExp[X].arg()/2.;
+      phaseExpAngle[ALL]   = std::atan2(phaseExp[X].imag(), phaseExp[X].real())/2.;
+      /* >>>>>>>> phase angle and modulus end here   <<<<<<*/
 
       jm1.copy_local_data_with_halo(jm1Ordered);
       jm2.copy_local_data_with_halo(jm2Ordered);
-      jm3.copy_local_data_with_halo(jm3Ordered);      
+      jm3.copy_local_data_with_halo(jm3Ordered);
+
+      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusO);
+      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleO);
+      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReO);
+      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImO);            
+    }
+
+    /*------------------ spin current components ------------------*/
+    if (config.hdf5_spin_current_output == 1){
+      Field<Matrix<3,3,double>> jsX; // column is alpha for spin, row is i for spatial
+
+      onsites(ALL) {
+	jsX[X] = 0;
+	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
+          jsX[X].e(i,al) += matep.epsilon(al,be,ga)
+	                     * (A[X].e(be,i).conj() * (A[X+j].e(ga,j) - A[X-j].e(ga,j))
+			        + A[X].e(be,j).conj() * (A[X+i].e(ga,j) - A[X-i].e(ga,j))
+			        + A[X].e(be,j).conj() * (A[X+j].e(ga,i) - A[X-j].e(ga,i))).real();
+	  
+	  /*jmX[X].e(i,al) += (A[X].e(al,j).conj() *(A[X+i].e(al,j) - A[X-i].e(al,j))
+			  + A[X].e(al,j).conj() * (A[X+j].e(al,i) - A[X-j].e(al,i))
+			  + A[X].e(al,i).conj() * (A[X+j].e(al,j) - A[X-j].e(al,j))).real();*/
+	} // foralldir end here, outermost foralldir slowest, inner run earier
+	jsX[X] /= 2*config.dx;
+      } // onsites(ALL) end here
+
+      js11[ALL] = jsX[X].e(0,0);
+      js21[ALL] = jsX[X].e(1,0);
+      js31[ALL] = jsX[X].e(2,0);
+      js12[ALL] = jsX[X].e(0,1);
+      js22[ALL] = jsX[X].e(1,1);
+      js32[ALL] = jsX[X].e(2,1);
+      js13[ALL] = jsX[X].e(0,2);
+      js23[ALL] = jsX[X].e(1,2);
+      js33[ALL] = jsX[X].e(2,2);
+      
+      js11.copy_local_data_with_halo(js11O);
+      js21.copy_local_data_with_halo(js21O);
+      js31.copy_local_data_with_halo(js31O);
+      
+      js12.copy_local_data_with_halo(js12O);
+      js22.copy_local_data_with_halo(js22O);
+      js32.copy_local_data_with_halo(js32O);
+      
+      js13.copy_local_data_with_halo(js13O);
+      js23.copy_local_data_with_halo(js23O);
+      js33.copy_local_data_with_halo(js33O);
+
     }
     
     /*------------------------------------------------------------*/
@@ -1848,7 +2157,7 @@ void he3sim::insitu_execute() {
   /* ToDo list :
    * > orbital vectors;
    * > spin vectors;
-   * > mass current;
+   * x mass current (done);
    * > spin currents;
    * x free energy density (done)
    * > ...
@@ -1894,8 +2203,28 @@ void he3sim::insitu_initialize() {
     if (config.hdf5_mass_current_output == 1){
       jm1Ordered.reserve(latticeVolumeWithGhost);
       jm2Ordered.reserve(latticeVolumeWithGhost);
-      jm3Ordered.reserve(latticeVolumeWithGhost);      
+      jm3Ordered.reserve(latticeVolumeWithGhost);
+
+      phaseExpModulusO.reserve(latticeVolumeWithGhost);
+      phaseExpAngleO.reserve(latticeVolumeWithGhost);
+      phaseExp2ReO.reserve(latticeVolumeWithGhost);
+      phaseExp2ImO.reserve(latticeVolumeWithGhost);                  
     }
+
+    if (config.hdf5_spin_current_output == 1){
+      js11O.reserve(latticeVolumeWithGhost);
+      js21O.reserve(latticeVolumeWithGhost);
+      js31O.reserve(latticeVolumeWithGhost);
+
+      js12O.reserve(latticeVolumeWithGhost);
+      js22O.reserve(latticeVolumeWithGhost);
+      js32O.reserve(latticeVolumeWithGhost);
+
+      js13O.reserve(latticeVolumeWithGhost);
+      js23O.reserve(latticeVolumeWithGhost);
+      js33O.reserve(latticeVolumeWithGhost);      
+    }
+
     
     // One more point in each direction, but cell data (Npts - 1 cells)
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
@@ -2404,6 +2733,7 @@ int main(int argc, char **argv) {
 	|| (sim.config.hdf5_trA_output          == 1)
 	|| (sim.config.hdf5_eigvA_output        == 1)
 	|| (sim.config.hdf5_mass_current_output == 1)
+	|| (sim.config.hdf5_spin_current_output == 1)
        ){
      sim.insitu_hdf5xdmf();
      //hila::synchronize();    
