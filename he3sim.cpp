@@ -118,7 +118,7 @@ public:
   /*----------------------------------------*/    
   
   Field<phi_t> A;
-  Field<phi_t> pi;
+  Field<phi_t> pi; // pi is dtdAali
 
   Matep matep;
   real_t t;
@@ -2113,14 +2113,11 @@ void he3sim::insitu_execute() {
       onsites(ALL) {
 	jsX[X] = 0;
 	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
-          jsX[X].e(i,al) += matep.epsilon(al,be,ga)
+          jsX[X].e(i,al) += -matep.epsilon(al,be,ga)
 	                     * (A[X].e(be,i).conj() * (A[X+j].e(ga,j) - A[X-j].e(ga,j))
 			        + A[X].e(be,j).conj() * (A[X+i].e(ga,j) - A[X-i].e(ga,j))
 			        + A[X].e(be,j).conj() * (A[X+j].e(ga,i) - A[X-j].e(ga,i))).real();
 	  
-	  /*jmX[X].e(i,al) += (A[X].e(al,j).conj() *(A[X+i].e(al,j) - A[X-i].e(al,j))
-			  + A[X].e(al,j).conj() * (A[X+j].e(al,i) - A[X-j].e(al,i))
-			  + A[X].e(al,i).conj() * (A[X+j].e(al,j) - A[X-j].e(al,j))).real();*/
 	} // foralldir end here, outermost foralldir slowest, inner run earier
 	jsX[X] /= 2*config.dx;
       } // onsites(ALL) end here
@@ -2292,6 +2289,9 @@ void he3sim::next() {
   
   next_timer.start();
 
+  /* --------------------------------------------------------------- */  
+  /* >>>>>>>>>>  boundary condition handling block starts <<<<<<<<<< */
+  /* --------------------------------------------------------------- */
   onsites (ALL) {
 
     A[X] += config.dt * pi[X];
@@ -2444,6 +2444,10 @@ void he3sim::next() {
     
   } // onsites(ALL) block ends here
 
+  /* --------------------------------------------------------------- */  
+  /* >>>>>>>    boundary condition handling block ends here   <<<<<< */
+  /* --------------------------------------------------------------- */  
+
   onsites (ALL) {
       
     auto AxAt = A[X]*A[X].transpose();
@@ -2456,14 +2460,14 @@ void he3sim::next() {
       - 2.0*config.beta4*AxAd*A[X] 
       - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
 
-  }
+  } // bulk energy contribution
 
   onsites(ALL) {
     djAaj[X] = 0;
     foralldir(j) {
       djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
     }
-  }
+  } // DjA_aj = D0A_al0 + D1A_al1 + D2A_al2 ???
 
   onsites(ALL) {
     phi_t mat;
@@ -2476,19 +2480,11 @@ void he3sim::next() {
   }
 
   onsites (ALL) {
-    // deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x + e_x] + A[X - e_x - e_x]
-    // 						     + A[X + e_y + e_y] + A[X - e_y - e_y]
-    // 						     + A[X + e_z + e_z] + A[X - e_z - e_z]
-    // 						     - 6.0*A[X]);
-
-    /*
-     * debug gradient updates: 
-     */
     deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]
 						      + A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
-  }
+  } // DjDjAali term summation
 
     //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
 
