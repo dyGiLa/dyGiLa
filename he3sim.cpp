@@ -166,7 +166,7 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
       }
-    config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
+    config.boundary_conditions = parameters.get_item("BCs1",{"periodic", "AB", "PairBreaking"});
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
     
@@ -629,7 +629,7 @@ void scaling_sim::write_phases() {
 
   onsites (ALL) {
 
-    real_t R1,R2,R3,R4,R5;
+    real_t R1,/*R2*/R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
     real_t error=1.0/3.0;
     int phase;
@@ -647,7 +647,7 @@ void scaling_sim::write_phases() {
 
     R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
 
-    R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
+    //R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
 
     R3 = real(((Ac*Ac.transpose()*Ac.conj()*Ac.dagger()).trace()));
 
@@ -733,7 +733,7 @@ void scaling_sim::write_positions() {
       
       onsites (ALL) {
 
-	real_t R1,R2,R3,R4,R5;
+	real_t R1/*,R2*/,R3,R4,R5;
 	phi_t Ac;
 
 	if (real((A[X]*A[X].dagger()).trace()) > 0.0)
@@ -747,7 +747,7 @@ void scaling_sim::write_positions() {
 	    
 	R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
 
-	R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
+	//R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
 
 	R3 = real(((Ac*Ac.transpose()*Ac.conj()*Ac.dagger()).trace()));
 
