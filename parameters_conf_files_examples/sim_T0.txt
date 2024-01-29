@@ -1,0 +1,27 @@
+Nx                  128              # Number of points in the 0st direction
+Ny		    64              # Number of points in the 2nd direction
+Nz		    32              # Number of points in the 3rd direction
+dx		    0.5              # Distance between two points
+dtdxRatio	    0.2	             # ratio between dt and dx 
+tStart		    10.0             # starting time
+tEnd		    70.0             # end time
+tdif		    10.0             # end time for diffusion
+difFac		    3.0              # diffusion factor, related with dx, it has to be mdified when dx is changed (ex dx->dx/2 difFac->2*difFac)
+tdis		    10.0             # end of damping 
+gamma		    0.0              # value of damping
+initialCondition    Bphase           # type of initial condition gaussrand, kgaussrand,Bphase,Aphase
+seed		    1                # Random seed
+IniMod              1.0389           # Intial modulus in the kgaussrand case
+Inilc               1.0              # Initial correlation length in the kgaussrand case
+category            computed         #fixed -> alpha and betai,  computed -> T and p, interpolated-> params_file
+T                   2.0  
+p                   15.0
+tStats              10.0             # Starting time for the output_file
+nOutputs	    61.0             # Number of outputs for the output_file
+output_file         stats/phaseB.txt #Path for output_file
+out_points          yes              #yes or no create a points directory for the output
+write_phases        no               #write pahse info poitn by point, if out_points set to no remove line
+write_eigen         no               #wriet eigenvalue and eigenvector, if out_points set to no remove line 
+boundary_conditions PairBreaking     #periodic, AB or PairBreaking
+useTbath            no               #yes or no, if yes uses the upodate with thermal bath
+Tbath               1.0              #Temperature of thermal bath
