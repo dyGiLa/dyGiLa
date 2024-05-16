@@ -33,8 +33,14 @@ public:
   void write_phases();
   void next();
   void next_bath();
-
-
+  const phi_t shift(phi_t phip ,phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir);
+  const phi_t periodic(phi_t phi1);
+  const phi_t maximal();
+  const	phi_t BphaseBoundary();
+  const	phi_t AphaseBoundary();
+  const	phi_t normalBoundary();
+  const phi_t RobinBoundary(phi_t phiI, int oorN, real_t bt, int face);
+  
   void write_A_matrix_positions();             // output A-matrix after certain time interval
   void latticeCoordinate_output();             // lattice coordinates output with same sequence of A.write() 
   
@@ -68,6 +74,8 @@ public:
       int seed;
       real_t IniMod;
       real_t Inilc;
+      real_t radius;
+      real_t variance;
       
       int item;
       real_t T;
@@ -85,10 +93,22 @@ public:
       int positions;
       std::string end_name;
       int npositionout;
-      int boundary_conditions;
+      int bcx0;
+      int bcxN;
+      int bcy0;
+      int bcyN;
+      int bcz0;
+      int bczN;
+      real_t robinbt_x0;
+      real_t robinbt_xN;
+      real_t robinbt_y0;
+      real_t robinbt_yN;
+      real_t robinbt_z0;
+      real_t robinbt_zN;
       int useTbath;
       int write_phases;
       int write_eigen;
+      int write_gap;
     } config;
 };
 
@@ -110,7 +130,11 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
     config.gamma = parameters.get("gamma");
-    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
+    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase","noisyA","bubble"});
+    if (config.initialCondition==5){
+      config.radius = parameters.get("radius");
+      config.variance = parameters.get("variance");
+    }
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
@@ -129,7 +153,6 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     else if (config.item == 1) {
       config.T = parameters.get("T");
       config.p = parameters.get("p");
-      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p);
     }
     else {
       const std::string in_file = parameters.get("params_file"); // where is params_file ???
@@ -165,8 +188,23 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
 	config.npositionout = parameters.get("npositionout");
 	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
 	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
+	config.write_gap = parameters.get_item("write_gap",{"no","yes"});
       }
-    config.boundary_conditions = parameters.get_item("boundary_conditions",{"periodic", "AB", "PairBreaking"});
+    
+    config.bcx0 = parameters.get_item("bcx0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcxN = parameters.get_item("bcxN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcy0 = parameters.get_item("bcy0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcyN = parameters.get_item("bcyN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcz0 = parameters.get_item("bcz0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bczN = parameters.get_item("bczN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.robinbt_x0 = parameters.get("robinbt_x0");
+    config.robinbt_xN = parameters.get("robinbt_xN");
+    config.robinbt_y0 = parameters.get("robinbt_y0");
+    config.robinbt_yN = parameters.get("robinbt_yN");
+    config.robinbt_z0 = parameters.get("robinbt_z0");
+    config.robinbt_zN = parameters.get("robinbt_zN");
+
+    
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
     
@@ -296,6 +334,53 @@ void scaling_sim::initialize() {
 
     break;
     }
+  case 4: {
+    pi = 0;
+    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
+    onsites(ALL) {
+      foralldir(al) foralldir(i){
+	A[X].e(al,i) = sqrt(0.5) * hila::gaussian_random<Complex<real_t>>();
+	if ((al==0) && (i==0)) {
+	  A[X].e(al,i).re=A[X].e(al,i).re + 1.;
+	}
+	else if ((al==0) && (i==1)) {
+	  A[X].e(al,i).im=A[X].e(al,i).im + 1.;
+	} // put bulk A-phase elements into random matrix
+
+	A[X].e(al,i)=(A[X].e(al,i)/sqrt(2.)) * gap;    
+      } 
+    }
+
+    hila::out0 << "Noisy A phase \n";
+
+    break;
+  }
+  case 5: {
+    pi = 0;
+    real_t radius=config.radius;
+    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
+    onsites(ALL) {
+      real_t d=sqrt(pow(X.coordinates()[0]-config.lx/2.0,2.0)+pow(X.coordinates()[1]-config.ly/2.0,2.0)+pow(X.coordinates()[2]-config.lz/2.0,2.0));
+      if(d<radius){
+	foralldir(al) foralldir(i){
+	  A[X].e(al,i) = sqrt(config.variance) * hila::gaussian_random<Complex<real_t>>();
+	}
+      }
+      else{
+	foralldir(al) foralldir(i){
+	  if ((al==0) && (i==0)) {
+	    A[X].e(al,i).re = 1.;
+	  }
+	  else if ((al==0) && (i==1)) {
+	    A[X].e(al,i).im = 1.;
+	  }
+	}
+	A[X] = gap * A[X]/sqrt(2.0);
+      }
+    }
+    hila::out0 << "Normal phase bubble with radius: "<<radius<<"\n";
+    break;
+  }
   default: {
 
     // #pragma hila ast_dump
@@ -749,15 +834,24 @@ void scaling_sim::write_positions() {
 
       onsites(ALL){
 
-	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X],hila::sort::ascending);
+	(A[X].dagger()*A[X]).eigen_jacobi(eval[X],evec[X]);//,hila::sort::ascending);
 	evec[X]=evec[X].transpose();
       }
 
       eval.write("points/eigenvalues-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
-      evec.write("points/eigenvectors-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
+      //evec.write("points/eigenvectors-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
       
     }
-      
+
+  if(config.write_gap==1)
+    {
+      Field<double> gap;
+
+      onsites(ALL){
+	gap[X] = real(sqrt((A[X]*A[X].dagger()).trace()));}
+
+      gap.write("points/gap-t"+std::to_string(int(round(t/config.dt)))+"_"+config.end_name,false);
+    }
 }
 
 void scaling_sim::write_A_matrix_positions() {
@@ -807,6 +901,302 @@ void scaling_sim::latticeCoordinate_output()
 
 }
 
+const phi_t scaling_sim::shift(phi_t phip, phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir) {
+
+  phi_t phibc;
+  CoordinateVector box;
+
+  box={config.lx,config.ly,config.lz};
+
+  if(p[d] == 0 and d == 0 and dir == 0){
+    switch (config.bcx0) {
+    case 0: {
+      phibc = periodic(phim);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+    case 5: {
+      phibc = RobinBoundary(phip,0,config.robinbt_x0,0);
+      break;
+    }
+    } 
+  }
+  else if (p[d] == 0 and d == 1 and dir == 0){
+    switch (config.bcy0) {
+    case 0: {
+      phibc = periodic(phim);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+      case 5: {
+	phibc = RobinBoundary(phip,0,config.robinbt_y0,1);
+      break;
+    }
+    }
+  }
+  else if (p[d] == 0 and d == 2 and dir == 0){
+    switch (config.bcz0) {
+    case 0: {
+      phibc = periodic(phim);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+      case 5: {
+	phibc = RobinBoundary(phip,0,config.robinbt_z0,2);
+      break;
+    }
+    }
+  }
+  else if (p[d] == box[d]-1 and d == 0 and dir == 1){
+     switch (config.bcxN) {
+    case 0: {
+      phibc = periodic(phip);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+      case 5: {
+	phibc = RobinBoundary(phim,1,config.robinbt_xN,0);
+      break;
+    }
+    }
+  }
+ else if (p[d] == box[d]-1 and d == 1 and dir == 1){
+     switch (config.bcyN) {
+    case 0: {
+      phibc = periodic(phip);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+      case 5: {
+	phibc = RobinBoundary(phim,1,config.robinbt_yN,1);
+      break;
+    }
+    }
+  }
+  else if (p[d] == box[d]-1 and d == 2 and dir == 1){
+     switch (config.bczN) {
+    case 0: {
+      phibc = periodic(phip);
+      break;
+    }
+    case 1: {
+      phibc = AphaseBoundary();
+      break;
+    }
+    case 2: {
+      phibc = BphaseBoundary();
+      break;
+    }
+    case 3: {
+      phibc = normalBoundary();
+      break;
+    }
+    case 4: {
+      phibc = maximal();
+      break;
+    }
+      case 5: {
+	phibc = RobinBoundary(phim,1,config.robinbt_zN,2);
+      break;
+    }
+    }
+  }
+  else {
+    if (dir == 0 ){
+      phibc=phim;}
+    else if (dir == 1){
+      phibc=phip;
+    }
+  }
+    
+    
+  return phibc;
+
+}
+
+const phi_t scaling_sim::periodic(phi_t phi1) {
+
+  return phi1;
+}
+
+const phi_t scaling_sim::maximal() {
+
+  phi_t phibc;
+ 
+  phibc=0.0;
+
+  return phibc;
+
+}
+
+const phi_t scaling_sim::BphaseBoundary() {
+
+  Matep MP;
+  real_t Tp[2];
+  update_Tp(t, Tp);
+  phi_t phibc;
+  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
+
+  
+  foralldir(d1)foralldir(d2){                                                                                                                                                                     
+    if (d1==d2){                                                                                                                                                                                  
+      phibc.e(d1,d2).re = 1.0;                                                                                                                                                                     
+      phibc.e(d1,d2).im = 0.0;                                                                                                                                                                     
+    }                                                                                                                                                                                             
+    else {                                                                                                                                                                                        
+      phibc.e(d1,d2).re = 0.0;                                                                                                                                                                     
+      phibc.e(d1,d2).im = 0.0;}                                                                                                                                                                    
+  }                                                                                                                                                                                               
+
+  phibc = gapb * phibc/sqrt(3.0); 
+  
+
+  return phibc;
+
+}
+
+
+const phi_t scaling_sim::AphaseBoundary() {
+
+  Matep MP;
+  real_t Tp[2];
+  update_Tp(t, Tp);
+  phi_t phibc;
+  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
+
+  foralldir(d1)foralldir(d2){                                                                                                                                                                     
+    if (d1==2 && d2==0){                                                                                                                                                                          
+      phibc.e(d1,d2).re = 1.0;                                                                                                                                                                     
+      phibc.e(d1,d2).im = 0.0;                                                                                                                                                                     
+    }                                                                                                                                                                                             
+    else if (d1==2 && d2==1){                                                                                                                                                                     
+      phibc.e(d1,d2).re = 0.0;  // this A-order parameter same with GL-theory note eq.46                                                                                                           
+      phibc.e(d1,d2).im = 1.0;                                                                                                                                                                     
+    }                                                                                                                                                                                             
+    else {                                                                                                                                                                                        
+      phibc.e(d1,d2).re = 0.0;                                                                                                                                                                     
+      phibc.e(d1,d2).im = 0.0;                                                                                                                                                                     
+    }                                                                                                                                                                                             
+  }                                                                                                                                                                                               
+
+  phibc = gapa * phibc/sqrt(2.0);  
+
+  return phibc;
+  
+}
+
+const phi_t scaling_sim::normalBoundary(){
+
+  
+  phi_t phibc;
+
+  foralldir(al) foralldir(i){
+      phibc.e(al,i) = sqrt(1.0) * hila::gaussian_random<Complex<real_t>>();
+  } // doralldir end here                                                                                                                                                                               
+  
+  return phibc;
+  
+}
+
+const phi_t scaling_sim::RobinBoundary(phi_t phiI, int oorN,real_t bt, int face){
+
+  phi_t phibc;
+  real_t pbt=config.dx/bt;
+
+  foralldir(d1){
+    if(d1==face){
+      foralldir(d2){
+	phibc.e(d2,d1)=0.0;}
+    }else{
+      if(oorN == 0){
+	foralldir(d2){
+	  phibc.e(d2,d1)=phiI.e(d2,d1)*((1.0-pbt)/(1.0+pbt));}
+      }else{
+	foralldir(d2){
+	  phibc.e(d2,d1)=phiI.e(d2,d1)*((1.0+pbt)/(1.0-pbt));}
+      }
+    }
+  }
+
+  return phibc;
+
+}
+
 void scaling_sim::next() {
 
   Matep MP;
@@ -821,60 +1211,10 @@ void scaling_sim::next() {
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
 
-  int bc=config.boundary_conditions;
-  
   next_timer.start();
 
   onsites (ALL) {
-
     A[X] += config.dt * pi[X];
-
-    if (bc ==1)
-      {
-	if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
-	  {	
-	    foralldir(d1)foralldir(d2){
-	      if (d1==d2){
-		A[X].e(d1,d2).re = 1.0;
-		A[X].e(d1,d2).im = 0.0;
-	      }
-	      else {
-		A[X].e(d1,d2).re = 0.0;
-		A[X].e(d1,d2).im = 0.0;}
-	    }
-	    A[X] = gapb * A[X]/sqrt(3.0);
-	  }
-	else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-	  {
-	    foralldir(d1)foralldir(d2){
-	      if (d1==2 && d2==0){
-		A[X].e(d1,d2).re = 1.0;
-		A[X].e(d1,d2).im = 0.0;
-	      }
-	      else if (d1==2 && d2==1){
-		A[X].e(d1,d2).re = 0.0;  // this A-order parameter same with GL-theory note eq.46
-		A[X].e(d1,d2).im = 1.0;
-	      }
-	      else {
-		A[X].e(d1,d2).re = 0.0;
-		A[X].e(d1,d2).im = 0.0;
-	      }
-	    }
-	    A[X] = gapa * A[X]/sqrt(2.0);
-	  }
-      }
-    else if (bc==2)
-      {
-	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
-	    X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
-	    X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
-	    X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
-	    X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
-	    X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
-          {
-	    A[X]=0.0;
-	  }
-      }
   }
 
   onsites (ALL) {
@@ -894,7 +1234,8 @@ void scaling_sim::next() {
   onsites(ALL) {
     djAaj[X] = 0;
     foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+      djAaj[X] += shift(A[X+j],A[X],A[X-j], X.coordinates(),j,1).column(j)-shift(A[X+j],A[X],A[X-j], X.coordinates(),j,0).column(j);
+      //djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
     }
   }
 
@@ -917,9 +1258,9 @@ void scaling_sim::next() {
     /*
      * debug gradient updates: 
      */
-    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
-						      + A[X + e_y] + A[X - e_y]
-						      + A[X + e_z] + A[X - e_z]
+    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,0)//A[X + e_x] + A[X - e_x]
+						      + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,0) //+ A[X + e_y] + A[X - e_y]
+						      + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,0) //+ A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
   }
 
@@ -963,60 +1304,10 @@ void scaling_sim::next_bath() {
   real_t sig = sqrt(2.0*tb*config.gamma);
   real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
 
-  int bc=config.boundary_conditions;
-
-    next_timer.start();
+  next_timer.start();
 
   onsites (ALL) {
-
     A[X] += config.dt * pi[X];
-
-    if (bc ==1)
-      {
-        if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
-          {
-            foralldir(d1)foralldir(d2){
-              if (d1==d2){
-                A[X].e(d1,d2).re = 1.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-              else {
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 0.0;}
-            }
-            A[X] = gapb * A[X]/sqrt(3.0);
-          }
-        else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-          {
-            foralldir(d1)foralldir(d2){
-              if (d1==2 && d2==0){
-                A[X].e(d1,d2).re = 1.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-              else if (d1==2 && d2==1){
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 1.0;
-              }
-              else {
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-	               }
-            A[X] = gapa * A[X]/sqrt(2.0);
-          }
-        }
-    else if (bc==2)
-      {
-        if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
-            X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
-            X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
-            X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
-            X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
-            X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
-          {
-            A[X]=0.0;
-          }
-      }
   }
 
   onsites (ALL) {
@@ -1036,7 +1327,7 @@ void scaling_sim::next_bath() {
   onsites(ALL) {
     djAaj[X] = 0;
     foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+      djAaj[X] += shift(A[X+j],A[X],A[X-j], X.coordinates(),j,1).column(j) - shift(A[X+j],A[X],A[X-j],X.coordinates(),j,0).column(j);
     }
   }
 
@@ -1051,9 +1342,9 @@ void scaling_sim::next_bath() {
   }
 
   onsites (ALL) {
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
+    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (shift(A[X+e_x],A[X],A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X],A[X-e_x],X.coordinates(),e_x,0)
+						     + shift(A[X+e_y],A[X],A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X],A[X-e_y],X.coordinates(),e_y,0)
+                                                     + shift(A[X+e_z],A[X],A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X],A[X-e_z],X.coordinates(),e_z,0)
                                                      - 6.0*A[X]);
      deltaPi[X] += hila::gaussrand()*sig;
 
@@ -1092,7 +1383,7 @@ void scaling_sim::next_bath() {
       onsites(ALL) {
         djAaj[X] = 0;
         foralldir(j) {
-          djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+          djAaj[X] += shift(A[X+j],A[X],A[X-j],X.coordinates(),j,1).column(j) - shift(A[X+j],A[X],A[X-j],X.coordinates(),j,0).column(j);
         }
       }
 
@@ -1107,9 +1398,9 @@ void scaling_sim::next_bath() {
       }
 
       onsites (ALL) {
-        deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
+        deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (shift(A[X+e_x],A[X],A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X],A[X-e_x],X.coordinates(),e_x,0)
+							 + shift(A[X+e_y],A[X],A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X],A[X-e_y],X.coordinates(),e_y,0)
+							 + shift(A[X+e_z],A[X],A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X],A[X-e_z],X.coordinates(),e_z,0)
 							 - 6.0*A[X]);
         deltaPi[X] += hila::gaussrand()*sig;
       }
