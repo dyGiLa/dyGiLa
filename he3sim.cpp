@@ -697,7 +697,14 @@ void scaling_sim::write_positions() {
 
       data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);*/
 
-      T.write("points/temp-t"+std::to_string(int(t/config.dt)),false);
+      Field<double> gap;
+
+      onsites(ALL){
+        gap[X] = real(sqrt((A[X]*A[X].dagger()).trace()));}
+
+      gap.write("points/gap-t"+std::to_string(int(round(t/config.dt))),false);
+      
+      T.write("points/temp-t"+std::to_string(int(round(t/config.dt))),false);
 
     }
 
