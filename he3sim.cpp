@@ -44,6 +44,7 @@ public:
   Field<phi_t> pi;
 
   Field<real_t> T;
+  Field<real_t> dT;
   Field<real_t> p;
   
   real_t t;
@@ -343,6 +344,7 @@ void scaling_sim::initializeT() {
     
     onsites(ALL) {
       T[X] = config.IniT;
+      dT[X] = 0.0;
     }
 
      hila::out0 << "COnstant T \n";
@@ -357,7 +359,7 @@ void scaling_sim::initializeT() {
       auto xcoord = X.coordinate(e_x);
 
       T[X] = config.IniT + config.ampT*sin(2.0*M_PI*xcoord/config.lx);
-    
+      dT[X] = 0.0;
     }
 
      hila::out0 << "Sine T \n";
@@ -377,6 +379,7 @@ void scaling_sim::initializeT() {
       real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
       
       T[X] = config.IniT + config.ampT*expx*expy*expz;
+      dT[X] = 0.0;
     }
 
      hila::out0 << "Hot Spot \n";
@@ -655,7 +658,7 @@ void scaling_sim::write_positions() {
 
   if (config.write_phases==1)
     {
-      Field<Vector<8,float>> data;
+      /*Field<Vector<8,float>> data;
       
       onsites (ALL) {
 
@@ -692,7 +695,9 @@ void scaling_sim::write_positions() {
 
       }
 
-      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);
+      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);*/
+
+      T.write("points/temp-t"+std::to_string(int(t/config.dt)),false);
 
     }
 
@@ -1088,54 +1093,62 @@ void scaling_sim::next_bath() {
 
 void scaling_sim::nextT() {
 
-  real_t t0=config.startdiffT;
-  
+  Field<real_t> deltaT;
+  real_t alpha=1.0;
+  real_t heatfactor=3.0;
+
+  real_t time_steps=1.0;
+  real_t dt=config.dt;
+
   switch (config.Tevolvetype){
   case 0: {
 
-    onsites (ALL) {
-      auto xcoord = X.coordinate(e_x);
-      auto ycoord = X.coordinate(e_y);
-      auto zcoord = X.coordinate(e_z);
-
-      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
-      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
-      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
-
-      real_t diff0=exp((-pow(xcoord-config.lx/2.0,2.0)-pow(ycoord-config.ly/2.0,2.0)-pow(zcoord-config.lz/2.0,2.0))/(4.0*config.diffT*t0))/pow(t0,3.0/2.0);
-      real_t diff = exp((-pow(xcoord-config.lx/2.0,2.0)-pow(ycoord-config.ly/2.0,2.0)-pow(zcoord-config.lz/2.0,2.0))/(4.0*config.diffT*t))/pow(t,3.0/2.0);
-      real_t a0 = config.ampT*expx*expy*expz/diff0;
-
-      T[X] =sim.initT + a0 * diff;
-      
-    }
+    dt=config.dt/heatfactor;
+    time_steps=heatfactor;
     
-   
     break;
   }
   case 1: {
-  
-    onsites (ALL) {
-      auto xcoord = X.coordinate(e_x);
-      auto ycoord = X.coordinate(e_y);
-      auto zcoord = X.coordinate(e_z);
-
-      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
-      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
-      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
-
-      real_t diff0=exp(-(xcoord-config.lx/2.0)/sqrt(3.0)-(ycoord-config.ly/2.0)/sqrt(3.0)-(zcoord-config.lz/2.0)/sqrt(3)-t0);
-      real_t diff=exp(-(xcoord-config.lx/2.0)/sqrt(3.0)-(ycoord-config.ly/2.0)/sqrt(3.0)-(zcoord-config.lz/2.0)/sqrt(3)-t);
-      real_t a0 = config.ampT*expx*expy*expz/diff0;
-
-      T[X] = a0 * diff;
-
-    }
+    
+    dt=config.dt;
+    time_steps=1;
     
     break;
   }
-
   }
+  
+  for(int i=0; i<time_steps; i++)
+    {
+  
+      onsites (ALL) {
+
+	T[X] += dt * dT[X];
+      }
+
+      onsites (ALL) {
+
+	real_t diff2 = alpha *(1.0/(config.dx*config.dx)) * (T[X + e_x] + T[X - e_x]
+							     + T[X + e_y] + T[X - e_y]
+							     + T[X + e_z] + T[X - e_z]
+							     - 6.0*T[X]); 
+    
+	switch (config.Tevolvetype){
+	case 0: {
+	  
+	  dT[X] = diff2;
+	
+	  break;
+	}
+	case 1: {
+	  
+	  dT[X] = dT[X] + diff2 * dt;
+
+	  break;
+	}
+	}
+      }
+    }
+
   
 }
 
