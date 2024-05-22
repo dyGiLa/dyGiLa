@@ -293,11 +293,20 @@ void scaling_sim::initialize() {
     hila::out0<<"Gap A: "<<gap<<"\n";
     onsites(ALL) {
 
-        A[X] = 0;
-        A[X].e(0,2).re = 1.0;         // what indice of e means? Is this A-phase?
-        A[X].e(1,2).im = 1.0;
+      A[X]=0.0;
       
+      foralldir(al) foralldir(i){
+	if ((al==0) && (i==0)) {
+	  A[X].e(al,i).re = 1.;
+	}
+	else if ((al==0) && (i==1)) {
+	  A[X].e(al,i).im = 1.;
+	}
+      }
+
       A[X] = gap * A[X]/sqrt(2.0);
+      
+      
     }
 
     hila::out0 << "Pure A phase \n";
