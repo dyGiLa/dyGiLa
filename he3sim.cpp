@@ -1207,10 +1207,18 @@ void scaling_sim::next() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
+  real_t H[3];
+
+  H[0]=1.0/sqrt(3.0);
+  H[1]=1.0/sqrt(3.0);
+  H[2]=1.0/sqrt(3.0);
+  
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
-
+  real_t gh=-0.1;
+  real_t gz=-0.1;
+  
   next_timer.start();
 
   onsites (ALL) {
@@ -1221,6 +1229,9 @@ void scaling_sim::next() {
       
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
+    phi_t HHA = 0;
+    phi_t He = 0;
+    real_t sgn=0.0;
     
     deltaPi[X] = - config.alpha*A[X]
       - 2.0*config.beta1*A[X].conj()*AxAt.trace() 
@@ -1229,6 +1240,37 @@ void scaling_sim::next() {
       - 2.0*config.beta4*AxAd*A[X] 
       - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
 
+
+    foralldir(al) foralldir(i){
+      foralldir(k){
+	HHA.e(al,i) += H[al]*H[k]*A[X].e(k,i);
+      }
+    }
+
+    foralldir(al) foralldir(i){
+      if (al==i){
+	He.e(al,i)=0.0;
+      }else {
+	if (al<i){
+	  sgn=1.0;
+	}else{
+	  sgn=-1.0;}
+	foralldir(k){
+	  if (k==al or k==i){
+	    He.e(al,i) += 0.0;
+	  }else{
+	    He.e(al,i) += sgn*H[k];
+	  }
+	}
+      }
+    }
+
+    
+    deltaPi[X] -= gh*HHA + gz*He.transpose()*A[X];  
+
+    //magnetic field
+
+    
   }
 
   onsites(ALL) {
