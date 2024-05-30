@@ -1209,15 +1209,15 @@ void scaling_sim::next() {
 
   real_t H[3];
 
-  H[0]=1.0/sqrt(3.0);
-  H[1]=1.0/sqrt(3.0);
-  H[2]=1.0/sqrt(3.0);
+  H[0]=0.0;
+  H[1]=0.0;
+  H[2]=0.1;
   
   real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
   real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
 
-  real_t gh=-0.1;
-  real_t gz=-0.1;
+  real_t gh=0.852;
+  real_t gz=0.022;
   
   next_timer.start();
 
