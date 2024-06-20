@@ -68,8 +68,8 @@ public:
       real_t tdif;
       real_t difFac;
       real_t tdis;
-      real_t gamma;
-
+      Complex<double> gamma;
+      
       int initialCondition;
       int seed;
       real_t IniMod;
@@ -114,6 +114,7 @@ public:
 const std::string scaling_sim::allocate(const std::string &fname, int argc, char **argv)
 {
 
+  real_t gammar;
     Matep MP;
     hila::initialize(argc, argv);
     hila::input parameters(fname);
@@ -128,7 +129,9 @@ const std::string scaling_sim::allocate(const std::string &fname, int argc, char
     config.tdif = parameters.get("tdif");
     config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
-    config.gamma = parameters.get("gamma");
+    gammar = parameters.get("gamma");
+    config.gamma.re=gammar;
+    config.gamma.im=0.0;//gammar;
     config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
     config.seed = parameters.get("seed");
     config.IniMod = parameters.get("IniMod");
@@ -289,11 +292,14 @@ void scaling_sim::initialize() {
     }
   case 3: {
     pi = 0;
-    real_t gap = MP.gap_A_td(config.Inip, config.IniT);
-    hila::out0<<"Gap A: "<<gap<<"\n";
+    real_t gapA = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gapB = MP.gap_B_td(config.Inip, config.IniT);
+    real_t tb = config.Inilc;//config.IniT/ MP.Tcp_mK(config.Inip);
+    hila::out0<<"Gap A: "<<gapA<<"\n";
+    hila::out0<<"Gap B: "<<gapB<<"\n";
     onsites(ALL) {
 
-      A[X]=0.0;
+      A[X].gaussian_random(config.IniMod);
       
       foralldir(al) foralldir(i){
 	if ((al==0) && (i==0)) {
@@ -304,7 +310,7 @@ void scaling_sim::initialize() {
 	}
       }
 
-      A[X] = gap * A[X]/sqrt(2.0);
+      A[X] = gapA * A[X]/sqrt(2.0);
       
       
     }
@@ -579,14 +585,14 @@ void scaling_sim::write_phases() {
 
     real_t R1,R2,R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
-    real_t error=1.0/3.0;
+    real_t error=100.0;
     int phase;
     real_t p;
     phi_t Ac;
 
     if (real((A[X]*A[X].dagger()).trace()) > 0.0)
       {
-        Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+        Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());
       }
     else
       {
@@ -903,7 +909,7 @@ void scaling_sim::next() {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
-  else if (t < config.tdis && config.gamma > 0 )
+  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt;
       t += config.dt;
@@ -925,8 +931,14 @@ void scaling_sim::next_bath() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
+  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
+  Matep MP;
+  real_t tb = config.Inilc;// config.IniT/ MP.Tcp_mK(config.Inip);
 
+  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
+
+  double modP=0.0;
+  
   int bc=config.boundary_conditions;
 
     next_timer.start();
@@ -1023,15 +1035,17 @@ void scaling_sim::next_bath() {
 
   onsites (ALL) {
 
-    Matep MP;
-    real_t tb = T[X]/ MP.Tcp_mK(p[X]);
-    real_t sig = sqrt(2.0*tb*config.gamma);
-      
+    //Matep MP;
+    //real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+    //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
+    //phi_t rad_mat;
+    
     deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
                                                      - 6.0*A[X]);
-     deltaPi[X] += hila::gaussrand()*sig;
+    //rad_mat.gaussian_random();
+    //deltaPi[X] += rad_mat*sig;
 
   }
 
@@ -1043,12 +1057,15 @@ void scaling_sim::next_bath() {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
-  else if (t < config.tdis && config.gamma > 0 )
+  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
-
-      pi[ALL] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*hila::gaussrand();
-
+      onsites(ALL){
+	phi_t rad_mat;
+	rad_mat.gaussian_random();
+	pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+	//modP += sqrt(ep2)*tb*rad_mat.norm();
+      }
 
       deltaPi[ALL] = 0.0;
 
@@ -1087,15 +1104,17 @@ void scaling_sim::next_bath() {
 
       onsites (ALL) {
 
-	Matep MP;
-	real_t tb = T[X]/ MP.Tcp_mK(p[X]);
-	real_t sig = sqrt(2.0*tb*config.gamma);
+	//Matep MP;
+	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+	//real_t sig = sqrt(2.0*tb*config.gamma);
+	//phi_t rad_mat;
 	
         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
 							 - 6.0*A[X]);
-        deltaPi[X] += hila::gaussrand()*sig;
+	//rad_mat.gaussian_random();
+	//deltaPi[X] += sig*rad_mat; 
       }
 
 
@@ -1109,7 +1128,7 @@ void scaling_sim::next_bath() {
       t += config.dt;
     }
 
-
+  //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
   next_timer.stop();
 
 }
@@ -1117,7 +1136,7 @@ void scaling_sim::next_bath() {
 void scaling_sim::nextT() {
 
   Field<real_t> deltaT;
-  real_t alpha=1.0;
+  real_t alpha=0.1;
   real_t heatfactor=3.0;
 
   real_t time_steps=1.0;
