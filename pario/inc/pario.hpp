@@ -15,6 +15,7 @@
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 //#include "matep.hpp"
+#include "glsolver.hpp"
 
 /*-----------------------------------------------------------------------*/
 /***      include Ascent & Canduit for in situ rank rendering        *****/
@@ -31,9 +32,11 @@
 
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
-using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
+// using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
-// Container for simulation parameters and methods
+// class tamplate for handling parallel stream
+// template paramter is the dimension of order paramter matrix e.g., 1, 2, 3
+template <unsigned int OPDim> 
 class parIO{
 
 public:
@@ -43,7 +46,7 @@ public:
   /*----------------------------------------*/
   /*  parallel-IO in-situ via Ascent        */
   /*----------------------------------------*/  
-    void insitu_createMesh();
+  void insitu_createMesh(lattice_struct &, glsolver &);
     void insitu_defineActions();
     void insitu_hdf5xdmf();
     void insitu_initialize();  
