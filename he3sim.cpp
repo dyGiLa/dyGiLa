@@ -299,20 +299,27 @@ void scaling_sim::initialize() {
     hila::out0<<"Gap B: "<<gapB<<"\n";
     onsites(ALL) {
 
-      A[X].gaussian_random(config.IniMod);
-      
-      foralldir(al) foralldir(i){
-	if ((al==0) && (i==0)) {
-	  A[X].e(al,i).re = 1.;
-	}
-	else if ((al==0) && (i==1)) {
-	  A[X].e(al,i).im = 1.;
-	}
+      real_t d=sqrt(pow(X.coordinates()[0]-config.lx/2.0,2.0)+pow(X.coordinates()[1]-config.ly/2.0,2.0)+pow(X.coordinates()[2]-config.lz/2.0,2.0));
+      if(d<tb){
+        foralldir(al) foralldir(i){
+          A[X].e(al,i) = sqrt(config.IniMod) * hila::gaussian_random<Complex<real_t>>();
+        }
       }
+      else{
+	//A[X].gaussian_random(config.IniMod);
+      
+	foralldir(al) foralldir(i){
+	  if ((al==0) && (i==0)) {
+	    A[X].e(al,i).re = 1.;
+	  }
+	  else if ((al==0) && (i==1)) {
+	    A[X].e(al,i).im = 1.;
+	  }
+	}
+	A[X] = gapA * A[X]/sqrt(2.0);
+      }
+      
 
-      A[X] = gapA * A[X]/sqrt(2.0);
-      
-      
     }
 
     hila::out0 << "Pure A phase \n";
@@ -585,7 +592,7 @@ void scaling_sim::write_phases() {
 
     real_t R1,R2,R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
-    real_t error=100.0;
+    real_t error=0.5;
     int phase;
     real_t p;
     phi_t Ac;
@@ -933,7 +940,7 @@ void scaling_sim::next_bath() {
 
   Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
   Matep MP;
-  real_t tb = config.Inilc;// config.IniT/ MP.Tcp_mK(config.Inip);
+  real_t tb =  config.IniT/ MP.Tcp_mK(config.Inip);
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
 
