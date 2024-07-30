@@ -18,6 +18,11 @@ ifndef ARCH
 ARCH := vanilla
 endif
 
+# absolute path of dyGiLa folder
+ifeq ($(ARCH), lumi)
+ DYGILA_DIR := /projappl/project_462000465/dyGiLa
+endif
+
 # Absolute UNIX path of parallel io library Ascent
 ifeq ($(ARCH), lumi)
  ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
@@ -41,15 +46,9 @@ APP_OPTS += -I /projappl/project_462000465/lib/fftw-3.3.10-fftw3f/include \
 .DEFAULT_GOAL := dyGiLa
 
 # Read in the main makefile contents, incl. platforms
-include $(HILA_DIR)/libraries/main.mk
+include $(HILA_DIR)/libraries/main.mk \
+        $(DYGILA_DIR)/pario/pario_config.mk
 
-USE_PARIO := ON
-ifeq ($(USE_PARIO), ON)
-  include $(ASCENT_DIR)/share/ascent/ascent_config.mk
-  APP_OPTS += $(ASCENT_INCLUDE_FLAGS)
-  LDFLAGS  += $(ASCENT_LINK_RPATH)
-  LDLIBS   += $(ASCENT_MPI_LIB_FLAGS)
-endif
 
 LDFLAGS += -L/projappl/project_462000465/lib/fftw-3.3.10-fftw3f/lib \
            -L/projappl/project_462000465/lib/fftw-3.3.10-fftw3/lib
@@ -60,12 +59,12 @@ dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
 build/dyGiLa: Makefile build/glsol.o \
-	      build/xdmf.o build/pstream.o build/init.o build/shutdown.o build/mesh.o build/actions.o \
+              $(PARIO_OBJECTS) \
 	      build/matep.o \
               build/main.o \
               $(HILA_OBJECTS) $(HEADERS)
 	$(LD) -o $@ build/glsol.o \
-              build/xdmf.o build/pstream.o build/init.o build/shutdown.o build/mesh.o build/actions.o \
+              $(PARIO_OBJECTS) \
               build/matep.o \
               build/main.o \
 	      $(HILA_OBJECTS) \
