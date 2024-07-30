@@ -2,6 +2,7 @@
 #define PARIO_HPP
 
 #define _USE_MATH_DEFINES
+//#define USE_ASCENT 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -17,15 +18,26 @@
 #include "matep.hpp"
 #include "glsol.hpp"
 
-//#if defined USE_ASCENT
+/*-----------------------------------------------------------------------*/
+/***      include Ascent & Canduit for in situ rank rendering        *****/
+/*-----------------------------------------------------------------------*/
+#if defined USE_ASCENT
+
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
-//#endif
+
+#endif
+/*-----------------------------------------------------------------------*/
+/***               include Ascent & Canduit end here                 *****/
+/*-----------------------------------------------------------------------*/
 
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
 // using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
+// class tamplate for handling parallel stream
+// template paramter is the dimension of order paramter matrix e.g., 1, 2, 3
+template <unsigned int OPDim> 
 class parIO{
 
 public:
@@ -34,22 +46,20 @@ public:
   Matep matep;
   
   /*----------------------------------------*/
-  /*  parallel-IO memember functions        */ 
+  /*  parallel-IO in-situ via Ascent        */
   /*----------------------------------------*/
 
   // called in main() before t-while-loop started
-  void xdmf(glsol &);
+  void insitu_hdf5xdmf(glsol &);
 
   // called in main()  
-  void init(glsol &);
-  void pstream(glsol &);
-  void shutdown();  
+  void insitu_initialize(glsol &);
+  void insitu_execute(glsol &);
+  void insitu_close();  
 
-private:
-  
-  /*-- functions called in insitu_initialize() --*/ 
-  void describeMesh(glsol &);
-  void defineActions(glsol &);
+  // called in insitu_initialize()
+  void insitu_createMesh(glsol &);
+  void insitu_defineActions(glsol &);
 
   /*----- fields declearations -----*/
   
@@ -89,7 +99,7 @@ private:
   
   unsigned char *ghostCellsMask;
 
-  ascent::Ascent pio;
+  ascent::Ascent insitu;
   conduit::Node ascent_options;
   conduit::Node actions;
   conduit::Node mesh;
