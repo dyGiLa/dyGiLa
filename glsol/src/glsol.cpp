@@ -15,21 +15,19 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
-// /*-----------------------------------------------------------------------*/
-// /***      include Ascent & Canduit for in situ rank rendering        *****/
-// /*-----------------------------------------------------------------------*/
-// #if defined USE_ASCENT
-
-// #include "ascent.hpp"
-// #include "conduit_blueprint.hpp"
-
-// #endif
-// /*-----------------------------------------------------------------------*/
-// /***               include Ascent & Canduit end here                 *****/
-// /*-----------------------------------------------------------------------*/
 
 const std::string glsol::allocate(const std::string &fname, int argc, char **argv)
 {
+
+  /** complex gamma, real part, this needs deep looking**/
+  real_t gammar;
+
+
+
+
+
+
+  
     Matep MP;
     hila::initialize(argc, argv);
     hila::input parameters(fname);
@@ -44,6 +42,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.tdif = parameters.get("tdif");
     config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
+
 
     /*----   gamma as a complex number   -----*/
     //config.gamma = parameters.get("gamma");
@@ -153,6 +152,49 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /*----------------------------------------*/
     /* parameters update strategies end here  */
     /*----------------------------------------*/   
+
+
+
+
+    /*Here is confilict point*/
+    /* initial condtion needs deep look */	   
+    gammar = parameters.get("gamma");
+    config.gamma.re=gammar;
+    config.gamma.im=0.0;//gammar;
+    config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
+    config.seed = parameters.get("seed");
+    config.IniMod = parameters.get("IniMod");
+    config.Inilc = parameters.get("Inilc");
+    config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
+    if(config.initialConditionT == 0)
+      {
+	config.IniT = parameters.get("IniT");
+      }
+    else if (config.initialConditionT == 1)
+      {
+	config.IniT = parameters.get("IniT");
+	config.ampT = parameters.get("ampT");
+      }
+    else if (config.initialConditionT == 2)
+      {
+	config.IniT = parameters.get("IniT");
+        config.ampT = parameters.get("ampT");
+	config.sigTx = parameters.get("sigTx");
+	config.sigTy = parameters.get("sigTy");
+	config.sigTz = parameters.get("sigTz");
+      }
+    config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
+    config.Inip	= parameters.get("Inip");
+
+    /* initial condtion needs deep look */
+
+
+
+    
+
+    
+
+    
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
@@ -208,7 +250,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
     /*----------------------------------------*/
-    /*       insitu randering parameters      */
+    /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
     // config.A_matrix_output             = parameters.get_item("A_matrix_output",{"no","yes"});
     // config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
@@ -230,9 +272,23 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.camera_azi = parameters.get("camera_azi");
     config.camera_ele = parameters.get("camera_ele");
     /*----------------------------------------*/
-    /*  insitu randering parameters end       */
+    /* Parallel IO Engineparameters end       */
     /*----------------------------------------*/
     
+    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
+    if(config.evolveT ==1)
+      {
+	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave"});
+	config.startdiffT = parameters.get("startdiffT");
+	config.diffT = parameters.get("diffT");
+      }
+    config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
+    if(config.bloob_after== 1)
+      {
+	config.theat = parameters.get("theat");
+      }
+	
+
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 
@@ -249,23 +305,21 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 void glsol::initialize() {
 
   Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-  
+   
   int Nx = config.lx;
   int Ny = config.ly;
   int Nz = config.lz;
   
   real_t dx = config.dx;
 
-  real_t ttc = MP.Tcp_mK(Tp[1]);
-  hila::out0 <<"T_AB: "<<MP.tAB_RWS(Tp[1])*ttc<<"\n";
+  real_t ttc = MP.Tcp_mK(config.Inip);
+  hila::out0 <<"T_AB: "<<MP.tAB_RWS(config.Inip)*ttc<<"\n";
   
   switch (config.initialCondition) {
     
   case 0: {
     pi = 0;                            
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     onsites(ALL) {                     
       A[X] = hila::gaussrand();
       A[X] = gap * A[X]/A[X].norm();   
@@ -356,7 +410,7 @@ void glsol::initialize() {
     
   case 5: {
     pi = 0;
-    real_t gap = MP.gap_B_td(Tp[1], Tp[0]);
+    real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     hila::out0 <<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
       foralldir(d1)foralldir(d2){
@@ -379,15 +433,33 @@ void glsol::initialize() {
     
     case 6: {
     pi = 0;
-    real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
-    hila::out0<<"Gap A: "<<gap<<"\n";
+    real_t gapA = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gapB = MP.gap_B_td(config.Inip, config.IniT);
+    real_t tb = config.Inilc;//config.IniT/ MP.Tcp_mK(config.Inip);
+    hila::out0<<"Gap A: "<<gapA<<"\n";
+    hila::out0<<"Gap B: "<<gapB<<"\n";
     onsites(ALL) {
 
-        A[X] = sqrt(config.variance_sigma) * hila::gaussrand();
-	A[X].e(0,0).re = 1.0 + sqrt(config.variance_sigma) * hila::gaussrand();
-	A[X].e(0,1).im = 1.0 + sqrt(config.variance_sigma) * hila::gaussrand();
+      real_t d=sqrt(pow(X.coordinates()[0]-config.lx/2.0,2.0)+pow(X.coordinates()[1]-config.ly/2.0,2.0)+pow(X.coordinates()[2]-config.lz/2.0,2.0));
+      if(d<tb){
+        foralldir(al) foralldir(i){
+          A[X].e(al,i) = sqrt(config.IniMod) * hila::gaussian_random<Complex<real_t>>();
+        }
+      }
+      else{
+	//A[X].gaussian_random(config.IniMod);
       
-        A[X] = gap * A[X]/sqrt(2.0);
+	foralldir(al) foralldir(i){
+	  if ((al==0) && (i==0)) {
+	    A[X].e(al,i).re = 1.;
+	  }
+	  else if ((al==0) && (i==1)) {
+	    A[X].e(al,i).im = 1.;
+	  }
+	}
+	A[X] = gapA * A[X]/sqrt(2.0);
+      }
+      
     }
 
     hila::out0 << "Aphase_partial is created \n";
@@ -495,109 +567,124 @@ void glsol::initialize() {
   }
   }
 
+
 } // initialize() call end here
 
-void glsol::update_Tp (real_t t, real_t Tp[2]) {
 
-   
-  if (config.item ==2)
-    {
-      int k1,k2;
-      int size = t_v.size();
 
-      if (t == t_v[size -1]) {
-	k1 = size-1;
-	k2 = size-1;}
-      else {
-	for (int i=1; i<size; i++) {
-	  
-	  if (t >= t_v[i-1] && t < t_v[i]) {
-	    k1 = i-1;
-	    k2 = i; }
-	}
-      }
-      
-      if (k1 == k2 && k1 == size-1){
-	Tp[0] = T_v[size-1];
-	Tp[1] = p_v[size-1];}
-      else {
-	Tp[0]= T_v[k1] + ((T_v[k2]-T_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);
-	Tp[1]= p_v[k1] + ((p_v[k2]-p_v[k1])/(t_v[k2]-t_v[k1])) * (t - t_v[k1]);}
+void glsol::heatbloob() {
+
+  onsites(ALL){
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
+
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
+
+      T[X] = config.IniT + config.ampT*expx*expy*expz;
     }
-  else if (config.item == 1)
-    {
-      Tp[0] = config.T;
-      Tp[1] = config.p;
-    }
-  else if (config.item == 0)
-    {
-      Tp[0] = 0.0;
-      Tp[1] = 0.0;
-    }
+
+  hila::out0 << "Hot Spot created at t="<<t<<" \n";    
 
  
-} // update_Tp function ends here
+} // heatbloob function ends here
 
-void glsol::update_params() {
+
+
+void glsol::initializeT() {
+
+  switch (config.initialConditionT) {
+
+  case 0: {
+    
+    onsites(ALL) {
+      T[X] = config.IniT;
+      dT[X] = 0.0;
+    }
+
+     hila::out0 << "COnstant T \n";
+    
+    break;
+  }
+   
+  case 1: {
+
+    onsites(ALL){
+      
+      auto xcoord = X.coordinate(e_x);
+
+      T[X] = config.IniT + config.ampT*sin(2.0*M_PI*xcoord/config.lx);
+      dT[X] = 0.0;
+    }
+
+     hila::out0 << "Sine T \n";
+    
+    break;
+  }
+
+  case 2: {
+
+    onsites(ALL){
+      auto xcoord = X.coordinate(e_x);
+      auto ycoord = X.coordinate(e_y);
+      auto zcoord = X.coordinate(e_z);
+
+      real_t expx=exp(-0.5*pow(xcoord-config.lx/2.0,2.0)/pow(config.sigTx,2.0));
+      real_t expy=exp(-0.5*pow(ycoord-config.ly/2.0,2.0)/pow(config.sigTy,2.0));
+      real_t expz=exp(-0.5*pow(zcoord-config.lz/2.0,2.0)/pow(config.sigTz,2.0));
+      
+      T[X] = config.IniT + config.ampT*expx*expy*expz;
+      dT[X] = 0.0;
+    }
+
+     hila::out0 << "Hot Spot \n";
+    
+    break;
+  } 
+  }
+}
+
+void glsol::initializep() {
+
+  switch (config.initialConditionp) {
+
+  case 0: {
+
+    onsites(ALL) {
+
+      p[X] = config.Inip;
+
+    }
+
+     hila::out0 << "Constant p \n";
+
+     break;
+  }
+  } 
+}
+
+void glsol::point_params(real_t T, real_t p, real_t beta[6]) {
 
   Matep MP;
-  real_t Tp[2];
-  real_t gapa,gapb;
-  real_t fa,fb;
   
-  if (config.item ==1 && t == config.tStart){
-    tc = MP.Tcp_mK(config.p);
-    gapa = MP.gap_A_td(config.p, config.T);
-    gapb = MP.gap_B_td(config.p, config.T);
-    fa = MP.f_A_td(config.p, config.T);
-    fb = MP.f_B_td(config.p, config.T);
-    
-    hila::out0<<"T: "<<config.T<<" p:"<<config.p<<"\n";
-    hila::out0<<"Tc: "<<tc<<"\n";
-    hila::out0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
-    hila::out0<<"Bulk_A: "<<fa<<" Bulk_B: "<<fb<<"\n";
-    
-    config.alpha = MP.alpha_td(config.p, config.T);
-    config.beta1 = MP.beta1_td(config.p, config.T);
-    config.beta2 = MP.beta2_td(config.p, config.T);
-    config.beta3 = MP.beta3_td(config.p, config.T);
-    config.beta4 = MP.beta4_td(config.p, config.T);
-    config.beta5 = MP.beta5_td(config.p, config.T);
-
-    hila::out0 << config.alpha << " " << config.beta1 << " " << config.beta2 << " " << config.beta3 << " " << config.beta4 << " " << config.beta5<< "\n";
-
-  }
-  else if (config.item ==2){
-    update_Tp(t, Tp);
-    tc = MP.Tcp_mK(Tp[1]);
-    gapa = MP.gap_A_td(Tp[1], Tp[0]);
-    gapb = MP.gap_B_td(Tp[1], Tp[0]);
-    fa = MP.f_A_td(Tp[1], Tp[0]);
-    fb = MP.f_B_td(Tp[1], Tp[0]);
-
-    hila::out0<<"t="<<t<<"\n";
-    hila::out0<<"T: "<<Tp[0]<<" p:"<<Tp[1]<<"\n";
-    hila::out0<<"Tc: "<<tc<<"\n";
-    hila::out0<<"Gap_A: "<<gapa<<" Gap_B: "<<gapb<< "\n";
-    hila::out0<<"Bulk_A: "<<fa<<" Bulk_B: "<<fb<<"\n";
-    
-    config.alpha = MP.alpha_td(Tp[1], Tp[0]);
-    config.beta1 = MP.beta1_td(Tp[1], Tp[0]);
-    config.beta2 = MP.beta2_td(Tp[1], Tp[0]);
-    config.beta3 = MP.beta3_td(Tp[1], Tp[0]);
-    config.beta4 = MP.beta4_td(Tp[1], Tp[0]);
-    config.beta5 = MP.beta5_td(Tp[1], Tp[0]);
-  }
-} // update_params function ends here
-
+  beta[0] = MP.alpha_td(p, T);
+  beta[1] = MP.beta1_td(p, T);
+  beta[2] = MP.beta2_td(p, T);
+  beta[3] = MP.beta3_td(p, T);
+  beta[4] = MP.beta4_td(p, T);
+  beta[5] = MP.beta5_td(p, T);
+}
+  
 void glsol::write_moduli() {
 
    // real_t a = scaleFactor(t);
 
-  double Amod = 0.0/*, AGap = 0.0*/;
+    double Amod = 0.0/*, AGap = 0.0*/;
     double pimod = 0.0;
-    
-    real_t Tp[2];
+
+    //real_t Tp[2];
 
     hila::set_allreduce(false);
     onsites (ALL) {
@@ -606,21 +693,18 @@ void glsol::write_moduli() {
 
     }
         
-    update_Tp(t, Tp);
+    //update_Tp(t, Tp);
     
     if (hila::myrank() == 0) {
-        config.stream << t << ", "
-	              << tc << ", "
-	              << Tp[0] << ", " << Tp[1] << ", "
-	              << config.alpha << " " << config.beta1 << " " <<	config.beta2 << " " <<	config.beta3 << " " <<	config.beta4 << " "    <<	config.beta5 << " "
-	    << Amod / lattice.volume() << " " << pimod / lattice.volume()
-	              << std::endl;
+        config.stream << t << " "
+                      << Amod / lattice.volume() << " " << pimod / lattice.volume()
+                      << " ";
     }
-} // write_moduli ends at here
+
+    hila::out0 << "Moduli done \n";
+}// write_moduli ends at here
 
 void glsol::write_energies() {
-
-  Matep MP;
   
   Complex<double> suma(0),sumb2(0),sumb3(0),sumb4(0),sumb5(0);
   Complex<double> suma_we(0),sumb2_we(0),sumb3_we(0),sumb4_we(0),sumb5_we(0);
@@ -630,30 +714,42 @@ void glsol::write_energies() {
   Complex<double> sumb1_we = 0;
   Complex<double> sumkin(0);
   Complex<double> sumkin_we(0);
-  real_t Tp[2];
 
-  update_Tp(t, Tp);
-
-  real_t ebfe=fmin(MP.f_A_td(Tp[1], Tp[0]),MP.f_B_td(Tp[1], Tp[0]));
-  
     hila::set_allreduce(false);
     onsites(ALL) {
 
+      Matep MP;
       Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
       Complex<double> kin(0);
       Complex<double> k1(0), k2(0), k3(0);
       Complex<double> bfe(0);
       double b1 = 0;
+
+      real_t ebfe=fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X])); 
+
+      //real_t ebfe=fmin(MP.f_A_td(20.0, 2.2),MP.f_B_td(20.0, 2.2));
       
-      a = config.alpha * (A[X]*A[X].dagger()).trace();
-      b1 = config.beta1 * ((A[X]*A[X].transpose()).trace()).squarenorm();
-      b2 = config.beta2 * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
-      b3 = config.beta3 * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
-      b4 = config.beta4 * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
-      b5 = config.beta5 * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
+      //real_t ebfe = 1.0;
+      
+      real_t beta[6];
+      point_params(T[X], p[X],beta);
+
+            
+      a = beta[0] * (A[X]*A[X].dagger()).trace();
+
+      b1 = beta[1] * ((A[X]*A[X].transpose()).trace()).squarenorm();
+
+      b2 = beta[2] * ((A[X]*A[X].dagger()).trace()*(A[X]*A[X].dagger()).trace());
+
+      b3 = beta[3] * ((A[X]*A[X].transpose()*A[X].conj()*A[X].dagger()).trace());
+
+      b4 = beta[4] * ((A[X]*A[X].dagger()*A[X]*A[X].dagger()).trace());
+
+      b5 = beta[5] * ((A[X]*A[X].dagger()*A[X].conj()*A[X].transpose()).trace());
 
       bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
 
+            
       kin = (pi[X]*pi[X].dagger()).trace();
       
       foralldir(j) foralldir (k) foralldir(al){
@@ -736,18 +832,18 @@ void glsol::write_phases() {
 
     real_t R1,R2,R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
-    real_t error=1.0/5.0;
+    real_t error=0.5;
     int phase;
     real_t p;
     phi_t Ac;
 
     if (real((A[X]*A[X].dagger()).trace()) > 0.0)
       {
-	Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());;
+        Ac=A[X]/sqrt((A[X]*A[X].dagger()).trace());
       }
     else
       {
-	Ac=A[X];
+        Ac=A[X];
       }
 
     R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
@@ -819,23 +915,19 @@ void glsol::write_phases() {
       double vol = lattice.volume();
       config.stream << ph0/vol << " " << ph1/vol << " " << ph2/vol << " " << ph3/vol << " " << ph4/vol << " " << ph5/vol << " " << ph6/vol << " " << ph7/vol << " " << ph8/vol << " " << ph9/vol << "\n";
     }
-
+  hila::out0 << "Phases done \n";
+  
 } // write_phases() function ends here
 
 void glsol::write_positions() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-  
+  hila::out0 << "Writting positions \n";
+    
   hila::set_allreduce(false);
 
   if (config.write_phases==1)
     {
-      Field<Vector<8,float>> data;
+      /*Field<Vector<8,float>> data;
       
       onsites (ALL) {
 
@@ -879,7 +971,16 @@ void glsol::write_positions() {
 
       }
 
-      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);
+      data.write("points/phase-distances-t"+std::to_string(int(t/config.dt)),false);*/
+
+      Field<double> gap;
+
+      onsites(ALL){
+        gap[X] = real(sqrt((A[X]*A[X].dagger()).trace()));}
+
+      gap.write("points/gap-t"+std::to_string(int(round(t/config.dt))),false);
+      
+      T.write("points/temp-t"+std::to_string(int(round(t/config.dt))),false);
 
     }
 
@@ -899,6 +1000,8 @@ void glsol::write_positions() {
       evec.write("points/eigenvectors-t"+std::to_string(int(t/config.dt)),false);
       
     }
+
+  hila::out0 << "Writting positions done \n";
       
 } // write_positions() function ends here
 
@@ -933,35 +1036,14 @@ void glsol::write_xdmf(){
     config.xdmf_out.close();
 } // write_xdmf() function ends here
 
-// void glsol::write_A_matrix_positions() {
-
-//   std::ofstream stream_out;
-  
-//   const std::string fname = "A_matrix_output/t"+std::to_string(int(t/config.dt))+".dat";
-//   stream_out.open(fname, std::ios::out);
-
-//   hila::set_allreduce(false);
-//   A.write(stream_out,false,8);
-  
-//   stream_out.close();
-
-// }
 
 void glsol::next() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-  
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-
-  int bc=config.boundaryConditions;
-  //std::string bc=config.boundaryConditions;
+  int bc=config.boundary_conditions;
   
   next_timer.start();
 
@@ -970,6 +1052,11 @@ void glsol::next() {
   /* --------------------------------------------------------------- */
   onsites (ALL) {
 
+    Matep MP;
+    real_t gapa = MP.gap_A_td(p[X], T[X]);
+    real_t gapb = MP.gap_B_td(p[X], T[X]);
+
+    
     A[X] += config.dt * pi[X];
 
     if(bc < 3)
@@ -1125,16 +1212,19 @@ void glsol::next() {
   /* --------------------------------------------------------------- */  
 
   onsites (ALL) {
+
+    real_t beta[6];
+    point_params(T[X], p[X],beta);
       
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
     
-    deltaPi[X] = - config.alpha*A[X]
-      - 2.0*config.beta1*A[X].conj()*AxAt.trace() 
-      - 2.0*config.beta2*A[X]*AxAd.trace()
-      - 2.0*config.beta3*AxAt*A[X].conj()
-      - 2.0*config.beta4*AxAd*A[X] 
-      - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta[0]*A[X]
+      - 2.0*beta[1]*A[X].conj()*AxAt.trace() 
+      - 2.0*beta[2]*A[X]*AxAd.trace()
+      - 2.0*beta[3]*AxAt*A[X].conj()
+      - 2.0*beta[4]*AxAd*A[X] 
+      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
 
   } // bulk energy contribution
 
@@ -1156,20 +1246,21 @@ void glsol::next() {
   }
 
   onsites (ALL) {
+
     deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]
 						      + A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
   } // DjDjAali term summation
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt
 
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
-  else if (t < config.tdis && /*config.gamma*/ config.gamma.real() >= 0 )
+  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
+
     {
       //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
@@ -1187,29 +1278,27 @@ void glsol::next() {
 
 void glsol::next_bath() {
 
-  Matep MP;
-  real_t Tp[2];
-  update_Tp(t, Tp);
-
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-  real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);
-
-  real_t tb = Tp[0]/tc;
-  //real_t sig = sqrt(2.0*tb*config.gamma);
-  Complex<real_t> sig = sqrt(2.0*tb*config.gamma);  
-  //real_t ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
   Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
+  Matep MP;
+  real_t tb =  config.IniT/ MP.Tcp_mK(config.Inip);
 
-  int bc=config.boundaryConditions;
-  //std::string bc=config.boundaryConditions;
+  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
+
+  double modP=0.0;
+  
+  int bc=config.boundary_conditions;
 
   next_timer.start();
 
   onsites (ALL) {
+
+    Matep MP;
+    real_t gapa = MP.gap_A_td(p[X], T[X]);
+    real_t gapb = MP.gap_B_td(p[X], T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -1263,15 +1352,18 @@ void glsol::next_bath() {
 
   onsites (ALL) {
 
+    real_t beta[6];
+    point_params(T[X], p[X],beta);
+
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - config.alpha*A[X]
-      - 2.0*config.beta1*A[X].conj()*AxAt.trace()
-      - 2.0*config.beta2*A[X]*AxAd.trace()
-      - 2.0*config.beta3*AxAt*A[X].conj()
-      - 2.0*config.beta4*AxAd*A[X]
-      - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta[0]*A[X]
+      - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+      - 2.0*beta[2]*A[X]*AxAd.trace()
+      - 2.0*beta[3]*AxAt*A[X].conj()
+      - 2.0*beta[4]*AxAd*A[X]
+      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
 
   }
 
@@ -1293,11 +1385,18 @@ void glsol::next_bath() {
   }
 
   onsites (ALL) {
+
+    //Matep MP;
+    //real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+    //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
+    //phi_t rad_mat;
+    
     deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
                                                      - 6.0*A[X]);
-     deltaPi[X] += hila::gaussrand()*sig;
+    //rad_mat.gaussian_random();
+    //deltaPi[X] += rad_mat*sig;
 
   }
 
@@ -1307,26 +1406,36 @@ void glsol::next_bath() {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
+<<<<<<< HEAD:glsol/src/glsol.cpp
   else if (t < config.tdis && /*config.gamma*/config.gamma.real() > 0 )
+=======
+  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
+>>>>>>> origin/Tfield:he3sim.cpp
     {
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
-
-      pi[ALL] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*hila::gaussrand();
-
+      onsites(ALL){
+	phi_t rad_mat;
+	rad_mat.gaussian_random();
+	pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+	//modP += sqrt(ep2)*tb*rad_mat.norm();
+      }
 
       deltaPi[ALL] = 0.0;
 
       onsites (ALL) {
 
+	real_t beta[6];
+	point_params(T[X], p[X],beta);
+	
         auto AxAt = A[X]*A[X].transpose();
         auto AxAd = A[X]*A[X].dagger();
 
-        deltaPi[X] = - config.alpha*A[X]
-          - 2.0*config.beta1*A[X].conj()*AxAt.trace()
-          - 2.0*config.beta2*A[X]*AxAd.trace()
-          - 2.0*config.beta3*AxAt*A[X].conj()
-          - 2.0*config.beta4*AxAd*A[X]
-          - 2.0*config.beta5*A[X].conj()*A[X].transpose()*A[X];
+        deltaPi[X] = - beta[0]*A[X]
+          - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+          - 2.0*beta[2]*A[X]*AxAd.trace()
+          - 2.0*beta[3]*AxAt*A[X].conj()
+          - 2.0*beta[4]*AxAd*A[X]
+          - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
       }
 
       onsites(ALL) {
@@ -1347,11 +1456,18 @@ void glsol::next_bath() {
       }
 
       onsites (ALL) {
+
+	//Matep MP;
+	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+	//real_t sig = sqrt(2.0*tb*config.gamma);
+	//phi_t rad_mat;
+	
         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
 							 - 6.0*A[X]);
-        deltaPi[X] += hila::gaussrand()*sig;
+	//rad_mat.gaussian_random();
+	//deltaPi[X] += sig*rad_mat; 
       }
 
 
@@ -1365,7 +1481,68 @@ void glsol::next_bath() {
       t += config.dt;
     }
 
-
+  //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
   next_timer.stop();
 
 } // next_bath() ends here
+
+void scaling_sim::nextT() {
+
+  Field<real_t> deltaT;
+  real_t alpha=0.1;
+  real_t heatfactor=3.0;
+
+  real_t time_steps=1.0;
+  real_t dt=config.dt;
+
+  switch (config.Tevolvetype){
+  case 0: {
+
+    dt=config.dt/heatfactor;
+    time_steps=heatfactor;
+    
+    break;
+  }
+  case 1: {
+    
+    dt=config.dt;
+    time_steps=1;
+    
+    break;
+  }
+  }
+  
+  for(int i=0; i<time_steps; i++)
+    {
+  
+      onsites (ALL) {
+
+	T[X] += dt * dT[X];
+      }
+
+      onsites (ALL) {
+
+	real_t diff2 = alpha *(1.0/(config.dx*config.dx)) * (T[X + e_x] + T[X - e_x]
+							     + T[X + e_y] + T[X - e_y]
+							     + T[X + e_z] + T[X - e_z]
+							     - 6.0*T[X]); 
+    
+	switch (config.Tevolvetype){
+	case 0: {
+	  
+	  dT[X] = diff2;
+	
+	  break;
+	}
+	case 1: {
+	  
+	  dT[X] = dT[X] + diff2 * dt;
+
+	  break;
+	}
+	}
+      }
+    }
+
+} // nextT() ends here
+

@@ -14,8 +14,8 @@ seed		    1                # Random seed
 IniMod              1.0389           # Intial modulus in the kgaussrand case
 Inilc               1.0              # Initial correlation length in the kgaussrand case
 category            computed         #fixed -> alpha and betai,  computed -> T and p, interpolated-> params_file
-T                   2.0  
-p                   15.0
+IniT                2.0
+Inip                15.0
 tStats              10.0             # Starting time for the output_file
 nOutputs	    61.0             # Number of outputs for the output_file
 output_file         stats/phaseB.txt #Path for output_file
