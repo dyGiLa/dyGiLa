@@ -47,7 +47,8 @@ APP_OPTS += -I /projappl/project_462000465/lib/fftw-3.3.10-fftw3f/include \
 
 # Read in the main makefile contents, incl. platforms
 include $(HILA_DIR)/libraries/main.mk \
-        $(DYGILA_DIR)/pario/pario_config.mk
+        $(DYGILA_DIR)/pario/pario_conf.mk \
+        $(DYGILA_DIR)/matep/matep_conf.mk
 
 
 LDFLAGS += -L/projappl/project_462000465/lib/fftw-3.3.10-fftw3f/lib \
@@ -59,13 +60,11 @@ dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
 build/dyGiLa: Makefile build/glsol.o \
-              $(PARIO_OBJECTS) \
-	      build/matep.o \
+              $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
               build/main.o \
               $(HILA_OBJECTS) $(HEADERS)
 	$(LD) -o $@ build/glsol.o \
-              $(PARIO_OBJECTS) \
-              build/matep.o \
+              $(PARIO_OBJECTS) $(MATEP_OBJECTS)\
               build/main.o \
 	      $(HILA_OBJECTS) \
 	      $(LDFLAGS) $(LDLIBS)
