@@ -15,21 +15,7 @@
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 
-//#include "pario.hpp"
 #include "matep.hpp"
-
-/*-----------------------------------------------------------------------*/
-/***      include Ascent & Canduit for in situ rank rendering        *****/
-/*-----------------------------------------------------------------------*/
-// #if defined USE_ASCENT
-
-// #include "ascent.hpp"
-// #include "conduit_blueprint.hpp"
-
-// #endif
-/*-----------------------------------------------------------------------*/
-/***               include Ascent & Canduit end here                 *****/
-/*-----------------------------------------------------------------------*/
 
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
@@ -45,24 +31,29 @@ public:
   const std::string allocate(const std::string &fname, int argc, char **argv);
   
   void initialize();
-  void update_params();
-  void update_Tp (real_t t, real_t Tp[2]);
-
-  void next();
-  void next_bath();
+  
+  void initializeT();
+  void initializep();
+  
+  void point_params(real_t T, real_t p, real_t beta[6]);
   
   void write_moduli();
   void write_energies();
   void write_positions();
   void write_phases();
   
-  void write_xdmf();  
-
+  void next();
+  void next_bath();
+  void nextT();
+  void hotbloob();
   
   Field<phi_t> A;
-  Field<phi_t> pi; // pi is dtdAali
+  Field<phi_t> pi;
 
-  Matep matep;
+  Field<real_t> T;
+  Field<real_t> dT;
+  Field<real_t> p;
+  
   real_t t;
   real_t tc = 0;
 
@@ -99,9 +90,24 @@ public:
       real_t Inilc;
 
       int item;
+    
+
+    /* These are new, need look in... */
+      int initialConditionT;
+      real_t IniT;
+      real_t ampT;
+      real_t sigTx;
+      real_t sigTy;
+      real_t sigTz;
+      int initialConditionp;
+      real_t Inip;
+    /* These are new, need look in... */
+    
+    
       real_t T;
       real_t dT_from_TAB;
       real_t p;
+    
       real_t alpha;
       real_t beta1;
       real_t beta2;
@@ -127,8 +133,8 @@ public:
       /*        switches declearation end       */
       /*----------------------------------------*/      
 
-      // int positions;
-      // int npositionout;
+      int positions;
+      int npositionout;
       
       int boundaryConditions;
       int BCs1;
@@ -166,6 +172,16 @@ public:
       
       int write_phases;
       int write_eigen;
+
+    /* These are new, need look in... */
+      int evolveT;
+      int Tevolvetype;
+      real_t startdiffT;
+      real_t diffT;
+      int bloob_after;
+      real_t theat;
+    /* These are new, need look in... */    
+    
   } config;
   
 };
