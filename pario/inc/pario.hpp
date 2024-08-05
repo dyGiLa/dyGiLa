@@ -17,10 +17,9 @@
 #include "matep.hpp"
 #include "glsol.hpp"
 
-//#if defined USE_ASCENT
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
-//#endif
+
 
 // Definition of the field that we will use
 using real_t = float;                          // or double ?
@@ -39,6 +38,7 @@ public:
 
   // called in main() before t-while-loop started
   void xdmf(glsol &);
+  void xml(glsol &);
 
   // called in main()  
   void init(glsol &);

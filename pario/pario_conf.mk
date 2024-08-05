@@ -1,5 +1,8 @@
 # Makefie of parallel IO engine pario
 
+# *.cpp files searching path
+vpath %.cpp pario/src pario/src/utilities
+
 # Add Ascent include path, linder flags
 # of path and binary libs into
 # prerequisites & recipes of dyGiLa
@@ -12,12 +15,16 @@ ifeq ($(USE_PARIO), ON)
   LDLIBS   += $(ASCENT_MPI_LIB_FLAGS)
 endif
 
+# add headers searching directories
+APP_OPTS += -I $(DYGILA_DIR)/pario/inc
+
 # pario objects, built by HILA pattern rules
-PARIO_OBJECTS = build/xdmf.o \
-                build/pstream.o \
-                build/init.o \
+PARIO_OBJECTS = build/xdmf.o     \
+                build/xml.o      \
+                build/pstream.o  \
+                build/init.o     \
                 build/shutdown.o \
-                build/mesh.o \
+                build/mesh.o     \
                 build/actions.o
 
 .PHONY: pario
