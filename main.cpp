@@ -20,11 +20,17 @@ int main(int argc, char **argv) {
     parIO paraio;
     
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
+
+    // initialize OP field
     gl.initialize();
+
+    // initialize Temperature field
     gl.initializeT();
+
+    // initialize pressure field
     gl.initializep();
 
-    int bloob_created=0;
+    //int bloob_created=0;
     
     int stepspos;
     
@@ -44,7 +50,7 @@ int main(int argc, char **argv) {
         stepspos = 1;
     }
         
-    int stat_counter = 0;
+    unsigned int stat_counter = 0;
 
     if (hila::myrank() == 0) {
         gl.config.stream.open(output_fname, std::ios::out);
@@ -66,9 +72,9 @@ int main(int argc, char **argv) {
      if (hila::myrank() == 0) {paraio.xdmf(gl);}    
     
 #if defined USE_PARIO
-    hila::out0 << "parallel IO enigne starts!" << "\n"
-               << std::endl;
     paraio.init(gl);
+    hila::out0 << "parallel IO enigne starts!" << "\n"
+               << std::endl;    
 #endif    
     
     /*-------------------------------------------------------------------*/
@@ -82,12 +88,12 @@ int main(int argc, char **argv) {
     
     while (gl.t < gl.config.tEnd) {
       //gl.config.gamma = (stat_counter < gl.config.gammaoffc) ? gl.config.gamma1 : gl.config.gamma2;
-      //hila::out0 << " gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
-      
-        if (gl.t >= gl.config.tStats) {            
+      //hila::out0 << "gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
+        
+        if (gl.t >= gl.config.tStats) {
 	  
             if (stat_counter % steps == 0) {
-	      
+
 	      meas_timer.start();
 	      //gl.write_moduli();
 	      gl.write_energies();
@@ -105,11 +111,11 @@ int main(int argc, char **argv) {
 
         } //gl.t > gl.config.Stats block	
 	
-	if (gl.config.bloob_after==1 && gl.t>gl.config.theat && bloob_created==0)
-	  {
-	    gl.hotbloob();
-	    bloob_created=1;
-	  }
+	// if (gl.config.bloob_after==1 && gl.t>gl.config.theat && bloob_created==0)
+	//   {
+	//     gl.hotbloob();
+	//     bloob_created=1;
+	//   }
 	    
 	if (gl.config.useTbath == 1)
 	  {
@@ -120,11 +126,14 @@ int main(int argc, char **argv) {
 	    gl.next();
 	  }
 	
-	if(gl.t > gl.config.startdiffT && gl.config.evolveT == 1)
+	if(/*(gl.t > gl.config.startdiffT) &&*/
+	   gl.config.evolveT == 1
+	  )
 	  {
 	    gl.nextT();
 	  }
-    }
+	
+    } // gl.t evolves while loop ends here
     run_timer.stop();
 
 #if defined USE_PARIO
