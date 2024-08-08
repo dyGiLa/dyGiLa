@@ -37,11 +37,11 @@ void parIO::defineActions(glsol &sol) {
     // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
     scenes["s1/plots/p1/min_value"]
       = (sol.config.initialCondition == 2 || sol.config.initialCondition == 0)
-         ? 0.0 :  (matep.gap_A_td(sol.config.p, sol.config.T)
+         ? 0.0 :  (matep.gap_A_td(sol.config.Inip, sol.config.IniT)
 		   * (1. + sol.config.clamp_bias_gapMin));
 
     scenes["s1/plots/p1/max_value"]
-      = matep.gap_B_td(sol.config.p, sol.config.T)
+      = matep.gap_B_td(sol.config.Inip, sol.config.IniT)
         * (1. + sol.config.clamp_bias_gapMax);
     
     scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";

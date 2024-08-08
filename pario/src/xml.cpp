@@ -25,9 +25,9 @@ void parIO::xml(glsol &sol){
   const std::string fname = "rank_xmls/" + sol.config.xmf2_fname + "_" + std::to_string(hila::myrank()) + ".xml";
   sol.config.xml_out.open(fname, std::ios::out);
 
-  hila::out << sol.config.xml_out.good() << "\n";
-  hila::out << sol.config.xml_out.is_open() << "\n";
-  hila::out << sol.config.xml_out.fail() << "\n";
+  // hila::out << sol.config.xml_out.good() << "\n";
+  // hila::out << sol.config.xml_out.is_open() << "\n";
+  // hila::out << sol.config.xml_out.fail() << "\n";
   
   const long dim_0 = lattice.mynode.size[0] + 2,
              dim_1 = lattice.mynode.size[1] + 2,
