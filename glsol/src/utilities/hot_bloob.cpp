@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -15,7 +15,6 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
-
 void glsol::hotbloob() {
 
   onsites(ALL){
@@ -30,8 +29,5 @@ void glsol::hotbloob() {
       T[X] = config.IniT + config.ampT*expx*expy*expz;
     }
 
-  hila::out0 << "Hot Spot created at t="<<t<<" \n";    
-
- 
-} // heatbloob function ends here
-
+  hila::out0 << "Hot Spot created at t="<<t<<" \n";
+}

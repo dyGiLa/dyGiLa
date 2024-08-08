@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -22,13 +22,17 @@ void glsol::next() {
   Field<Vector<3,Complex<real_t>>> djAaj;
 
   int bc=config.boundaryConditions;
+
+  // hila::out0 << "bc is " << bc << std::endl;
   
   next_timer.start();
 
   /* --------------------------------------------------------------- */  
   /* >>>>>>>>>>  boundary condition handling block starts <<<<<<<<<< */
   /* --------------------------------------------------------------- */
-  onsites (ALL) {
+  
+  onsites(ALL) {
+    //hila::out0 << "inside ondites (ALL)" << std::endl;
 
     Matep MP;
     real_t gapa = MP.gap_A_td(p[X], T[X]);
@@ -191,6 +195,7 @@ void glsol::next() {
 
   onsites (ALL) {
 
+    //hila::out0 << "in bulk energy block" << std::endl;
     real_t beta[6];
     point_params(T[X], p[X],beta);
       
@@ -212,7 +217,7 @@ void glsol::next() {
       djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
     }
   } // DjA_aj = D0A_al0 + D1A_al1 + D2A_al2 ???
-
+  
   onsites(ALL) {
     phi_t mat;
     foralldir(d) {
@@ -222,7 +227,7 @@ void glsol::next() {
 
     deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
   }
-
+  
   onsites (ALL) {
 
     deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
@@ -231,14 +236,13 @@ void glsol::next() {
 						      - 6.0 * A[X]);
   } // DjDjAali term summation
 
-
+  
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
-
     {
       //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
@@ -249,7 +253,7 @@ void glsol::next() {
       pi[ALL] = pi[X] + deltaPi[X]*config.dt;
       t += config.dt;
     }
-  
+
   next_timer.stop();
 
 } // next() function ends here

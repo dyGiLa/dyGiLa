@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -17,8 +17,6 @@
 
 
 const std::string glsol::allocate(const std::string &fname, int argc, char **argv) {
-
-  /** complex gamma, real part, this needs deep looking**/
   
     Matep MP;
     hila::initialize(argc, argv);
@@ -100,7 +98,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 								      ,"Aphase_full"          //7
                                                                       ,"BinA"});              //8
 
-    hila::out0 << "  config.initialCondition is "
+    hila::out0 << "config.initialCondition is "
 	       << config.initialCondition
 	       << "\n";
     
@@ -110,47 +108,47 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
 
-    /*----------------------------------------*/
-    /*       parameters update strategies     */
-    /*----------------------------------------*/
-    config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
-    if (config.item == 0){
-      config.alpha = parameters.get("alpha");
-      config.beta1 = parameters.get("beta1");
-      config.beta2 = parameters.get("beta2");
-      config.beta3 = parameters.get("beta3");
-      config.beta4 = parameters.get("beta4");
-      config.beta5 = parameters.get("beta5");
-    }
-    else if (config.item == 1) {
-      //config.T = parameters.get("T");
-      config.dT_from_TAB = parameters.get("dT_from_TAB");
-      config.p = parameters.get("p");
-      config.T = (MP.tAB_RWS(config.p) * MP.Tcp_mK(config.p)) + config.dT_from_TAB;
-      hila::out0 << "Tab: "<< MP.tAB_RWS(config.p)
-	         << ", p:" << config.p
-	         << ", T:" << config.T
-	         << ", dT_from_TAB:" << config.dT_from_TAB << "\n";
-    }
-    else {
-      const std::string in_file = parameters.get("params_file"); 
+    // /*----------------------------------------*/
+    // /*       parameters update strategies     */
+    // /*----------------------------------------*/
+    // config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
+    // if (config.item == 0){
+    //   config.alpha = parameters.get("alpha");
+    //   config.beta1 = parameters.get("beta1");
+    //   config.beta2 = parameters.get("beta2");
+    //   config.beta3 = parameters.get("beta3");
+    //   config.beta4 = parameters.get("beta4");
+    //   config.beta5 = parameters.get("beta5");
+    // }
+    // else if (config.item == 1) {
+    //   //config.T = parameters.get("T");
+    //   config.dT_from_TAB = parameters.get("dT_from_TAB");
+    //   config.p = parameters.get("p");
+    //   config.T = (MP.tAB_RWS(config.p) * MP.Tcp_mK(config.p)) + config.dT_from_TAB;
+    //   hila::out0 << "Tab: "<< MP.tAB_RWS(config.p)
+    // 	         << ", p:" << config.p
+    // 	         << ", T:" << config.T
+    // 	         << ", dT_from_TAB:" << config.dT_from_TAB << "\n";
+    // }
+    // else {
+    //   const std::string in_file = parameters.get("params_file"); 
 
-      std::fstream params_stream;
-      params_stream.open(in_file, std::ios::in);
-      std::string line;
+    //   std::fstream params_stream;
+    //   params_stream.open(in_file, std::ios::in);
+    //   std::string line;
 
-      while (std::getline(params_stream, line))
-	{
-	  std::stringstream ss(line);
-	  real_t a, b, c;
-	  if (ss >> a >> b >> c)
-	    {
-	      t_v.push_back(a);
-	      T_v.push_back(b);
-	      p_v.push_back(c);
-	    }
-	}
-    }
+    //   while (std::getline(params_stream, line))
+    // 	{
+    // 	  std::stringstream ss(line);
+    // 	  real_t a, b, c;
+    // 	  if (ss >> a >> b >> c)
+    // 	    {
+    // 	      t_v.push_back(a);
+    // 	      T_v.push_back(b);
+    // 	      p_v.push_back(c);
+    // 	    }
+    // 	}
+    // }
     /*----------------------------------------*/
     /* parameters update strategies end here  */
     /*----------------------------------------*/   
@@ -166,7 +164,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     // config.IniMod = parameters.get("IniMod");
     // config.Inilc = parameters.get("Inilc");
 
-    /* initialCondition-T */
+    //initialCondition-T
     config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
     if(config.initialConditionT == 0)
       {
@@ -186,12 +184,9 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	config.sigTz = parameters.get("sigTz");
       }
 
-    /* initialCondition-p */
+    //initialCondition-p
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     config.Inip	= parameters.get("Inip");
-
-    /* initial condtion needs deep look */
-
     
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
@@ -201,13 +196,6 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 
     // xdmf file name, which is provided through config file
     config.xmf2_fname = parameters.get("xmf2_file");
-
-    /*if(config.positions==1)
-      {
-	config.npositionout = parameters.get("npositionout");
-	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
-	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
-	}*/
 
     /*----------------------------------------*/
     /* >>>>>>>  boundary conditions  <<<<<<<<<*/
@@ -232,8 +220,30 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     
     config.BCchangec = parameters.get("BCchangec");
        
+    /*if(config.positions==1)
+      {
+	config.npositionout = parameters.get("npositionout");
+	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
+	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
+      }*/
+        
+    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
+    if(config.evolveT ==1)
+      {
+	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave"});
+	config.startdiffT = parameters.get("startdiffT");
+	config.diffT = parameters.get("diffT");
+      }
+    // config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
+    // if(config.bloob_after== 1)
+    //   {
+    // 	config.theat = parameters.get("theat");
+    //   }
+
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
 
+
+    
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
@@ -257,23 +267,9 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.camera_azi = parameters.get("camera_azi");
     config.camera_ele = parameters.get("camera_ele");
     /*----------------------------------------*/
-    /* Parallel IO Engineparameters end       */
+    /* Parallel IO Engine parameters end      */
     /*----------------------------------------*/
-    
-    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
-    if(config.evolveT ==1)
-      {
-	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave"});
-	config.startdiffT = parameters.get("startdiffT");
-	config.diffT = parameters.get("diffT");
-      }
-    config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
-    if(config.bloob_after== 1)
-      {
-	config.theat = parameters.get("theat");
-      }
 	
-
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
 

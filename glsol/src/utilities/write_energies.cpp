@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -130,7 +130,7 @@ void glsol::write_energies() {
 	              << std::endl;
       }
 
-       hila::out0 << "Energy done \n";
+      //hila::out0 << "Energy done \n";
 
 } // write_energies function ends here
 

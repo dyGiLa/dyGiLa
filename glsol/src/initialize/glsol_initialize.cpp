@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -112,6 +112,7 @@ void glsol::initialize() {
   case 4: {
     pi = 0.;
     onsites(ALL) {
+      //hila::out0 << "this is case 4" << std::endl;
       foralldir(al) foralldir(i){
 	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
       } // doralldir end here
