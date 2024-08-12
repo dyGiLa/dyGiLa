@@ -97,22 +97,22 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      // unsigned int A_matrix_output;
+      unsigned int A_matrix_output;
       // unsigned int do_gapA_clip,
       //              do_gapA_isosurface,
       //              do_gapA_3slice,
       //              do_fe_slice,
       //              do_gapA_slice;
 
-      // unsigned int hdf5_A_matrix_output,
+      unsigned int hdf5_A_matrix_output,
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
-      //              hdf5_mass_current_output,
-      //              hdf5_spin_current_output;
+                   hdf5_mass_current_output,
+                   hdf5_spin_current_output;
 	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
-      // real_t clamp_fed_Min, clamp_fed_Max;      
+      real_t clamp_fed_Min, clamp_fed_Max;      
       real_t camera_azi, camera_ele;
       /*----------------------------------------*/
       /*    parallel IO parameter end           */
