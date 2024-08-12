@@ -22,9 +22,8 @@ void glsol::next_bath() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt) ;
-  Matep MP;
-  real_t tb =  config.IniT/ MP.Tcp_mK(config.Inip);
+  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
+  real_t tb =  config.IniT/MP.Tcp_mK(config.Inip);
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
 
@@ -34,9 +33,8 @@ void glsol::next_bath() {
 
   next_timer.start();
 
-  onsites (ALL) {
+  onsites(ALL) {
 
-    Matep MP;
     real_t gapa = MP.gap_A_td(p[X], T[X]);
     real_t gapb = MP.gap_B_td(p[X], T[X]);
 
@@ -53,7 +51,8 @@ void glsol::next_bath() {
               }
               else {
                 A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 0.0;}
+                A[X].e(d1,d2).im = 0.0;
+	      }	
             }
             A[X] = gapb * A[X]/sqrt(3.0);
           }
@@ -140,7 +139,7 @@ void glsol::next_bath() {
 
   }
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt                                                                                                                                                                                         
+    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);

@@ -18,7 +18,6 @@
 
 const std::string glsol::allocate(const std::string &fname, int argc, char **argv) {
   
-    Matep MP;
     hila::initialize(argc, argv);
     hila::input parameters(fname);
     

@@ -17,8 +17,6 @@
 
 
 void glsol::initialize() {
-
-  Matep MP;
    
   int Nx = config.lx;
   int Ny = config.ly;

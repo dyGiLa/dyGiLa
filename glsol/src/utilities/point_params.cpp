@@ -16,8 +16,6 @@
 #include "matep.hpp"
 
 void glsol::point_params(real_t T, real_t p, real_t beta[6]) {
-
-  Matep MP;
   
   beta[0] = MP.alpha_td(p, T);
   beta[1] = MP.beta1_td(p, T);

@@ -22,8 +22,6 @@ void glsol::next() {
   Field<Vector<3,Complex<real_t>>> djAaj;
 
   int bc=config.boundaryConditions;
-
-  // hila::out0 << "bc is " << bc << std::endl;
   
   next_timer.start();
 
@@ -32,9 +30,7 @@ void glsol::next() {
   /* --------------------------------------------------------------- */
   
   onsites(ALL) {
-    //hila::out0 << "inside ondites (ALL)" << std::endl;
 
-    Matep MP;
     real_t gapa = MP.gap_A_td(p[X], T[X]);
     real_t gapb = MP.gap_B_td(p[X], T[X]);
 
@@ -53,8 +49,9 @@ void glsol::next() {
 		A[X].e(d1,d2).im = 0.0;
 	       }
 	       else {
-		A[X].e(d1,d2).re = 0.0;
-		A[X].e(d1,d2).im = 0.0;}
+		 A[X].e(d1,d2).re = 0.0;
+		 A[X].e(d1,d2).im = 0.0;
+	        }
 	       }
 	       A[X] = gapb * A[X]/sqrt(3.0);
 	      }
@@ -195,7 +192,6 @@ void glsol::next() {
 
   onsites (ALL) {
 
-    //hila::out0 << "in bulk energy block" << std::endl;
     real_t beta[6];
     point_params(T[X], p[X],beta);
       
@@ -228,7 +224,7 @@ void glsol::next() {
     deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
   }
   
-  onsites (ALL) {
+  onsites(ALL) {
 
     deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]

@@ -30,7 +30,6 @@ void glsol::write_energies() {
     hila::set_allreduce(false);
     onsites(ALL) {
 
-      Matep MP;
       Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
       Complex<double> kin(0);
       Complex<double> k1(0), k2(0), k3(0);
