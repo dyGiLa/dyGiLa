@@ -20,44 +20,44 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::describeMesh(glsol &sol) {
+void parIO::describeMesh_AMatrix() {
 
     // Create a 3D mesh defined on a uniform grid of points
    
     // conduit::Node mesh;
-    mesh["state/time"].set_external(&sol.t);
-    // mesh["state/cycle"].set_external(&step);
-#if defined USE_MPI
-    mesh["state/domain_id"] = lattice.mynode.rank;
-#endif
-    mesh["state/software"] = "dyGiLa";
-    mesh["state/title"] = "TDGL-Langiven equations simulator";
-    mesh["state/info"] = "Parallel IO stream and insitu rendering of data from dyGiLa";
+//     mesh["state/time"].set_external(&sol.t);
+//     // mesh["state/cycle"].set_external(&step);
+// #if defined USE_MPI
+//     mesh["state/domain_id"] = lattice.mynode.rank;
+// #endif
+//     mesh["state/software"] = "dyGiLa";
+//     mesh["state/title"] = "TDGL-Langiven equations simulator";
+//     mesh["state/info"] = "Parallel IO stream and insitu rendering of data from dyGiLa";
 
-    // create the coordinate set
-    mesh["coordsets/coords/type"] = "uniform";
-    mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
-    mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
-    mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
+//     // create the coordinate set
+//     mesh["coordsets/coords/type"] = "uniform";
+//     mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
+//     mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
+//     mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
 
-    // add origin and spacing to the coordset (optional)
-    mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * sol.config.dx);
-    mesh["coordsets/coords/spacing/dx"] = sol.config.dx;
-    mesh["coordsets/coords/spacing/dy"] = sol.config.dx;
-    mesh["coordsets/coords/spacing/dz"] = sol.config.dx;
+//     // add origin and spacing to the coordset (optional)
+//     mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/spacing/dx"] = sol.config.dx;
+//     mesh["coordsets/coords/spacing/dy"] = sol.config.dx;
+//     mesh["coordsets/coords/spacing/dz"] = sol.config.dx;
     
-    // add the topology
-    // this case is simple b/c it's implicitly derived from the coordinate set
-    mesh["topologies/topo/type"] = "uniform";
-    // reference the coordinate set by name
-    mesh["topologies/topo/coordset"] = "coords";
+//     // add the topology
+//     // this case is simple b/c it's implicitly derived from the coordinate set
+//     mesh["topologies/topo/type"] = "uniform";
+//     // reference the coordinate set by name
+//     mesh["topologies/topo/coordset"] = "coords";
 
-    // create an vertex associated field named gapAOrdered
-    // mesh["fields/gapAOrdered/association"] = "vertex";
-    // mesh["fields/gapAOrdered/topology"] = "topo";
-    // mesh["fields/gapAOrdered/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
+//     // create an vertex associated field named gapAOrdered
+//     mesh["fields/gapAOrdered/association"] = "vertex";
+//     mesh["fields/gapAOrdered/topology"] = "topo";
+//     mesh["fields/gapAOrdered/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
 
     // create an vertex associated field named feDensityOrdered
     // mesh["fields/feDensityOrdered/association"] = "vertex";
@@ -163,77 +163,77 @@ void parIO::describeMesh(glsol &sol) {
     // /*---create vertices associated field named of uxxOrdered vxxOrdered ---*/
     // /*----------------------------------------------------------------------*/
     // if (config.A_matrix_output == 1){
-    //   mesh["fields/u11Ordered/association"] = "vertex";
-    //   mesh["fields/u11Ordered/topology"] = "topo";
-    //   mesh["fields/u11Ordered/values"].set_external(u11Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u11Ordered/association"] = "vertex";
+      mesh["fields/u11Ordered/topology"] = "topo";
+      mesh["fields/u11Ordered/values"].set_external(u11Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u12Ordered/association"] = "vertex";
-    //   mesh["fields/u12Ordered/topology"] = "topo";
-    //   mesh["fields/u12Ordered/values"].set_external(u12Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u12Ordered/association"] = "vertex";
+      mesh["fields/u12Ordered/topology"] = "topo";
+      mesh["fields/u12Ordered/values"].set_external(u12Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u13Ordered/association"] = "vertex";
-    //   mesh["fields/u13Ordered/topology"] = "topo";
-    //   mesh["fields/u13Ordered/values"].set_external(u13Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u13Ordered/association"] = "vertex";
+      mesh["fields/u13Ordered/topology"] = "topo";
+      mesh["fields/u13Ordered/values"].set_external(u13Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u21Ordered/association"] = "vertex";
-    //   mesh["fields/u21Ordered/topology"] = "topo";
-    //   mesh["fields/u21Ordered/values"].set_external(u21Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u21Ordered/association"] = "vertex";
+      mesh["fields/u21Ordered/topology"] = "topo";
+      mesh["fields/u21Ordered/values"].set_external(u21Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u22Ordered/association"] = "vertex";
-    //   mesh["fields/u22Ordered/topology"] = "topo";
-    //   mesh["fields/u22Ordered/values"].set_external(u22Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u22Ordered/association"] = "vertex";
+      mesh["fields/u22Ordered/topology"] = "topo";
+      mesh["fields/u22Ordered/values"].set_external(u22Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u23Ordered/association"] = "vertex";
-    //   mesh["fields/u23Ordered/topology"] = "topo";
-    //   mesh["fields/u23Ordered/values"].set_external(u23Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u23Ordered/association"] = "vertex";
+      mesh["fields/u23Ordered/topology"] = "topo";
+      mesh["fields/u23Ordered/values"].set_external(u23Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u31Ordered/association"] = "vertex";
-    //   mesh["fields/u31Ordered/topology"] = "topo";
-    //   mesh["fields/u31Ordered/values"].set_external(u31Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u31Ordered/association"] = "vertex";
+      mesh["fields/u31Ordered/topology"] = "topo";
+      mesh["fields/u31Ordered/values"].set_external(u31Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u32Ordered/association"] = "vertex";
-    //   mesh["fields/u32Ordered/topology"] = "topo";
-    //   mesh["fields/u32Ordered/values"].set_external(u32Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u32Ordered/association"] = "vertex";
+      mesh["fields/u32Ordered/topology"] = "topo";
+      mesh["fields/u32Ordered/values"].set_external(u32Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/u33Ordered/association"] = "vertex";
-    //   mesh["fields/u33Ordered/topology"] = "topo";
-    //   mesh["fields/u33Ordered/values"].set_external(u33Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/u33Ordered/association"] = "vertex";
+      mesh["fields/u33Ordered/topology"] = "topo";
+      mesh["fields/u33Ordered/values"].set_external(u33Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v11Ordered/association"] = "vertex";
-    //   mesh["fields/v11Ordered/topology"] = "topo";
-    //   mesh["fields/v11Ordered/values"].set_external(v11Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v11Ordered/association"] = "vertex";
+      mesh["fields/v11Ordered/topology"] = "topo";
+      mesh["fields/v11Ordered/values"].set_external(v11Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v12Ordered/association"] = "vertex";
-    //   mesh["fields/v12Ordered/topology"] = "topo";
-    //   mesh["fields/v12Ordered/values"].set_external(v12Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v12Ordered/association"] = "vertex";
+      mesh["fields/v12Ordered/topology"] = "topo";
+      mesh["fields/v12Ordered/values"].set_external(v12Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v13Ordered/association"] = "vertex";
-    //   mesh["fields/v13Ordered/topology"] = "topo";
-    //   mesh["fields/v13Ordered/values"].set_external(v13Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v13Ordered/association"] = "vertex";
+      mesh["fields/v13Ordered/topology"] = "topo";
+      mesh["fields/v13Ordered/values"].set_external(v13Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v21Ordered/association"] = "vertex";
-    //   mesh["fields/v21Ordered/topology"] = "topo";
-    //   mesh["fields/v21Ordered/values"].set_external(v21Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v21Ordered/association"] = "vertex";
+      mesh["fields/v21Ordered/topology"] = "topo";
+      mesh["fields/v21Ordered/values"].set_external(v21Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v22Ordered/association"] = "vertex";
-    //   mesh["fields/v22Ordered/topology"] = "topo";
-    //   mesh["fields/v22Ordered/values"].set_external(v22Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v22Ordered/association"] = "vertex";
+      mesh["fields/v22Ordered/topology"] = "topo";
+      mesh["fields/v22Ordered/values"].set_external(v22Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v23Ordered/association"] = "vertex";
-    //   mesh["fields/v23Ordered/topology"] = "topo";
-    //   mesh["fields/v23Ordered/values"].set_external(v23Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v23Ordered/association"] = "vertex";
+      mesh["fields/v23Ordered/topology"] = "topo";
+      mesh["fields/v23Ordered/values"].set_external(v23Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v31Ordered/association"] = "vertex";
-    //   mesh["fields/v31Ordered/topology"] = "topo";
-    //   mesh["fields/v31Ordered/values"].set_external(v31Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v31Ordered/association"] = "vertex";
+      mesh["fields/v31Ordered/topology"] = "topo";
+      mesh["fields/v31Ordered/values"].set_external(v31Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v32Ordered/association"] = "vertex";
-    //   mesh["fields/v32Ordered/topology"] = "topo";
-    //   mesh["fields/v32Ordered/values"].set_external(v32Ordered.data(), latticeVolumeWithGhost);
+      mesh["fields/v32Ordered/association"] = "vertex";
+      mesh["fields/v32Ordered/topology"] = "topo";
+      mesh["fields/v32Ordered/values"].set_external(v32Ordered.data(), latticeVolumeWithGhost);
 
-    //   mesh["fields/v33Ordered/association"] = "vertex";
-    //   mesh["fields/v33Ordered/topology"] = "topo";
-    //   mesh["fields/v33Ordered/values"].set_external(v33Ordered.data(), latticeVolumeWithGhost);              
+      mesh["fields/v33Ordered/association"] = "vertex";
+      mesh["fields/v33Ordered/topology"] = "topo";
+      mesh["fields/v33Ordered/values"].set_external(v33Ordered.data(), latticeVolumeWithGhost);              
     // }
     /*----------------------------------------------------------------------*/
     /*--- vertex associated field named of uxxOrdered vxxOrdered end here --*/

@@ -20,39 +20,39 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::describeMesh(glsol &sol) {
+void parIO::describeMesh_addGhost_verify() {
 
     // Create a 3D mesh defined on a uniform grid of points
    
     // conduit::Node mesh;
-    mesh["state/time"].set_external(&sol.t);
-    // mesh["state/cycle"].set_external(&step);
-#if defined USE_MPI
-    mesh["state/domain_id"] = lattice.mynode.rank;
-#endif
-    mesh["state/software"] = "dyGiLa";
-    mesh["state/title"] = "TDGL-Langiven equations simulator";
-    mesh["state/info"] = "Parallel IO stream and insitu rendering of data from dyGiLa";
+//     mesh["state/time"].set_external(&sol.t);
+//     // mesh["state/cycle"].set_external(&step);
+// #if defined USE_MPI
+//     mesh["state/domain_id"] = lattice.mynode.rank;
+// #endif
+//     mesh["state/software"] = "dyGiLa";
+//     mesh["state/title"] = "TDGL-Langiven equations simulator";
+//     mesh["state/info"] = "Parallel IO stream and insitu rendering of data from dyGiLa";
 
-    // create the coordinate set
-    mesh["coordsets/coords/type"] = "uniform";
-    mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
-    mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
-    mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
+//     // create the coordinate set
+//     mesh["coordsets/coords/type"] = "uniform";
+//     mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
+//     mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
+//     mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
 
-    // add origin and spacing to the coordset (optional)
-    mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * sol.config.dx);
-    mesh["coordsets/coords/spacing/dx"] = sol.config.dx;
-    mesh["coordsets/coords/spacing/dy"] = sol.config.dx;
-    mesh["coordsets/coords/spacing/dz"] = sol.config.dx;
+//     // add origin and spacing to the coordset (optional)
+//     mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * sol.config.dx);
+//     mesh["coordsets/coords/spacing/dx"] = sol.config.dx;
+//     mesh["coordsets/coords/spacing/dy"] = sol.config.dx;
+//     mesh["coordsets/coords/spacing/dz"] = sol.config.dx;
     
-    // add the topology
-    // this case is simple b/c it's implicitly derived from the coordinate set
-    mesh["topologies/topo/type"] = "uniform";
-    // reference the coordinate set by name
-    mesh["topologies/topo/coordset"] = "coords";
+//     // add the topology
+//     // this case is simple b/c it's implicitly derived from the coordinate set
+//     mesh["topologies/topo/type"] = "uniform";
+//     // reference the coordinate set by name
+//     mesh["topologies/topo/coordset"] = "coords";
 
     // create an vertex associated field named gapAOrdered
     // mesh["fields/gapAOrdered/association"] = "vertex";
@@ -240,21 +240,21 @@ void parIO::describeMesh(glsol &sol) {
     /*----------------------------------------------------------------------*/
 
     
-    // create an element associated field named ghostCells
-    // mesh["fields/ascent_ghosts/association"] = "element";
-    // mesh["fields/ascent_ghosts/topology"] = "topo";
-    // mesh["fields/ascent_ghosts/values"].set_external(ghostCellsMask, ghostVolume);
+    //create an element associated field named ghostCells
+    mesh["fields/ascent_ghosts/association"] = "element";
+    mesh["fields/ascent_ghosts/topology"] = "topo";
+    mesh["fields/ascent_ghosts/values"].set_external(ghostCellsMask, ghostVolume);
 
-    // // make sure the mesh we created conforms to the blueprint
-    // conduit::Node verify_info;
-    // if (!conduit::blueprint::mesh::verify(mesh, verify_info)) {
-    //     hila::out0 << "Mesh Verify failed!\n";
-    //     hila::out0 << verify_info.to_yaml()
-    // 		   << '\n';
-    // }
-    // else {
-    //     hila::out0 << "Mesh verify success!\n";
-    // }
+    // make sure the mesh we created conforms to the blueprint
+    conduit::Node verify_info;
+    if (!conduit::blueprint::mesh::verify(mesh, verify_info)) {
+        hila::out0 << "Mesh Verify failed!\n";
+        hila::out0 << verify_info.to_yaml()
+		   << '\n';
+    }
+    else {
+        hila::out0 << "Mesh verify success!\n";
+    }
 
 } // describeMesh() end here
 

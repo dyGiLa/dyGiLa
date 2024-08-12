@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -16,37 +16,34 @@
 #include "matep.hpp"
 #include "pario.hpp"
 
-//#if defined USE_ASCENT
-
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
-//#endif
 
-void parIO::defineActions(glsol &sol) {
+void parIO::defineActions_AMatrix() {
 
-    conduit::Node &add_act = actions.append();
+    // conduit::Node &add_act = actions.append();
     
-    add_act["action"] = "add_scenes";
-    conduit::Node &scenes = add_act["scenes"];
+    // add_act["action"] = "add_scenes";
+    // conduit::Node &scenes = add_act["scenes"];
 
-    /* >>>>>>>>>>>>>>   1st scene    <<<<<<<<<<<<< */
-    scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = "gapAOrdered";
+    // /* >>>>>>>>>>>>>>   1st scene    <<<<<<<<<<<<< */
+    // scenes["s1/plots/p1/type"] = "pseudocolor";
+    // scenes["s1/plots/p1/field"] = "gapAOrdered";
 
-    // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
-    scenes["s1/plots/p1/min_value"]
-      = (sol.config.initialCondition == 2 || sol.config.initialCondition == 0)
-         ? 0.0 :  (matep.gap_A_td(sol.config.Inip, sol.config.IniT)
-		   * (1. + sol.config.clamp_bias_gapMin));
+    // // color map clamping. min_value will be set to 0.0 if initialCondtion is 2 i.e., normal_phase
+    // scenes["s1/plots/p1/min_value"]
+    //   = (sol.config.initialCondition == 2 || sol.config.initialCondition == 0)
+    //      ? 0.0 :  (matep.gap_A_td(sol.config.Inip, sol.config.IniT)
+    // 		   * (1. + sol.config.clamp_bias_gapMin));
 
-    scenes["s1/plots/p1/max_value"]
-      = matep.gap_B_td(sol.config.Inip, sol.config.IniT)
-        * (1. + sol.config.clamp_bias_gapMax);
+    // scenes["s1/plots/p1/max_value"]
+    //   = matep.gap_B_td(sol.config.Inip, sol.config.IniT)
+    //     * (1. + sol.config.clamp_bias_gapMax);
     
-    scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";
-    scenes["s1/renders/r1/camera/azimuth"] = sol.config.camera_azi/*35.0*/;
-    scenes["s1/renders/r1/camera/elevation"] = sol.config.camera_ele/*30.0*/;
+    // scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";
+    // scenes["s1/renders/r1/camera/azimuth"] = sol.config.camera_azi/*35.0*/;
+    // scenes["s1/renders/r1/camera/elevation"] = sol.config.camera_ele/*30.0*/;
   
     /* >>>>>>>>>>>>>> pipleline Node <<<<<<<<<<<<< */
     
@@ -193,36 +190,36 @@ void parIO::defineActions(glsol &sol) {
     // /* >>>>>>>>>>>>> extract hdf5 <<<<<<<<<<<<<< */
 
     // if (config.hdf5_A_matrix_output == 1){
-    //  conduit::Node &add_act3 = actions.append();
-    //  add_act3["action"] = "add_extracts";
+     conduit::Node &add_act3 = actions.append();
+     add_act3["action"] = "add_extracts";
 
-    //  conduit::Node &extracts = add_act3["extracts"];
-    //  extracts["e1/type"] = "relay";
-    //  extracts["e1/params/path"] = "sim-data";
-    //  extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+     conduit::Node &extracts = add_act3["extracts"];
+     extracts["e1/type"] = "relay";
+     extracts["e1/params/path"] = "sim-data";
+     extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
-    //  extracts["e1/params/fields"].append().set("gapAOrdered");
-    //  extracts["e1/params/fields"].append().set("feDensityOrdered");
+     extracts["e1/params/fields"].append().set("gapAOrdered");
+     extracts["e1/params/fields"].append().set("feDensityOrdered");
     
-    //  extracts["e1/params/fields"].append().set("u11Ordered");
-    //  extracts["e1/params/fields"].append().set("u12Ordered");
-    //  extracts["e1/params/fields"].append().set("u13Ordered");
-    //  extracts["e1/params/fields"].append().set("u21Ordered");
-    //  extracts["e1/params/fields"].append().set("u22Ordered");
-    //  extracts["e1/params/fields"].append().set("u23Ordered");
-    //  extracts["e1/params/fields"].append().set("u31Ordered");
-    //  extracts["e1/params/fields"].append().set("u32Ordered");
-    //  extracts["e1/params/fields"].append().set("u33Ordered");
+     extracts["e1/params/fields"].append().set("u11Ordered");
+     extracts["e1/params/fields"].append().set("u12Ordered");
+     extracts["e1/params/fields"].append().set("u13Ordered");
+     extracts["e1/params/fields"].append().set("u21Ordered");
+     extracts["e1/params/fields"].append().set("u22Ordered");
+     extracts["e1/params/fields"].append().set("u23Ordered");
+     extracts["e1/params/fields"].append().set("u31Ordered");
+     extracts["e1/params/fields"].append().set("u32Ordered");
+     extracts["e1/params/fields"].append().set("u33Ordered");
 
-    //  extracts["e1/params/fields"].append().set("v11Ordered");
-    //  extracts["e1/params/fields"].append().set("v12Ordered");
-    //  extracts["e1/params/fields"].append().set("v13Ordered");
-    //  extracts["e1/params/fields"].append().set("v21Ordered");
-    //  extracts["e1/params/fields"].append().set("v22Ordered");
-    //  extracts["e1/params/fields"].append().set("v23Ordered");
-    //  extracts["e1/params/fields"].append().set("v31Ordered");
-    //  extracts["e1/params/fields"].append().set("v32Ordered");
-    //  extracts["e1/params/fields"].append().set("v33Ordered");
+     extracts["e1/params/fields"].append().set("v11Ordered");
+     extracts["e1/params/fields"].append().set("v12Ordered");
+     extracts["e1/params/fields"].append().set("v13Ordered");
+     extracts["e1/params/fields"].append().set("v21Ordered");
+     extracts["e1/params/fields"].append().set("v22Ordered");
+     extracts["e1/params/fields"].append().set("v23Ordered");
+     extracts["e1/params/fields"].append().set("v31Ordered");
+     extracts["e1/params/fields"].append().set("v32Ordered");
+     extracts["e1/params/fields"].append().set("v33Ordered");
     // }
 
     // if (config.hdf5_trA_output == 1){
@@ -303,9 +300,9 @@ void parIO::defineActions(glsol &sol) {
     /* >>>>>>>>>>>>> ???????????? <<<<<<<<<<<<<< */
      
     // print our full actions tree
-    hila::out0 << actions.to_yaml()
-	       << '\n'
-	       << std::endl;
+    // hila::out0 << actions.to_yaml()
+    // 	       << '\n'
+    // 	       << std::endl;
     
 } // defineActions() call end here
 
