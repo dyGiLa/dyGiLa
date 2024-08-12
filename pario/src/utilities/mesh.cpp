@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -16,12 +16,9 @@
 #include "matep.hpp"
 #include "pario.hpp"
 
-//#if defined USE_ASCENT
-
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
-//#endif
 
 void parIO::describeMesh(glsol &sol) {
 

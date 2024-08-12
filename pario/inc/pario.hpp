@@ -90,7 +90,7 @@ private:
   unsigned char *ghostCellsMask;
 
   ascent::Ascent pio;
-  conduit::Node ascent_options;
+  conduit::Node pio_options;
   conduit::Node actions;
   conduit::Node mesh;
 

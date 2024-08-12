@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define USE_ASCENT 
+#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -16,12 +16,8 @@
 #include "matep.hpp"
 #include "pario.hpp"
 
-//#if defined USE_ASCENT
-
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
-
-//#endif
 
 void parIO::init(glsol &sol) {
 
@@ -110,15 +106,15 @@ void parIO::init(glsol &sol) {
     // describeMesh() call
     describeMesh(sol);
 
-    ascent_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
-    ascent_options["runtime/type"] = "ascent";
+    pio_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
+    pio_options["runtime/type"] = "ascent";
 #if defined CUDA
-    ascent_options["runtime/vtkm/backend"] = "cuda";
-    ascent_options["cuda/init"] = "false";
+    pio_options["runtime/vtkm/backend"] = "cuda";
+    pio_options["cuda/init"] = "false";
 #endif
-    ascent_options["timings"] = "false";
+    pio_options["timings"] = "false";
     
-    pio.open(ascent_options);
+    pio.open(pio_options);
     pio.publish(mesh);
 
     // defineActions() call
