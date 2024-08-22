@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>

@@ -107,62 +107,6 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
 
-    // /*----------------------------------------*/
-    // /*       parameters update strategies     */
-    // /*----------------------------------------*/
-    // config.item = parameters.get_item("category",{"fixed", "computed", "interpolated"});
-    // if (config.item == 0){
-    //   config.alpha = parameters.get("alpha");
-    //   config.beta1 = parameters.get("beta1");
-    //   config.beta2 = parameters.get("beta2");
-    //   config.beta3 = parameters.get("beta3");
-    //   config.beta4 = parameters.get("beta4");
-    //   config.beta5 = parameters.get("beta5");
-    // }
-    // else if (config.item == 1) {
-    //   //config.T = parameters.get("T");
-    //   config.dT_from_TAB = parameters.get("dT_from_TAB");
-    //   config.p = parameters.get("p");
-    //   config.T = (MP.tAB_RWS(config.p) * MP.Tcp_mK(config.p)) + config.dT_from_TAB;
-    //   hila::out0 << "Tab: "<< MP.tAB_RWS(config.p)
-    // 	         << ", p:" << config.p
-    // 	         << ", T:" << config.T
-    // 	         << ", dT_from_TAB:" << config.dT_from_TAB << "\n";
-    // }
-    // else {
-    //   const std::string in_file = parameters.get("params_file"); 
-
-    //   std::fstream params_stream;
-    //   params_stream.open(in_file, std::ios::in);
-    //   std::string line;
-
-    //   while (std::getline(params_stream, line))
-    // 	{
-    // 	  std::stringstream ss(line);
-    // 	  real_t a, b, c;
-    // 	  if (ss >> a >> b >> c)
-    // 	    {
-    // 	      t_v.push_back(a);
-    // 	      T_v.push_back(b);
-    // 	      p_v.push_back(c);
-    // 	    }
-    // 	}
-    // }
-    /*----------------------------------------*/
-    /* parameters update strategies end here  */
-    /*----------------------------------------*/   
-    
-    /* initial condtion needs deep look */	   
-    // gammar = parameters.get("gamma");
-    // config.gamma.re=gammar;
-    // config.gamma.im=0.0;//gammar;
-    /* complex valued gamma can be gotten from config file directly */
-
-    //config.initialCondition = parameters.get_item("initialCondition",{"gaussrand", "kgaussrand","Bphase","Aphase"});
-    // config.seed = parameters.get("seed");
-    // config.IniMod = parameters.get("IniMod");
-    // config.Inilc = parameters.get("Inilc");
-
     //initialCondition-T
     config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
     if(config.initialConditionT == 0)
@@ -246,12 +190,11 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
-    // config.A_matrix_output             = parameters.get_item("A_matrix_output",{"no","yes"});
-    // config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
+    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
     // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
     // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
-    // config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
-    // config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});        
+    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
+    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});        
 
     // config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     // config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
@@ -261,8 +204,8 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     
     config.clamp_bias_gapMin = parameters.get("clamp_bias_gapMin");
     config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
-    // config.clamp_fed_Min = parameters.get("clamp_fed_Min");
-    // config.clamp_fed_Max = parameters.get("clamp_fed_Max");    
+    config.clamp_fed_Min = parameters.get("clamp_fed_Min");
+    config.clamp_fed_Max = parameters.get("clamp_fed_Max");    
     config.camera_azi = parameters.get("camera_azi");
     config.camera_ele = parameters.get("camera_ele");
     /*----------------------------------------*/
