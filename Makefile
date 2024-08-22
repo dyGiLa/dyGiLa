@@ -4,19 +4,15 @@
 # Can be absolute or relative.
 # If one want use cosfithe HILA instance as library, one could pass
 # HILA_DIR=cosfithe option in command line
-ifndef HILA_DIR
-HILA_DIR:= /projappl/project_462000465/insHILA
-else
-  ifeq (${HILA_DIR}, cosfithe)
-    HILA_DIR := /projappl/cosfithe/HILA
-  endif
-endif
 
+# Absolute UNIX path of library HILA
 # Absolute UNIX path of parallel io library Ascent
 ifeq ($(ARCH), lumi)
+HILA_DIR:= /projappl/project_462000465/insHILA
 ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
 else
   ifeq ($(ARCH), mahti)
+   HILA_DIR:= /projappl/project_2006478/insHILA
    ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
   endif
 endif
@@ -29,6 +25,10 @@ endif
 # absolute UNIX path of dyGiLa folder
 ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000465/dyGiLa
+else
+  ifeq ($(ARCH), mahti)
+   DYGILA_DIR := /projappl/project_2006478/dyGiLa
+  endif
 endif
 
 APP_OPTS := -DNDIM=3
