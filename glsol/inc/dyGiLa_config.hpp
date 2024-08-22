@@ -68,9 +68,6 @@ struct dyGiLaConf {
 
       std::fstream stream;
       
-      // xdmf file fstream
-      std::fstream xdmf_out;
-      std::fstream xml_out;      
       std::string  xmf2_fname;
 
       int positions;
@@ -97,7 +94,6 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      unsigned int A_matrix_output;
       // unsigned int do_gapA_clip,
       //              do_gapA_isosurface,
       //              do_gapA_3slice,

@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
@@ -177,7 +176,7 @@ void parIO::pstream(glsol &sol) {
     }
 
     /*----------------     A matrix elements ---------------------*/
-    if (sol.config.A_matrix_output == 1){
+    if (sol.config.hdf5_A_matrix_output == 1){
      u11[ALL] = sol.A[X].e(0,0).re; v11[ALL] = sol.A[X].e(0,0).im;
      u12[ALL] = sol.A[X].e(0,1).re; v12[ALL] = sol.A[X].e(0,1).im;
      u13[ALL] = sol.A[X].e(0,2).re; v13[ALL] = sol.A[X].e(0,2).im;
