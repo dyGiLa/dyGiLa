@@ -154,55 +154,55 @@ void glsol::next_bath() {
 	//modP += sqrt(ep2)*tb*rad_mat.norm();
       }
 
-      deltaPi[ALL] = 0.0;
+      // deltaPi[ALL] = 0.0;
 
-      onsites (ALL) {
+      // onsites (ALL) {
 
-	real_t beta[6];
-	point_params(T[X], p[X],beta);
+      // 	real_t beta[6];
+      // 	point_params(T[X], p[X],beta);
 	
-        auto AxAt = A[X]*A[X].transpose();
-        auto AxAd = A[X]*A[X].dagger();
+      //   auto AxAt = A[X]*A[X].transpose();
+      //   auto AxAd = A[X]*A[X].dagger();
 
-        deltaPi[X] = - beta[0]*A[X]
-          - 2.0*beta[1]*A[X].conj()*AxAt.trace()
-          - 2.0*beta[2]*A[X]*AxAd.trace()
-          - 2.0*beta[3]*AxAt*A[X].conj()
-          - 2.0*beta[4]*AxAd*A[X]
-          - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
-      }
+      //   deltaPi[X] = - beta[0]*A[X]
+      //     - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+      //     - 2.0*beta[2]*A[X]*AxAd.trace()
+      //     - 2.0*beta[3]*AxAt*A[X].conj()
+      //     - 2.0*beta[4]*AxAd*A[X]
+      //     - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
+      // }
 
-      onsites(ALL) {
-        djAaj[X] = 0;
-        foralldir(j) {
-          djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-        }
-      }
+      // onsites(ALL) {
+      //   djAaj[X] = 0;
+      //   foralldir(j) {
+      //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+      //   }
+      // }
 
-      onsites(ALL) {
-        phi_t mat;
-        foralldir(d) {
-          auto col = djAaj[X+d] - djAaj[X-d];
-          for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-        }
+      // onsites(ALL) {
+      //   phi_t mat;
+      //   foralldir(d) {
+      //     auto col = djAaj[X+d] - djAaj[X-d];
+      //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+      //   }
 
-        deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-      }
+      //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+      // }
 
-      onsites (ALL) {
+      // onsites (ALL) {
 
-	//Matep MP;
-	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
-	//real_t sig = sqrt(2.0*tb*config.gamma);
-	//phi_t rad_mat;
+      // 	//Matep MP;
+      // 	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+      // 	//real_t sig = sqrt(2.0*tb*config.gamma);
+      // 	//phi_t rad_mat;
 	
-        deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
-							 - 6.0*A[X]);
-	//rad_mat.gaussian_random();
-	//deltaPi[X] += sig*rad_mat; 
-      }
+      //   deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+      //                                                + A[X + e_y] + A[X - e_y]
+      //                                                + A[X + e_z] + A[X - e_z]
+      // 							 - 6.0*A[X]);
+      // 	//rad_mat.gaussian_random();
+      // 	//deltaPi[X] += sig*rad_mat; 
+      // }
 
 
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
