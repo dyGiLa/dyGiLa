@@ -1,7 +1,6 @@
 #ifndef PARIO_HPP
 #define PARIO_HPP
 
-#define _USE_MATH_DEFINES
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -43,7 +42,11 @@ public:
   // called in main()  
   void init(glsol &);
   void pstream(glsol &);
-  void shutdown();  
+  void shutdown();
+
+  // xdmf file fstream
+  std::fstream xdmf_out;
+  std::fstream xml_out;
 
 private:
   
