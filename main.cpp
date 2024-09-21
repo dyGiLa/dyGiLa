@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
@@ -33,6 +32,9 @@ int main(int argc, char **argv) {
     //int bloob_created=0;
     
     int stepspos;
+
+    std::initializer_list<int> coordsList {0,0,0};
+    const CoordinateVector originpoints(coordsList); 
     
     int steps = (gl.config.tEnd - gl.config.tStats) 
                  / (gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
@@ -56,14 +58,14 @@ int main(int argc, char **argv) {
         gl.config.stream.open(output_fname, std::ios::out);
     }
 
-    // xml files for MetaData.    
-    // if (
-    //     (gl.config.hdf5_A_matrix_output        == 1)
-    // 	|| (gl.config.hdf5_trA_output          == 1)
-    // 	|| (gl.config.hdf5_eigvA_output        == 1)
-    // 	|| (gl.config.hdf5_mass_current_output == 1)
-    // 	|| (gl.config.hdf5_spin_current_output == 1)
-    //    )
+    //xml files for MetaData.    
+    if (
+        (gl.config.hdf5_A_matrix_output        == 1)
+	// || (gl.config.hdf5_trA_output          == 1)
+	// || (gl.config.hdf5_eigvA_output        == 1)
+	|| (gl.config.hdf5_mass_current_output == 1)
+	|| (gl.config.hdf5_spin_current_output == 1)
+       )
      {
       paraio.xml(gl);
      //hila::synchronize();    
@@ -117,13 +119,37 @@ int main(int argc, char **argv) {
 	//     bloob_created=1;
 	//   }
 	    
-	if (gl.config.useTbath == 1)
+	if (
+	    (gl.config.useTbath == 1)
+	    && (gl.t >= gl.config.Tbath_start)
+            && (gl.config.evolveT == 0)
+	   )
 	  {
 	    gl.next_bath();
+	    hila::out0 << " next_bath() call, T in site is " << gl.T.get_element(originpoints)
+		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    
+	  }
+	else if (
+	         (gl.config.useTbath == 1)
+	         && (gl.t >= gl.config.Tbath_start)
+		 && (gl.config.evolveT == 1)
+		 && (gl.config.Tevolvetype == 2)             
+                )
+	  {
+            gl.next_bath_UniT_quench();
+	    hila::out0 << " next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
+		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    
+
 	  }
 	else
 	  {
 	    gl.next();
+	    hila::out0 << " next() call, T in site is " << gl.T.get_element(originpoints)
+		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    
+	    
 	  }
 	
 	if(/*(gl.t > gl.config.startdiffT) &&*/

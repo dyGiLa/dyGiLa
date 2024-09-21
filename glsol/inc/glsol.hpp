@@ -1,7 +1,6 @@
 #ifndef GLSOL_HPP
 #define GLSOL_HPP
 
-#define _USE_MATH_DEFINES
 #define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
@@ -45,6 +44,7 @@ public:
   
   void next();
   void next_bath();
+  void next_bath_UniT_quench();  
   void nextT();
   void hotbloob();
   

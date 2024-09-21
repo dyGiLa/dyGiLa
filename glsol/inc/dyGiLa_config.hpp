@@ -20,7 +20,18 @@ struct dyGiLaConf {
       real_t dx;
       real_t dt;
       real_t dtdxRatio;
-      
+
+      // quench time, measured from Tc to 0
+      // Ttd_Qend, detinated temperature Ttd_Qend = T_Qend/Tc
+      // has1stQStop, has 1st quench stop point
+      // Ttd_Q1st, 1st quench stop Temp, Ttd_Q1st = T_Q1st/Tc
+      // tQ1Waiting, waiting time of 1st quench stop Temp
+      real_t tauQ;
+      unsigned int has1stQStop;
+      real_t Ttd_Q1st;
+      real_t tQ1Waiting;
+      real_t Ttd_Qend;
+  
       real_t tStart;
       real_t tEnd;
 
@@ -80,6 +91,7 @@ struct dyGiLaConf {
       int BCchangec;
       
       int useTbath;
+      real_t Tbath_start;
 
       int write_phases;
       int write_eigen;
@@ -94,7 +106,10 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      // unsigned int do_gapA_clip,
+      unsigned int do_gapA_clip;
+      real_t gapA_clip_point_x, gapA_clip_point_y, gapA_clip_point_z,
+             gapA_clip_norm_x, gapA_clip_norm_y, gapA_clip_norm_z;
+  
       //              do_gapA_isosurface,
       //              do_gapA_3slice,
       //              do_fe_slice,

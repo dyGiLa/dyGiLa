@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>
@@ -26,6 +25,14 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.lz = parameters.get("Nz");
     config.dx = parameters.get("dx");
     config.dtdxRatio = parameters.get("dtdxRatio");
+    config.tauQ = parameters.get("tauQ");
+    config.has1stQStop = parameters.get_item("has1stQStop",{"no", "yes"});
+    if (config.has1stQStop == 1)
+      {
+	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
+	config.tQ1Waiting = parameters.get("tQ1Waiting");
+      }    
+    config.Ttd_Qend = parameters.get("Ttd_Qend");
     config.tStart = parameters.get("tStart");
     config.tEnd = parameters.get("tEnd");
     config.tdif = parameters.get("tdif");
@@ -173,9 +180,12 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.evolveT = parameters.get_item("evolveT",{"no","yes"});
     if(config.evolveT ==1)
       {
-	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave"});
-	config.startdiffT = parameters.get("startdiffT");
-	config.diffT = parameters.get("diffT");
+	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave","homogeneousQuench"});
+	if (config.Tevolvetype == 0 || config.Tevolvetype == 1)
+	  {
+	   config.startdiffT = parameters.get("startdiffT");
+	   config.diffT = parameters.get("diffT");
+	  }
       }
     // config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
     // if(config.bloob_after== 1)
@@ -184,7 +194,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     //   }
 
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-
+    config.Tbath_start = parameters.get("Tbath_start");
 
     
     /*----------------------------------------*/
@@ -196,7 +206,18 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
     config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});        
 
-    // config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
+    config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
+    if ( config.do_gapA_clip ==1 )
+      {
+        config.gapA_clip_point_x = parameters.get("gapA_clip_point_x");
+	config.gapA_clip_point_y = parameters.get("gapA_clip_point_y");
+	config.gapA_clip_point_z = parameters.get("gapA_clip_point_z");
+        config.gapA_clip_norm_x = parameters.get("gapA_clip_norm_x");
+	config.gapA_clip_norm_y = parameters.get("gapA_clip_norm_y");
+	config.gapA_clip_norm_z = parameters.get("gapA_clip_norm_z");	
+      } // gapA clip control parammeters
+
+    
     // config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
