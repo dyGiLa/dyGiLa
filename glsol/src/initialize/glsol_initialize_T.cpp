@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>
@@ -21,7 +20,8 @@ void glsol::initializeT() {
   switch (config.initialConditionT) {
 
   case 0: {
-    
+
+    // constant uniform temperature
     onsites(ALL) {
       T[X] = config.IniT;
       dT[X] = 0.0;
@@ -34,6 +34,7 @@ void glsol::initializeT() {
    
   case 1: {
 
+    // case of sine configuration
     onsites(ALL){
       
       auto xcoord = X.coordinate(e_x);
@@ -49,6 +50,7 @@ void glsol::initializeT() {
 
   case 2: {
 
+    // case of hotbloob 
     onsites(ALL){
       auto xcoord = X.coordinate(e_x);
       auto ycoord = X.coordinate(e_y);

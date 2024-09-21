@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>
@@ -109,6 +108,10 @@ void glsol::initialize() {
 
   case 4: {
     pi = 0.;
+    hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+               << "\n"
+               << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+               << std::endl;
     onsites(ALL) {
       //hila::out0 << "this is case 4" << std::endl;
       foralldir(al) foralldir(i){
@@ -181,27 +184,29 @@ void glsol::initialize() {
     }
 
   case 7: {
-    // pi = 0.;
-    // real_t gap = MP.gap_A_td(Tp[1], Tp[0]);
-    // hila::out0<<"Gap A: "<<gap<<"\n";
+    pi = 0.;
+    real_t gap = MP.gap_A_td(config.Inip, config.IniT);
+    hila::out0 <<"Gap A " << "at initial p,T is " << gap
+               <<"Gap B " << "at initial p,T is " << MP.gap_B_td(config.Inip, config.IniT)
+	       << std::endl;
     
-    // onsites(ALL) {
-    //   foralldir(al) foralldir(i){
-    // 	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
+    onsites(ALL) {
+      foralldir(al) foralldir(i){
+	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
 	
-    // 	if ((al==0) && (i==0)) {
-    // 	  A[X].e(al,i).re=A[X].e(al,i).re + 1.;
-    // 	}
-    // 	else if ((al==0) && (i==1)) {
-    // 	  A[X].e(al,i).im=A[X].e(al,i).im + 1.;
-    // 	} // put bulk A-phase elements into random matrix
+	if ((al==0) && (i==0)) {
+	  A[X].e(al,i).re=A[X].e(al,i).re + 1.;
+	}
+	else if ((al==0) && (i==1)) {
+	  A[X].e(al,i).im=A[X].e(al,i).im + 1.;
+	} // put bulk A-phase elements into random matrix
 
-    // 	A[X].e(al,i)=(A[X].e(al,i)/sqrt(2.)) * gap;	
-    //   } // doralldir end here
-    // } // onsites(ALL) end here
+	A[X].e(al,i)=(A[X].e(al,i)/sqrt(2.)) * gap;	
+      } // doralldir end here
+    } // onsites(ALL) end here
 
-    // //A[ALL]=A[x].asArray()
-    // hila::out0 << "Aphase_full is created \n";
+    //A[ALL]=A[x].asArray()
+    hila::out0 << "Aphase_full with onsite random noise is created. " << std::endl;
 
     break;
   } // case 7: Aphase_full

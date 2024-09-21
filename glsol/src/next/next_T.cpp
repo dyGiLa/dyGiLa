@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>
@@ -25,21 +24,22 @@ void glsol::nextT() {
   real_t dt=config.dt;
 
   switch (config.Tevolvetype){
-  case 0: {
+   case 0: {
+     // case heat
+     dt=config.dt/heatfactor;
+     time_steps=heatfactor;
+    
+     break;
+   }
+   case 1: {
 
-    dt=config.dt/heatfactor;
-    time_steps=heatfactor;
+     // case wave
+     dt=config.dt;
+     time_steps=1;
     
-    break;
-  }
-  case 1: {
-    
-    dt=config.dt;
-    time_steps=1;
-    
-    break;
-  }
-  }
+     break;
+   }
+  } // config.Tevolvetype block
   
   for(int i=0; i<time_steps; i++)
     {
@@ -70,8 +70,9 @@ void glsol::nextT() {
 	  break;
 	}
 	}
-      }
-    }
+      } // onsite(ALL) block
+
+    } // for loop block
 
 } // nextT() ends here
 

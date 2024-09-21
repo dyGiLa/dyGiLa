@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define USE_PARIO
 #define USE_MPI 
 #include <sstream>
@@ -76,12 +75,14 @@ void glsol::next() {
            }
          else if (bc == 2)
              {
-	       if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
+	       if (
+		   X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
 	           X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
 	           X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
 	           X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
 	           X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
-	           X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
+	           X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2)
+		  )
                  {
 	          A[X]=0.0;
 	         }

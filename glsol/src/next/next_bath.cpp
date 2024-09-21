@@ -29,6 +29,7 @@ void glsol::next_bath() {
   double modP=0.0;
   
   int bc=config.boundaryConditions;
+  // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
 
   next_timer.start();
 
@@ -76,17 +77,19 @@ void glsol::next_bath() {
         }
     else if (bc == 2)
       {
-        if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == (config.lx - 1) or
-            X.coordinate(e_x) == 1 or X.coordinate(e_x) == (config.lx - 2) or
-            X.coordinate(e_y) == 0 or X.coordinate(e_y) == (config.ly - 1) or
-            X.coordinate(e_y) == 1 or X.coordinate(e_y) == (config.ly - 2) or
-            X.coordinate(e_z) == 0 or X.coordinate(e_z) == (config.lz - 1) or
-            X.coordinate(e_z) == 1 or X.coordinate(e_z) == (config.lz - 2))
+        if (
+	    X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1) ||
+            X.coordinate(e_x) == 1 || X.coordinate(e_x) == (config.lx - 2) ||
+            X.coordinate(e_y) == 0 || X.coordinate(e_y) == (config.ly - 1) ||
+            X.coordinate(e_y) == 1 || X.coordinate(e_y) == (config.ly - 2) ||
+            X.coordinate(e_z) == 0 || X.coordinate(e_z) == (config.lz - 1) ||
+            X.coordinate(e_z) == 1 || X.coordinate(e_z) == (config.lz - 2)
+	   )
           {
-            A[X]=0.0;
+            A[X]=0.0;	    
           }
       }
-  }
+  } // onsite() block ends here
 
   onsites (ALL) {
 
