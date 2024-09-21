@@ -30,10 +30,10 @@ PARIO_OBJECTS = build/xdmf.o     \
                 build/mesh_spinCurrent.o      \
                 build/mesh_AMatrix.o          \
                 build/mesh_addGhost_verify.o  \
-                build/actions_gapA_FEDensity.o \
+                build/actions_gapA_FEDensity.o  \
                 build/actions_massCurrent.o \
                 build/actions_spinCurrent.o \
-                build/actions_AMatrix.o \
+                build/actions_AMatrix.o     \
                 build/actions_printTree.o
 
 .PHONY: pario
