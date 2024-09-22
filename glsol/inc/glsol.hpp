@@ -1,7 +1,6 @@
 #ifndef GLSOL_HPP
 #define GLSOL_HPP
 
-#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
