@@ -21,11 +21,13 @@ struct dyGiLaConf {
       real_t dt;
       real_t dtdxRatio;
 
+      // tThermalizationWaiting, initilial configuration thermalizing time
       // quench time, measured from Tc to 0
       // Ttd_Qend, detinated temperature Ttd_Qend = T_Qend/Tc
       // has1stQStop, has 1st quench stop point
       // Ttd_Q1st, 1st quench stop Temp, Ttd_Q1st = T_Q1st/Tc
       // tQ1Waiting, waiting time of 1st quench stop Temp
+      real_t tThermalizationWaiting;  
       real_t tauQ;
       unsigned int has1stQStop;
       real_t Ttd_Q1st;

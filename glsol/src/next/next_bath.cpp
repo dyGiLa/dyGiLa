@@ -1,4 +1,3 @@
-#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -26,7 +25,7 @@ void glsol::next_bath() {
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
 
-  double modP=0.0;
+  //double modP=0.0;
   
   int bc=config.boundaryConditions;
   // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;

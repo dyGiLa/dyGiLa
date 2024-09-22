@@ -1,4 +1,4 @@
-#define USE_PARIO 
+//#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -16,7 +16,6 @@
 
 int main(int argc, char **argv) {
     glsol gl;
-    parIO paraio;
     
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
 
@@ -58,6 +57,9 @@ int main(int argc, char **argv) {
         gl.config.stream.open(output_fname, std::ios::out);
     }
 
+#if defined USE_PARIO
+    parIO paraio;    
+
     //xml files for MetaData.    
     if (
         (gl.config.hdf5_A_matrix_output        == 1)
@@ -66,14 +68,13 @@ int main(int argc, char **argv) {
 	|| (gl.config.hdf5_mass_current_output == 1)
 	|| (gl.config.hdf5_spin_current_output == 1)
        )
-     {
-      paraio.xml(gl);
+    {
+     paraio.xml(gl);
      //hila::synchronize();    
-     }
+    }
 
-     if (hila::myrank() == 0) {paraio.xdmf(gl);}    
+    if (hila::myrank() == 0) {paraio.xdmf(gl);}    
     
-#if defined USE_PARIO
     paraio.init(gl);
     hila::out0 << "parallel IO enigne starts!" << "\n"
                << std::endl;    
@@ -120,9 +121,14 @@ int main(int argc, char **argv) {
 	//   }
 	    
 	if (
-	    (gl.config.useTbath == 1)
-	    && (gl.t >= gl.config.Tbath_start)
-            && (gl.config.evolveT == 0)
+	    ((gl.config.useTbath == 1)
+	     && (gl.t >= gl.config.Tbath_start)
+	     && (gl.config.evolveT == 0)) // fixed T-thermal bath
+	    ||
+	    ((gl.config.useTbath == 1)
+	     && (gl.t >= gl.config.Tbath_start)
+	     && (gl.config.evolveT == 1)
+	     && (gl.t <= gl.config.tThermalizationWaiting)) // eolved T-thermal bath run, but in fixed T thermalization	    
 	   )
 	  {
 	    gl.next_bath();
@@ -134,7 +140,8 @@ int main(int argc, char **argv) {
 	         (gl.config.useTbath == 1)
 	         && (gl.t >= gl.config.Tbath_start)
 		 && (gl.config.evolveT == 1)
-		 && (gl.config.Tevolvetype == 2)             
+		 && (gl.config.Tevolvetype == 2)
+		 && (gl.t > gl.config.tThermalizationWaiting)
                 )
 	  {
             gl.next_bath_UniT_quench();

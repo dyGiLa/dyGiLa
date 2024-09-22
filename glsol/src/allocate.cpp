@@ -1,4 +1,3 @@
-#define USE_PARIO
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -25,8 +24,10 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.lz = parameters.get("Nz");
     config.dx = parameters.get("dx");
     config.dtdxRatio = parameters.get("dtdxRatio");
-    config.tauQ = parameters.get("tauQ");
-    config.has1stQStop = parameters.get_item("has1stQStop",{"no", "yes"});
+
+    config.tThermalizationWaiting = parameters.get("tThermalizationWaiting");
+    config.tauQ                   = parameters.get("tauQ");
+    config.has1stQStop            = parameters.get_item("has1stQStop",{"no", "yes"});
     if (config.has1stQStop == 1)
       {
 	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
