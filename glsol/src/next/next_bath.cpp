@@ -34,8 +34,10 @@ void glsol::next_bath() {
 
   onsites(ALL) {
 
-    real_t gapa = MP.gap_A_td(p[X], T[X]);
-    real_t gapb = MP.gap_B_td(p[X], T[X]);
+    Matep MPonsites;
+    
+    real_t gapa = MPonsites.gap_A_td(p[X], T[X]);
+    real_t gapb = MPonsites.gap_B_td(p[X], T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -92,18 +94,27 @@ void glsol::next_bath() {
 
   onsites (ALL) {
 
-    real_t beta[6];
-    point_params(T[X], p[X],beta);
+    Matep MPonsites;
+    //real_t beta[6];
+    //point_params(T[X], p[X],beta);
+
+    real_t beta0 = MPonsites.alpha_td(p[X], T[X]);
+    real_t beta1 = MPonsites.beta1_td(p[X], T[X]);
+    real_t beta2 = MPonsites.beta2_td(p[X], T[X]);
+    real_t beta3 = MPonsites.beta3_td(p[X], T[X]);
+    real_t beta4 = MPonsites.beta4_td(p[X], T[X]);
+    real_t beta5 = MPonsites.beta5_td(p[X], T[X]);
+    
 
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - beta[0]*A[X]
-      - 2.0*beta[1]*A[X].conj()*AxAt.trace()
-      - 2.0*beta[2]*A[X]*AxAd.trace()
-      - 2.0*beta[3]*AxAt*A[X].conj()
-      - 2.0*beta[4]*AxAd*A[X]
-      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta0*A[X]
+      - 2.0*beta1*A[X].conj()*AxAt.trace()
+      - 2.0*beta2*A[X]*AxAd.trace()
+      - 2.0*beta3*AxAt*A[X].conj()
+      - 2.0*beta4*AxAd*A[X]
+      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X];
 
   }
 

@@ -22,7 +22,8 @@ void glsol::write_phases() {
 
   onsites (ALL) {
 
-    real_t R1,R2,R3,R4,R5;
+    // R2 is commented to cuda gpu compiling
+    real_t R1/*,R2*/,R3,R4,R5;
     real_t p1,p2,p3,p4,p5,p6,p7,p8;
     real_t error=0.5;
     int phase;
@@ -40,7 +41,8 @@ void glsol::write_phases() {
 
     R1 = ((Ac*Ac.transpose()).trace()).squarenorm();
 
-    R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
+    // R2 is commented to cuda gpu compiling    
+    // R2 = real(((Ac*Ac.dagger()).trace()*(Ac*Ac.dagger()).trace()));
 
     R3 = real(((Ac*Ac.transpose()*Ac.conj()*Ac.dagger()).trace()));
 

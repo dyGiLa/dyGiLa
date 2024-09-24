@@ -15,6 +15,10 @@ else
    HILA_DIR:= /projappl/project_2006478/insHILA
    ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
   endif
+  ifeq ($(ARCH), mahti-cuda)
+   HILA_DIR:= /projappl/project_2006478/insHILA
+   ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
+  endif
 endif
 
 # default ARCH if no ARCH is provided form shell
@@ -27,6 +31,9 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000465/dyGiLa
 else
   ifeq ($(ARCH), mahti)
+   DYGILA_DIR := /projappl/project_2006478/dyGiLa
+  endif
+  ifeq ($(ARCH), mahti-cuda)
    DYGILA_DIR := /projappl/project_2006478/dyGiLa
   endif
 endif

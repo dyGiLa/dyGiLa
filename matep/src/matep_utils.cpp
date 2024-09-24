@@ -95,7 +95,7 @@ Matep::exp_q(real_t p){
   defp_G = p - p_pcp;
   
   // std::cout << " \n defp_G is " << defp_G << std::endl;
-  if (Switch == "ON") {
+  if (Switch == 1) {
     
     if (defp_G >= 0.f){
       
@@ -108,14 +108,14 @@ Matep::exp_q(real_t p){
     
     return std::exp(q);
 
-  } else if (Switch == "OFF") {
+  } else if (Switch == 1) {
     q = 0.f;
     //std::cout << " q is " << q << std::endl;
     return std::exp(0.f);
 
   } else {
 
-    std::cout << " \n Switch must be \"ON\" or \"OFF\"! " << std::endl;
+    std::cout << " \n Switch must be \"0\" or \"1\"! " << std::endl;
     return 1;
   }
   
