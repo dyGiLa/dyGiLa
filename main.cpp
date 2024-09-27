@@ -1,4 +1,4 @@
-#define USE_PARIO 
+//#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -12,7 +12,9 @@
 #include "plumbing/fft.h"
 
 #include "glsol.hpp"
+#if defined USE_PARIO
 #include "pario.hpp"
+#endif
 
 int main(int argc, char **argv) {
     glsol gl;
