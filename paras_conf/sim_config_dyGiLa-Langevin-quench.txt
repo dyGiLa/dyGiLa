@@ -5,24 +5,26 @@ dx                  0.5              # Distance between two points
 
 dtdxRatio           0.2              # ratio between dt and dx
 
-tauQ                200               # uniform Temperature quench in unit of tGL, Teperature counted from Tc to 0
+tThermalizationWaiting 200           # initial configuration thermalization time, in unit of tGL
+
+tauQ                50               # uniform Temperature quench in unit of tGL, Teperature counted from Tc to 0
 has1stQStop         yes              # has two steps of quenches
 Ttd_Q1st            0.92              # 1st quench Temp 0.9 Tc
-tQ1Waiting          450              # wainting time at 1st quench Tmep in unit of tGL
-Ttd_Qend            0.87              # destination temperature T_td_Qend = T_Qend/Tc
+tQ1Waiting          1000              # wainting time at 1st quench Tmep in unit of tGL
+Ttd_Qend            0.5              # destination temperature T_td_Qend = T_Qend/Tc
 
 tStart              10.0             # starting time
-tEnd                2010.0             # end time 610, 1010
+tEnd                3010.0             # end time 610, 1010
 tdif                10.0             # end time for diffusion
 difFac              3.0              # diffusion factor, related with dx, it has to be mdified when dx is changed (ex dx->dx/2 difFac->2*difFac)
-tdis                2010.0             # end of damping 
+tdis                3010.0             # end of damping 
 
 gamma1              0.0, 0.0         # complex value of damping coeff gamma i.e., gamma = re +I im
 gamma2              0.05, 0.0         # complex value of damping coeff gamma i.e., gamma = re +I im
 gammaoffc           12               # 12 * steps(40) = 480 dt = 48 tGL
 
 initialCondition    normal_phase_complex      # type of initial condition gaussrand, kgaussrand, normal_phase_1(2,complex), Bphase, Aphase_(partial1, full), BinA
-sigma               0.18               # variance sigma for hila::gaussrand()      
+sigma               0.0               # variance sigma for hila::gaussrand(), e.g., 0.18      
 
 seed                1                 # Random seed, e.g., 1001
 IniMod              1.0               # Intial modulus in the kgaussrand case
@@ -39,8 +41,8 @@ initialConditionp   constant         # type of pressure field, options are const
 Inip                26.0              # initial value of pressure field
 
 tStats              10.0             # Starting time for the output_file
-nOutputs            1000              # Number of outputs for the output_file, 2400, 1200, 600, 300, 28, 500
-output_file         stats/stream.txt # Path for output_file
+nOutputs            1500              # Number of outputs for the output_file, 2400, 1200, 600, 300, 28, 500
+output_file         stats/measure-stream.csv # Path for output_file
 xmf2_file           hdf5reader.xmf2   #hdf5 files reader for ParaView
 
 
@@ -80,14 +82,23 @@ gapA_clip_norm_x     0
 gapA_clip_norm_y     0
 gapA_clip_norm_z     -1
 
+do_fed_clip          yes
+fed_clip_point_x     64
+fed_clip_point_y     128
+fed_clip_point_z     64
+fed_clip_norm_x      0
+fed_clip_norm_y      0
+fed_clip_norm_z      -1
+
 #do_gapA_isosurface   no 
 #do_gapA_3slice       no
 #do_fe_slice          no
 #do_gapA_slice        yes
 
-clamp_bias_gapMin    -0.05        # bias ratio of gapMin in color map clam; should be nagtivep
+clamp_bias_gapMin    -0.77        # bias ratio of gapMin in color map clam; should be nagtivep
 clamp_bias_gapMax    0.05        # bias ratio of gapMax in color map clamp
-clamp_fed_Min        -5.0
-clamp_fed_Max        0.5
+clamp_bias_fed_Min   0.1         # bias ratio of feDneisty min in color map clamp, should be positive because fed < 0
+clamp_bias_fed_Max   0.1         # bias ratio of feDneisty max in color map clamp
+
 camera_azi           35.0        # camera azi of conduit scene 
 camera_ele           30.0        # camera ele of conduit scene
