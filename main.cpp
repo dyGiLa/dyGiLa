@@ -1,4 +1,4 @@
-//#define USE_PARIO 
+#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
     }
 
 #if defined USE_PARIO
-    parIO paraio;    
-
+    parIO paraio;
+    
     //xml files for MetaData.    
     if (
         (gl.config.hdf5_A_matrix_output        == 1)
@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
 
 #if defined USE_PARIO
               paraio.pstream(gl);
+	      //hila::out0 << "paraio.pstream() call is done " << std::endl;
 #endif	            
 	      meas_timer.stop();
             }
