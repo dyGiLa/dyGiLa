@@ -111,6 +111,10 @@ struct dyGiLaConf {
       unsigned int do_gapA_clip;
       real_t gapA_clip_point_x, gapA_clip_point_y, gapA_clip_point_z,
              gapA_clip_norm_x, gapA_clip_norm_y, gapA_clip_norm_z;
+
+      unsigned int do_fed_clip;
+      real_t fed_clip_point_x, fed_clip_point_y, fed_clip_point_z,
+             fed_clip_norm_x, fed_clip_norm_y, fed_clip_norm_z;
   
       //              do_gapA_isosurface,
       //              do_gapA_3slice,
@@ -125,7 +129,7 @@ struct dyGiLaConf {
 	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
-      real_t clamp_fed_Min, clamp_fed_Max;      
+      real_t clamp_bias_fed_Min, clamp_bias_fed_Max;      
       real_t camera_azi, camera_ele;
       /*----------------------------------------*/
       /*    parallel IO parameter end           */

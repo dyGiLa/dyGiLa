@@ -218,6 +218,17 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	config.gapA_clip_norm_z = parameters.get("gapA_clip_norm_z");	
       } // gapA clip control parammeters
 
+    config.do_fed_clip         = parameters.get_item("do_fed_clip",{"no","yes"});
+    if ( config.do_fed_clip ==1 )
+      {
+        config.fed_clip_point_x = parameters.get("fed_clip_point_x");
+	config.fed_clip_point_y = parameters.get("fed_clip_point_y");
+	config.fed_clip_point_z = parameters.get("fed_clip_point_z");
+        config.fed_clip_norm_x = parameters.get("fed_clip_norm_x");
+	config.fed_clip_norm_y = parameters.get("fed_clip_norm_y");
+	config.fed_clip_norm_z = parameters.get("fed_clip_norm_z");	
+      } // gapA clip control parammeters
+    
     
     // config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
@@ -226,8 +237,9 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     
     config.clamp_bias_gapMin = parameters.get("clamp_bias_gapMin");
     config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
-    config.clamp_fed_Min = parameters.get("clamp_fed_Min");
-    config.clamp_fed_Max = parameters.get("clamp_fed_Max");    
+    config.clamp_bias_fed_Min = parameters.get("clamp_bias_fed_Min");
+    config.clamp_bias_fed_Max = parameters.get("clamp_bias_fed_Max");
+    
     config.camera_azi = parameters.get("camera_azi");
     config.camera_ele = parameters.get("camera_ele");
     /*----------------------------------------*/
