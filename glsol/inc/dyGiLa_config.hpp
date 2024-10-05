@@ -116,7 +116,8 @@ struct dyGiLaConf {
       real_t fed_clip_point_x, fed_clip_point_y, fed_clip_point_z,
              fed_clip_norm_x, fed_clip_norm_y, fed_clip_norm_z;
   
-      //              do_gapA_isosurface,
+      unsigned int do_gapA_isosurface;
+      std::vector<double> iso_values_vector;
       //              do_gapA_3slice,
       //              do_fe_slice,
       //              do_gapA_slice;

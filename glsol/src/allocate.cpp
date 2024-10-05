@@ -230,7 +230,13 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
       } // gapA clip control parammeters
     
     
-    // config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
+    config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
+    if ( config.do_gapA_isosurface == 1 )
+      {
+        config.iso_values_vector = parameters.get("iso_values_vector");
+      } // gapA clip control parammeters
+
+    
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
     // config.do_gapA_slice        = parameters.get_item("do_gapA_slice",{"no","yes"});            
