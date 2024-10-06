@@ -1,4 +1,4 @@
-//#define USE_PARIO 
+#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -37,11 +37,11 @@ int main(int argc, char **argv) {
     std::initializer_list<int> coordsList {0,0,0};
     const CoordinateVector originpoints(coordsList); 
     
-    int steps = (gl.config.tEnd - gl.config.tStats) 
-                 / (gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
+    const unsigned int steps = (gl.config.tEnd - gl.config.tStats) 
+                               / (gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
     
-    if (steps == 0)
-        steps = 1;
+    // if (steps == 0)
+    //     steps = 1;
 
     gl.config.gamma              = gl.config.gamma1;                 // initial gamma parameter
     gl.config.boundaryConditions = gl.config.BCs1;                   // initial bounaryConstions
@@ -52,7 +52,8 @@ int main(int argc, char **argv) {
       if (stepspos == 0)
         stepspos = 1;
     }
-        
+
+    // measurement and stream counter
     unsigned int stat_counter = 0;
 
     if (hila::myrank() == 0) {
@@ -72,10 +73,9 @@ int main(int argc, char **argv) {
        )
     {
      paraio.xml(gl);
-     //hila::synchronize();    
+     //hila::synchronize();
+     if (hila::myrank() == 0) {paraio.xdmf(gl);}         
     }
-
-    if (hila::myrank() == 0) {paraio.xdmf(gl);}    
     
     paraio.init(gl);
     hila::out0 << "parallel IO enigne starts!" << "\n"
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
         
         if (gl.t >= gl.config.tStats) {
 	  
-            if (stat_counter % steps == 0) {
+	   if (stat_counter % steps == 0) {
 
 	      meas_timer.start();
 	      //gl.write_moduli();
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 	    if (stat_counter == (gl.config.gammaoffc)*steps) {gl.config.gamma = gl.config.gamma2;}
 	    //if (stat_counter == (gl.config.gammaoffc + 3)*steps) {gl.config.gamma = gl.config.gamma1;}
 	    if (stat_counter == (gl.config.BCchangec)*steps) {gl.config.boundaryConditions = gl.config.BCs2;}
-            stat_counter++;
+            ++stat_counter;
 
         } //gl.t > gl.config.Stats block	
 	
@@ -126,12 +126,14 @@ int main(int argc, char **argv) {
 	if (
 	    ((gl.config.useTbath == 1)
 	     && (gl.t >= gl.config.Tbath_start)
-	     && (gl.config.evolveT == 0)) // fixed T-thermal bath
+	     && (gl.config.evolveT == 0)
+	     && (gl.config.gamma == gl.config.gamma1)) // fixed T-thermal bath
 	    ||
 	    ((gl.config.useTbath == 1)
 	     && (gl.t >= gl.config.Tbath_start)
 	     && (gl.config.evolveT == 1)
-	     && (gl.t <= gl.config.tThermalizationWaiting)) // eolved T-thermal bath run, but in fixed T thermalization	    
+	     && (gl.t <= gl.config.tThermalizationWaiting)
+	     && (gl.config.gamma == gl.config.gamma1)) // eolved T-thermal bath run, but in fixed T thermalization	    
 	   )
 	  {
 	    gl.next_bath();
@@ -145,6 +147,7 @@ int main(int argc, char **argv) {
 		 && (gl.config.evolveT == 1)
 		 && (gl.config.Tevolvetype == 2)
 		 && (gl.t > gl.config.tThermalizationWaiting)
+		 && (gl.config.gamma == gl.config.gamma1)
                 )
 	  {
             gl.next_bath_UniT_quench();
@@ -155,6 +158,7 @@ int main(int argc, char **argv) {
 	  }
 	else
 	  {
+	    // if gl.config.gamma != gl.config.gamma1, program is doing frozen structure
 	    gl.next();
 	    hila::out0 << " next() call, T in site is " << gl.T.get_element(originpoints)
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
@@ -162,12 +166,12 @@ int main(int argc, char **argv) {
 	    
 	  }
 	
-	if(/*(gl.t > gl.config.startdiffT) &&*/
-	   gl.config.evolveT == 1
-	  )
-	  {
-	    gl.nextT();
-	  }
+	// if(/*(gl.t > gl.config.startdiffT) &&*/
+	//    gl.config.evolveT == 1
+	//   )
+	//   {
+	//     gl.nextT();
+	//   }
 	
     } // gl.t evolves while loop ends here
     run_timer.stop();
