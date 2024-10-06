@@ -1,4 +1,4 @@
-### dyGiLa -- dynamical simulation of GL Effective Theory
+### Mirror Repo: dyGiLa -- dynamical simulation of GL Effective Theory
 HPC software for simulating the order parameter dynamics of superfluid Helium 3 with Time-Dependent Ginzburg-Landau effective theory.
 
 dyGiLa started as a descendant of `onsim` developed by Dr. Asier Lopez-Eiguren. 
