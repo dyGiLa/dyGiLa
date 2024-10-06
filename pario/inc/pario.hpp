@@ -98,7 +98,7 @@ private:
                       js12O, js22O, js32O,
                       js13O, js23O, js33O;
   
-    /*--------------------------------*/
+  /*--------------------------------*/
   
   long long ghostVolume;
   long long latticeVolumeWithGhost;
@@ -111,6 +111,9 @@ private:
   conduit::Node actions;
   conduit::Node mesh;
 
+  /*---- control parameters ----*/
+  // do your need any ?
+  
   /*----------------------------------------*/
   /*      pario declearations end here      */
   /*----------------------------------------*/

@@ -34,7 +34,7 @@ void parIO::xml(glsol &sol){
 
   unsigned int n;
 
-  xml_out << "<Grid Name=\"sim-data\" Type=\"Uniform\">\n"
+  xml_out << "<Grid Name=\"dyGiLa-sim-data\" Type=\"Uniform\">\n"
           << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
           << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
           << "  </Topology>\n"

@@ -75,8 +75,7 @@ void parIO::init(glsol &sol) {
      u32Ordered.reserve(latticeVolumeWithGhost); v32Ordered.reserve(latticeVolumeWithGhost);
      u33Ordered.reserve(latticeVolumeWithGhost); v33Ordered.reserve(latticeVolumeWithGhost);    
     }
- 
-    
+     
     // One more point in each direction, but cell data (Npts - 1 cells)
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
     auto ghostNY = lattice.mynode.size[1] + 2 - 1;
