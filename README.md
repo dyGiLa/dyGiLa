@@ -2,7 +2,7 @@
 HPC software for simulating the order parameter dynamics of superfluid Helium 3 with Time-Dependent Ginzburg-Landau effective theory.
 
 dyGiLa started as a descendant of `onsim` developed by Dr. Asier Lopez-Eiguren. 
-Same as `onsim`, dyGiLa uses `HILA` as its CFT simulation framework (Kari Rummukainen et al): https://bitbucket.org/Kari_Rummukainen/hila/src/master
+Same as `onsim`, dyGiLa uses `HILA` as its CFT simulation framework (Kari Rummukainen et al): https://cft-hy.github.io/HILA.home
 After couple of years' develpment, Dr. Kuang Zhang has added parallel simulaton data stream feature and strong coupling corrections functions (material parameters) into dyGiLa.
 Moreover, implemented by Dr. Asier Lopez-Eiguren, and generalized by Dr. Kuang Zhang, GL EOM with Langevin noise i.e., GL-Langevin equation has been introduced into dyGiLa with many different temperature profiles. 
 
