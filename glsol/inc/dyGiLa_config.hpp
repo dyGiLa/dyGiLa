@@ -27,7 +27,9 @@ struct dyGiLaConf {
       // has1stQStop, has 1st quench stop point
       // Ttd_Q1st, 1st quench stop Temp, Ttd_Q1st = T_Q1st/Tc
       // tQ1Waiting, waiting time of 1st quench stop Temp
-      real_t tThermalizationWaiting;  
+      real_t tThermalizationWaiting;
+      real_t tauQ1;
+      real_t tauQ2;  
       real_t tauQ;
       unsigned int has1stQStop;
       real_t Ttd_Q1st;
@@ -122,10 +124,11 @@ struct dyGiLaConf {
       //              do_fe_slice,
       //              do_gapA_slice;
 
-      unsigned int hdf5_A_matrix_output,
+     unsigned int hdf5_A_matrix_output;
+     real_t hdf5Ststart, hdf5Stend;	
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
-                   hdf5_mass_current_output,
+     unsigned int  hdf5_mass_current_output,
                    hdf5_spin_current_output;
 	
       

@@ -26,7 +26,8 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.dtdxRatio = parameters.get("dtdxRatio");
 
     config.tThermalizationWaiting = parameters.get("tThermalizationWaiting");
-    config.tauQ                   = parameters.get("tauQ");
+    config.tauQ1                  = parameters.get("tauQ1");
+    config.tauQ2                  = parameters.get("tauQ2");    
     config.has1stQStop            = parameters.get_item("has1stQStop",{"no", "yes"});
     if (config.has1stQStop == 1)
       {
@@ -202,6 +203,12 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
+    if (config.hdf5_A_matrix_output == 1)
+      {
+       config.hdf5Ststart = parameters.get("hdf5Ststart");
+       config.hdf5Stend   = parameters.get("hdf5Stend");       
+      }
+    
     // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
     // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});

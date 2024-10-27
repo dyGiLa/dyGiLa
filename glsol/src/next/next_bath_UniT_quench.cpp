@@ -44,6 +44,9 @@ void glsol::next_bath_UniT_quench() {
        {/*empty block*/}
      else
        {
+	// 1st quench and 2nd quench has different tauQ
+	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
+	 
         // Temperature update for uniform quench
         T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
