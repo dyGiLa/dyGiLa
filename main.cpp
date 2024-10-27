@@ -72,12 +72,13 @@ int main(int argc, char **argv) {
 	|| (gl.config.hdf5_spin_current_output == 1)
        )
     {
-     paraio.xml(gl);
+      paraio.xml(gl);
      //hila::synchronize();
-     if (hila::myrank() == 0) {paraio.xdmf(gl);}         
     }
     
     paraio.init(gl);
+
+    if (hila::myrank() == 0) {paraio.xdmf(gl);}              
     hila::out0 << "parallel IO enigne starts!" << "\n"
                << std::endl;    
 #endif    
@@ -105,12 +106,14 @@ int main(int argc, char **argv) {
 	      //gl.write_phases();
 
 #if defined USE_PARIO
-              paraio.pstream(gl);
+	      if (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend) paraio.pstream(gl);
 	      //hila::out0 << "paraio.pstream() call is done " << std::endl;
 #endif	            
 	      meas_timer.stop();
             }
-	    if (stat_counter == (gl.config.gammaoffc)*steps) {gl.config.gamma = gl.config.gamma2;}
+
+	    // Set gamma to 2nd value after certain momentum
+	    if (stat_counter >= (gl.config.gammaoffc)*steps) {gl.config.gamma = gl.config.gamma2;}
 	    //if (stat_counter == (gl.config.gammaoffc + 3)*steps) {gl.config.gamma = gl.config.gamma1;}
 	    if (stat_counter == (gl.config.BCchangec)*steps) {gl.config.boundaryConditions = gl.config.BCs2;}
             ++stat_counter;
@@ -137,7 +140,8 @@ int main(int argc, char **argv) {
 	   )
 	  {
 	    gl.next_bath();
-	    hila::out0 << " next_bath() call, T in site is " << gl.T.get_element(originpoints)
+	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 	  }
@@ -151,7 +155,8 @@ int main(int argc, char **argv) {
                 )
 	  {
             gl.next_bath_UniT_quench();
-	    hila::out0 << " next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
+	    hila::out0 << "gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << " next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 
@@ -160,7 +165,8 @@ int main(int argc, char **argv) {
 	  {
 	    // if gl.config.gamma != gl.config.gamma1, program is doing frozen structure
 	    gl.next();
-	    hila::out0 << " next() call, T in site is " << gl.T.get_element(originpoints)
+	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << " next() call, T in site is " << gl.T.get_element(originpoints)
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 	    
