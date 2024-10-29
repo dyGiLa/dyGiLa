@@ -20,6 +20,9 @@
 //*********************************************************************
 //***     member functions, interfaces of dimensional qualities     ***
 //*********************************************************************
+real_t
+Matep::Fa0p(real_t p) {return lininterp(Fa0_arr, p);
+}
 
 real_t
 Matep::Tcp(real_t p){
@@ -109,6 +112,15 @@ Matep::beta5_td(real_t p, real_t T){
   return beta5;
 }  
 
+real_t
+Matep::gz_td(real_t p){
+  real_t gz = 5.f*c_betai
+              *(1./((1+Fa0p(p))*(1+Fa0p(p))))
+              *(gammahbar/(kb*Tcp(p)))
+              *(gammahbar/(kb*Tcp(p)));
+
+  return gz;
+}  
 
 //**********************************************************************
 //***                 beta_A, beta_B and Gaps                        ***

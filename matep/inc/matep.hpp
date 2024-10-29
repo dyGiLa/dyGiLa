@@ -33,7 +33,7 @@ public:
   // ************************************************************************** //
   // >>>>>>>>>>>        interfaces of dimensional qualities        <<<<<<<<<<<< //
   // ************************************************************************** //
-	
+        real_t Fa0p(real_t p);                 //dimensionless Landau Coefficient
         real_t Tcp(real_t p);                  // in unit of Kelvin
         real_t Tcp_mK(real_t p);               // in unit of mK
   
@@ -41,7 +41,7 @@ public:
         real_t vFp(real_t p);                  // Fermi velocity
         real_t xi0p(real_t p);                 // zero Temperature coherent length
         double N0p(real_t p);                  // deisty of state on Fermi surface
-  
+        
 
   // ************************************************************************* //
   // >>>>  interfaces of dimensionless coeficients; SC-correction parts: <<<<< //
@@ -53,6 +53,9 @@ public:
         real_t beta3_td(real_t p, real_t T);
         real_t beta4_td(real_t p, real_t T);
         real_t beta5_td(real_t p, real_t T);
+
+        // Quadratic H-term coefficient gz_td
+        real_t gz_td(real_t p);        
 
   // >>>>>>>>>    interfaces for beta_A, beta_B, gaps and tAB_RWS    <<<<<<<<< //
   
@@ -78,8 +81,8 @@ public:
   
 private:
         // SI unit
-        static constexpr real_t Kelvin =1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f
-                         	,pi = 3.14159265358979323846264338328f, p_pcp = 21.22f;
+        static constexpr real_t Kelvin = 1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f, mT = 1.0f
+	                        ,pi = 3.14159265358979323846264338328f, p_pcp = 21.22f;
 
         // temperature switch Greywall or PLTS2000
         std::string temperature_scale;
@@ -88,8 +91,7 @@ private:
         std::string Switch /*= "OFF"*/; 
 
         // physical constants for he3
-        static const real_t u, m3, nm, hbar, kb
-                            ,zeta3, c_betai;
+        static const real_t u, m3, nm, hbar, kb ,zeta3, c_betai, gammahbar;
  
        
         // SC-data sheets arries, All associate to SCCO class
@@ -100,6 +102,7 @@ private:
         static const real_t c5_arr[18];
 
         // ***************************************************
+        static const real_t Fa0_arr[18];
         static const real_t Tc_arr[18];
         static const real_t Ms_arr[18];
         static const real_t VF_arr[18];
