@@ -20,6 +20,7 @@
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
+
 // Container for simulation parameters and methods
 class glsol{
 
@@ -28,12 +29,18 @@ public:
   
   // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
-  
+
+  // OP field initialization
   void initialize();
-  
+
+  // T-field initialization  
   void initializeT();
+  // p-field initialization    
   void initializep();
-  
+  // H-field initialization    
+  void initializeH();
+
+  // bulk coefficients calculating tool
   void point_params(real_t T, real_t p, real_t beta[6]);
   
   void write_moduli();
@@ -43,7 +50,8 @@ public:
   
   void next();
   void next_bath();
-  void next_bath_UniT_quench();  
+  void next_bath_UniT_quench();
+  void next_bath_UniT_quench_Hfield();    
   void nextT();
   void hotbloob();
   
@@ -54,6 +62,8 @@ public:
   Field<real_t> dT;
   Field<real_t> dT_from_local_TAB;  
   Field<real_t> p;
+
+  Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
   
   real_t t;
   real_t tc = 0;
