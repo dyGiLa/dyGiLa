@@ -30,6 +30,9 @@ int main(int argc, char **argv) {
     // initialize pressure field
     gl.initializep();
 
+    // initilize static H-field
+    gl.initializeH();
+    
     //int bloob_created=0;
     
     int stepspos;
@@ -151,12 +154,31 @@ int main(int argc, char **argv) {
 		 && (gl.config.evolveT == 1)
 		 && (gl.config.Tevolvetype == 2)
 		 && (gl.t > gl.config.tThermalizationWaiting)
+		 && (gl.config.withHfield != 1)
 		 && (gl.config.gamma == gl.config.gamma1)
                 )
 	  {
             gl.next_bath_UniT_quench();
 	    hila::out0 << "gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
 		       << " next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
+		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    
+
+	  }
+	else if (
+	         (gl.config.useTbath == 1)
+	         && (gl.t >= gl.config.Tbath_start)
+		 && (gl.config.evolveT == 1)
+		 && (gl.config.Tevolvetype == 2)
+		 && (gl.t > gl.config.tThermalizationWaiting)
+		 && (gl.config.withHfield == 1)
+		 && (gl.config.gamma == gl.config.gamma1)
+                )
+	  {
+            gl.next_bath_UniT_quench_Hfield();
+	    hila::out0 << "gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << " next_bath_UniT_quench_Hfield() call, T in site is " << gl.T.get_element(originpoints)
+	               << " |H| is " << abs(gl.config.InitH)
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 
