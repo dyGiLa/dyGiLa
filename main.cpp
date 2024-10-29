@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
             gl.next_bath_UniT_quench_Hfield();
 	    hila::out0 << "gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
 		       << " next_bath_UniT_quench_Hfield() call, T in site is " << gl.T.get_element(originpoints)
-	               << " |H| is " << abs(gl.config.InitH)
+	               << " |H| is " << norm(gl.H.get_element(originpoints))
 		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 
