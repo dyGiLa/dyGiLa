@@ -8,8 +8,9 @@
 #include <fstream>
 #include <string>
 
-using real_t = float;                     
+#include "plumbing/hila.h"
 
+using real_t = float;                     
 
 // parameters configuraion class of dyGiLa
 struct dyGiLaConf {
@@ -69,15 +70,23 @@ struct dyGiLaConf {
       real_t beta4;
       real_t beta5;
 
+      // T-filed initialing & control parameters
       int initialConditionT;
       real_t IniT;
       real_t ampT;
       real_t sigTx;
       real_t sigTy;
       real_t sigTz;
+
+      // p-filed initialing & control parameters
       int initialConditionp;
       real_t Inip;
- 
+
+      // H-filed initialing & control parameters
+      unsigned int withHfield;  
+      int initialConditionH;
+      Vector<3, real_t> InitH;
+  
       real_t tStats;
       real_t nOutputs;
 

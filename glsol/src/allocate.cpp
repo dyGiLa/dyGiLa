@@ -139,6 +139,18 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     //initialCondition-p
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     config.Inip	= parameters.get("Inip");
+
+    //initialCondition-Hfield
+    config.withHfield = parameters.get_item("withHfield",{"no", "yes"});
+    if (config.withHfield == 1)
+      {
+       config.initialConditionH = parameters.get_item("initialConditionH",{"constant"});
+       std::vector<real_t> temp	= parameters.get("InitH");
+       foralldir(al){
+	 config.InitH.e(al) = temp[al];
+       }
+      }
+    
     
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
