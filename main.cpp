@@ -1,4 +1,4 @@
-#define USE_PARIO 
+//#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -18,9 +18,14 @@
 
 int main(int argc, char **argv) {
     glsol gl;
+
+
+#if defined USE_PARIO
+    exit(0);
+#endif
     
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
-
+    
     // initialize OP field
     gl.initialize();
 
