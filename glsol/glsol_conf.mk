@@ -1,7 +1,7 @@
 # Makefie of TDGL-Langvian eqns solver glsol
 
 # *.cpp files searching path
-vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize
+vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize glsol/src/boundaries
 
 # Include path, linder flags
 # of path and binary libs into
@@ -27,15 +27,17 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/write_positions.o       \
                 build/write_phases.o          \
                 build/write_moduli.o          \
-                build/next.o                  \
                 build/next_bath.o             \
-                build/next_bath_UniT_quench.o \
                 build/next_T.o                \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
                 build/glsol_initialize_p.o    \
                 build/point_params.o          \
-                build/hot_bloob.o
+                build/hot_bloob.o             \
+		build/shift.o		      \
+		build/boundaries.o            \
+		build/shiftT.o                \
+		build/boundariesT.o
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)

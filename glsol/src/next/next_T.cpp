@@ -50,11 +50,17 @@ void glsol::nextT() {
 
       onsites (ALL) {
 
-	real_t diff2 = alpha *(1.0/(config.dx*config.dx)) * (T[X + e_x] + T[X - e_x]
-							     + T[X + e_y] + T[X - e_y]
-							     + T[X + e_z] + T[X - e_z]
-							     - 6.0*T[X]); 
-    
+	//real_t diff2 = alpha * (1.0/(config.dx*config.dx)) * (T[X + e_x] + T[X - e_x]
+	//						     + T[X + e_y] + T[X - e_y]
+	//						     + T[X + e_z] + T[X - e_z]
+	//						     - 6.0*T[X]); 
+
+	real_t diff2 = alpha * (1.0/(config.dx*config.dx)) * (shiftT(T[X+e_x],T[X],T[X-e_x],X.coordinates(),e_x,1) + shiftT(T[X+e_x],T[X],T[X-e_x],X.coordinates(),e_x,0)
+							   + shiftT(T[X+e_y],T[X],T[X-e_y],X.coordinates(),e_y,1) + shiftT(T[X+e_y],T[X],T[X-e_y],X.coordinates(),e_y,0)
+							   + shiftT(T[X+e_z],T[X],T[X-e_z],X.coordinates(),e_z,1) + shiftT(T[X+e_z],T[X],T[X-e_z],X.coordinates(),e_z,0)
+							   - 6.0*T[X]);
+
+	
 	switch (config.Tevolvetype){
 	case 0: {
 	  

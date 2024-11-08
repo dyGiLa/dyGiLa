@@ -21,83 +21,44 @@ void glsol::next_bath() {
   Field<Vector<3,Complex<real_t>>> djAaj;
 
   Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
-  real_t tb =  config.IniT/MP.Tcp_mK(config.Inip);
+  real_t tb =  config.IniT/MP.Tcp_mK(config.Inip); // note that the bath tenperature could change. get corretc number
 
-  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
-
-  //double modP=0.0;
   
-  int bc=config.boundaryConditions;
-  // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
+  //int bc=config.boundaryConditions;
 
   next_timer.start();
 
-  onsites(ALL) {
 
-    real_t gapa = MP.gap_A_td(p[X], T[X]);
-    real_t gapb = MP.gap_B_td(p[X], T[X]);
+#ifndef T_FIELD
+    real_t gapa = MP.gap_A_td(p, T);
+    real_t gapb = MP.gap_B_td(p, T);
+#endif
+  
+  onsites(ALL) {
 
     A[X] += config.dt * pi[X];
 
-    if (bc == 1)
-      {
-        if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
-          {
-            foralldir(d1)foralldir(d2){
-              if (d1==d2){
-                A[X].e(d1,d2).re = 1.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-              else {
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 0.0;
-	      }	
-            }
-            A[X] = gapb * A[X]/sqrt(3.0);
-          }
-        else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-          {
-            foralldir(d1)foralldir(d2){
-              if (d1==2 && d2==0){
-                A[X].e(d1,d2).re = 1.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-              else if (d1==2 && d2==1){
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 1.0;
-              }
-              else {
-                A[X].e(d1,d2).re = 0.0;
-                A[X].e(d1,d2).im = 0.0;
-              }
-	               }
-            A[X] = gapa * A[X]/sqrt(2.0);
-          }
-        }
-    else if (bc == 2)
-      {
-        if (
-	    X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1) ||
-            X.coordinate(e_x) == 1 || X.coordinate(e_x) == (config.lx - 2) ||
-            X.coordinate(e_y) == 0 || X.coordinate(e_y) == (config.ly - 1) ||
-            X.coordinate(e_y) == 1 || X.coordinate(e_y) == (config.ly - 2) ||
-            X.coordinate(e_z) == 0 || X.coordinate(e_z) == (config.lz - 1) ||
-            X.coordinate(e_z) == 1 || X.coordinate(e_z) == (config.lz - 2)
-	   )
-          {
-            A[X]=0.0;	    
-          }
-      }
-  } // onsite() block ends here
+  }
 
+#ifndef T_FIELD
+    real_t beta[6];
+    point_params(T, p,beta);
+#endif
+  
   onsites (ALL) {
 
+#ifdef T_FIELD
     real_t beta[6];
-    point_params(T[X], p[X],beta);
-
+    point_params(T[X], p,beta);
+#endif
+    
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
+    phi_t HHA = 0;
+    phi_t He = 0;
+    real_t sgn=0.0;
 
+    
     deltaPi[X] = - beta[0]*A[X]
       - 2.0*beta[1]*A[X].conj()*AxAt.trace()
       - 2.0*beta[2]*A[X]*AxAd.trace()
@@ -105,12 +66,42 @@ void glsol::next_bath() {
       - 2.0*beta[4]*AxAd*A[X]
       - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
 
-  }
+  
 
+    foralldir(al) foralldir(i){
+      foralldir(k){
+	HHA.e(al,i) += H[al]*H[k]*A[X].e(k,i);
+      }
+    }
+
+    foralldir(al) foralldir(i){
+      if (al==i){
+	He.e(al,i)=0.0;
+      }else {
+	if (al<i){
+	  sgn=1.0;
+	}else{
+	  sgn=-1.0;}
+	foralldir(k){
+	  if (k==al or k==i){
+	    He.e(al,i) += 0.0;
+	  }else{
+	    He.e(al,i) += sgn*H[k];
+	  }
+	}
+      }
+    }
+
+
+    deltaPi[X] -= gh*HHA + gz*He.transpose()*A[X];
+    
+  }
+    
   onsites(ALL) {
     djAaj[X] = 0;
     foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+      //djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+      djAaj[X] += shift(A[X+j],A[X],A[X-j], X.coordinates(),j,1).column(j)-shift(A[X+j],A[X],A[X-j], X.coordinates(),j,0).column(j);
     }
   }
 
@@ -126,21 +117,18 @@ void glsol::next_bath() {
 
   onsites (ALL) {
 
-    //Matep MP;
-    //real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
-    //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
-    //phi_t rad_mat;
+    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,0)//A[X + e_x] + A[X - e_x]
+						      + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,0) //+ A[X + e_y] + A[X - e_y]
+						      + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,0) //+ A[X + e_z] + A[X - e_z]
+						      - 6.0 * A[X]);
     
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
-                                                     - 6.0*A[X]);
-    //rad_mat.gaussian_random();
-    //deltaPi[X] += rad_mat*sig;
+    //deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+    //                                               + A[X + e_y] + A[X - e_y]
+    //                                               + A[X + e_z] + A[X - e_z]
+    //                                               - 6.0*A[X]);
 
   }
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
@@ -151,65 +139,21 @@ void glsol::next_bath() {
       onsites(ALL){
 	phi_t rad_mat;
 	rad_mat.gaussian_random();
-	pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
-	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	//modP += sqrt(ep2)*tb*rad_mat.norm();
+	if ((config.useTbath == 1)
+	    && (t >= config.Tbath_start))
+	  {
+	    pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	    pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+	    pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	  }
+	else
+	  {
+	    pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	  }
       }
-
-      // deltaPi[ALL] = 0.0;
-
-      // onsites (ALL) {
-
-      // 	real_t beta[6];
-      // 	point_params(T[X], p[X],beta);
-	
-      //   auto AxAt = A[X]*A[X].transpose();
-      //   auto AxAd = A[X]*A[X].dagger();
-
-      //   deltaPi[X] = - beta[0]*A[X]
-      //     - 2.0*beta[1]*A[X].conj()*AxAt.trace()
-      //     - 2.0*beta[2]*A[X]*AxAd.trace()
-      //     - 2.0*beta[3]*AxAt*A[X].conj()
-      //     - 2.0*beta[4]*AxAd*A[X]
-      //     - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
-      // }
-
-      // onsites(ALL) {
-      //   djAaj[X] = 0;
-      //   foralldir(j) {
-      //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-      //   }
-      // }
-
-      // onsites(ALL) {
-      //   phi_t mat;
-      //   foralldir(d) {
-      //     auto col = djAaj[X+d] - djAaj[X-d];
-      //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-      //   }
-
-      //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-      // }
-
-      // onsites (ALL) {
-
-      // 	//Matep MP;
-      // 	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
-      // 	//real_t sig = sqrt(2.0*tb*config.gamma);
-      // 	//phi_t rad_mat;
-	
-      //   deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-      //                                                + A[X + e_y] + A[X - e_y]
-      //                                                + A[X + e_z] + A[X - e_z]
-      // 							 - 6.0*A[X]);
-      // 	//rad_mat.gaussian_random();
-      // 	//deltaPi[X] += sig*rad_mat; 
-      // }
-
-
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
-
+      
       t += config.dt;
+
     }
   else
     {

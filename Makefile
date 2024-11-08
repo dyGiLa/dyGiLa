@@ -8,7 +8,7 @@
 # Absolute UNIX path of library HILA
 # Absolute UNIX path of parallel io library Ascent
 
-USE_PARIO=1
+USE_PARIO=0
 USE_T_AS_A_FIELD=1
 
 ifeq ($(ARCH), lumi)

@@ -41,19 +41,41 @@ public:
   void write_positions();
   void write_phases();
   
-  void next();
+  //void next();
   void next_bath();
-  void next_bath_UniT_quench();  
+  //void next_bath_UniT_quench();  
   void nextT();
   void hotbloob();
+
+  const phi_t shift(phi_t phip ,phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir);  
+  const phi_t periodic(phi_t phi1);
+  const phi_t maximal();
+  const	phi_t BphaseBoundary();
+  const	phi_t AphaseBoundary();
+  const	phi_t normalBoundary();
+  const phi_t RobinBoundary(phi_t phiI, int oorN, real_t bt, int face);
+
+  const real_t shiftT(real_t Tp, real_t T0, real_t Tm, CoordinateVector p, Direction d, int dir);
+  const real_t periodic_T(real_t T1);
   
   Field<phi_t> A;
   Field<phi_t> pi;
 
+#ifdef T_FIELD
   Field<real_t> T;
   Field<real_t> dT;
-  Field<real_t> dT_from_local_TAB;  
-  Field<real_t> p;
+#else
+  real_t T;
+#endif
+
+  real_t p;
+  // Field<real_t> dT_from_local_TAB;  //check if it is useful or not
+  //Field<real_t> p; // it can be removed now but it can be a work for the future
+
+  real_t H[3]; //magnetic field;
+  real_t gh=0.852;
+  real_t gz=0.022;
+
   
   real_t t;
   real_t tc = 0;

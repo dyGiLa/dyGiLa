@@ -40,14 +40,14 @@ void glsol::write_energies() {
     Complex<double> bfe(0);
     double b1 = 0;
 
-    real_t ebfe=fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X])); 
+    real_t ebfe=fmin(MP.f_A_td(p, T[X]),MP.f_B_td(p, T[X])); 
 
     //real_t ebfe=fmin(MP.f_A_td(20.0, 2.2),MP.f_B_td(20.0, 2.2));
      
     //real_t ebfe = 1.0;
       
     real_t beta[6];
-    point_params(T[X], p[X],beta);
+    point_params(T[X], p,beta);
 
     gapA = sqrt((A[X]*(A[X].dagger())).trace());
     

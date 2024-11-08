@@ -16,7 +16,9 @@
 
 void glsol::initializep() {
 
-  switch (config.initialConditionp) {
+  p = config.Inip;
+  
+  /* switch (config.initialConditionp) {
 
   case 0: {
 
@@ -30,7 +32,7 @@ void glsol::initializep() {
 
      break;
   }
-  } // switch config.initialConfiguraionp block end
+  }*/ // switch config.initialConfiguraionp block end
 }
 
 

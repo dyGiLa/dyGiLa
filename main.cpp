@@ -20,10 +20,6 @@ int main(int argc, char **argv) {
     glsol gl;
 
 
-#if defined USE_PARIO
-    exit(0);
-#endif
-    
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
     
     // initialize OP field
@@ -131,58 +127,19 @@ int main(int argc, char **argv) {
 	//     bloob_created=1;
 	//   }
 	    
-	if (
-	    ((gl.config.useTbath == 1)
-	     && (gl.t >= gl.config.Tbath_start)
-	     && (gl.config.evolveT == 0)
-	     && (gl.config.gamma == gl.config.gamma1)) // fixed T-thermal bath
-	    ||
-	    ((gl.config.useTbath == 1)
-	     && (gl.t >= gl.config.Tbath_start)
-	     && (gl.config.evolveT == 1)
-	     && (gl.t <= gl.config.tThermalizationWaiting)
-	     && (gl.config.gamma == gl.config.gamma1)) // eolved T-thermal bath run, but in fixed T thermalization	    
-	   )
-	  {
-	    gl.next_bath();
-	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-		       << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
-		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << std::endl;	    
-	  }
-	else if (
-	         (gl.config.useTbath == 1)
-	         && (gl.t >= gl.config.Tbath_start)
-		 && (gl.config.evolveT == 1)
-		 && (gl.config.Tevolvetype == 2)
-		 && (gl.t > gl.config.tThermalizationWaiting)
-		 && (gl.config.gamma == gl.config.gamma1)
-                )
-	  {
-            gl.next_bath_UniT_quench();
-	    hila::out0 << "gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-		       << " next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
-		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << std::endl;	    
-
-	  }
-	else
-	  {
-	    // if gl.config.gamma != gl.config.gamma1, program is doing frozen structure
-	    gl.next();
-	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-		       << " next() call, T in site is " << gl.T.get_element(originpoints)
-		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << std::endl;	    
-	    
-	  }
+	gl.next_bath();
+	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		   << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
+		   << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		   << std::endl;	    
 	
-	// if(/*(gl.t > gl.config.startdiffT) &&*/
-	//    gl.config.evolveT == 1
-	//   )
-	//   {
-	//     gl.nextT();
-	//   }
+	if(
+	   ((gl.t >= gl.config.startdiffT) &&
+	    (gl.config.evolveT == 1))
+	   )
+          {
+	    gl.nextT();
+	  }
 	
     } // gl.t evolves while loop ends here
     run_timer.stop();

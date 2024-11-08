@@ -93,7 +93,30 @@ struct dyGiLaConf {
       int BCs2;
       // int Wn;
       int BCchangec;
-      
+
+      int bcx0;
+      int bcxN;
+      int bcy0;
+      int bcyN;
+      int bcz0;
+      int bczN;
+      real_t robinbt_x0;
+      real_t robinbt_xN;
+      real_t robinbt_y0;
+      real_t robinbt_yN;
+      real_t robinbt_z0;
+      real_t robinbt_zN;
+
+      int bcTx0;
+      int bcTxN;
+      int bcTy0;
+      int bcTyN;
+      int bcTz0;
+      int bcTzN;
+  
+      real_t T_boundary;
+      real_t p_boundary;
+  
       int useTbath;
       real_t Tbath_start;
 

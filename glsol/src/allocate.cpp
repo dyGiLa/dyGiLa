@@ -18,6 +18,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
   
     hila::initialize(argc, argv);
     hila::input parameters(fname);
+
     
     config.lx = parameters.get("Nx");
     config.ly = parameters.get("Ny");
@@ -180,6 +181,11 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
       }*/
         
     config.evolveT = parameters.get_item("evolveT",{"no","yes"});
+#ifndef T_FIELD
+    hila::out0 << "Tenperature set to a scalar, same over the whole box, only manual T evolution available"<< "\n";
+    //config.evolveT=0;
+#endif
+
     if(config.evolveT ==1)
       {
 	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave","homogeneousQuench"});

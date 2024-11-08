@@ -56,8 +56,8 @@ void glsol::next_bath_UniT_quench() {
       
   onsites(ALL) {
 
-    real_t gapa = MP.gap_A_td(p[X], T[X]);
-    real_t gapb = MP.gap_B_td(p[X], T[X]);
+    real_t gapa = MP.gap_A_td(p, T[X]);
+    real_t gapb = MP.gap_B_td(p, T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -115,7 +115,7 @@ void glsol::next_bath_UniT_quench() {
   onsites (ALL) {
 
     real_t beta[6];
-    point_params(T[X], p[X], beta);
+    point_params(T[X], p, beta);
 
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();

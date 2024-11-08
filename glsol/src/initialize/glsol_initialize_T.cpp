@@ -16,6 +16,7 @@
 
 void glsol::initializeT() {
 
+#ifdef T_FIELD
   switch (config.initialConditionT) {
 
   case 0: {
@@ -68,5 +69,8 @@ void glsol::initializeT() {
     break;
   } 
   } // switch config.initialConfiguraionT block end
+#else
+  T=config.IniT;
+#endif  
 }
 
