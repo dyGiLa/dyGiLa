@@ -12,12 +12,12 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
-const phi_t glsol::periodic(phi_t phi1) {
+phi_t glsol::periodic(phi_t phi1) {
 
   return phi1;
 }
 
-const phi_t glsol::maximal() {
+phi_t glsol::maximal() {
 
   phi_t phibc;
  
@@ -27,7 +27,7 @@ const phi_t glsol::maximal() {
 
 }
 
-const phi_t glsol::BphaseBoundary() {
+phi_t glsol::BphaseBoundary() {
 
 
   phi_t phibc;
@@ -52,7 +52,7 @@ const phi_t glsol::BphaseBoundary() {
 }
 
 
-const phi_t glsol::AphaseBoundary() {
+phi_t glsol::AphaseBoundary() {
 
   phi_t phibc;
   real_t gapa = MP.gap_A_td(config.p_boundary, config.T_boundary);
@@ -78,7 +78,7 @@ const phi_t glsol::AphaseBoundary() {
   
 }
 
-const phi_t glsol::normalBoundary(){
+phi_t glsol::normalBoundary(){
 
   
   phi_t phibc;
@@ -91,7 +91,7 @@ const phi_t glsol::normalBoundary(){
   
 }
 
-const phi_t glsol::RobinBoundary(phi_t phiI, int oorN,real_t bt, int face){
+phi_t glsol::RobinBoundary(phi_t phiI, int oorN,real_t bt, int face){
 
   phi_t phibc;
   real_t pbt=config.dx/bt;

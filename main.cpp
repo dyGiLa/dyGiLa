@@ -31,19 +31,27 @@ int main(int argc, char **argv) {
     // initialize pressure field
     gl.initializep();
 
+    // initialize magnetic field
+    gl.initializeH();
+    
     //int bloob_created=0;
     
     int stepspos;
 
     std::initializer_list<int> coordsList {0,0,0};
-    const CoordinateVector originpoints(coordsList); 
-    
-    const unsigned int steps = (gl.config.tEnd - gl.config.tStats) 
-                               / (gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
-    
-    // if (steps == 0)
-    //     steps = 1;
+    const CoordinateVector originpoints(coordsList);
 
+    unsigned int steps_check = (gl.config.tEnd - gl.config.tStats)
+                               / (gl.config.dt * gl.config.nOutputs);
+
+    if (steps_check==0){steps_check=1;}
+    
+    
+    const unsigned int steps= steps_check;
+
+    
+
+   
     gl.config.gamma              = gl.config.gamma1;                 // initial gamma parameter
     gl.config.boundaryConditions = gl.config.BCs1;                   // initial bounaryConstions
     
@@ -83,6 +91,7 @@ int main(int argc, char **argv) {
     hila::out0 << "parallel IO enigne starts!" << "\n"
                << std::endl;    
 #endif    
+
     
     /*-------------------------------------------------------------------*/
     /* Dynamic simulation starts after below.                            */
@@ -95,7 +104,7 @@ int main(int argc, char **argv) {
     
     while (gl.t < gl.config.tEnd) {
       //gl.config.gamma = (stat_counter < gl.config.gammaoffc) ? gl.config.gamma1 : gl.config.gamma2;
-      //hila::out0 << "gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
+      hila::out0 << "gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
         
         if (gl.t >= gl.config.tStats) {
 	  
@@ -105,7 +114,6 @@ int main(int argc, char **argv) {
 	      //gl.write_moduli();
 	      gl.write_energies();
 	      //gl.write_phases();
-
 #if defined USE_PARIO
 	      if (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend) paraio.pstream(gl);
 	      //hila::out0 << "paraio.pstream() call is done " << std::endl;
@@ -116,7 +124,7 @@ int main(int argc, char **argv) {
 	    // Set gamma to 2nd value after certain momentum
 	    if (stat_counter >= (gl.config.gammaoffc)*steps) {gl.config.gamma = gl.config.gamma2;}
 	    //if (stat_counter == (gl.config.gammaoffc + 3)*steps) {gl.config.gamma = gl.config.gamma1;}
-	    if (stat_counter == (gl.config.BCchangec)*steps) {gl.config.boundaryConditions = gl.config.BCs2;}
+	    //if (stat_counter == (gl.config.BCchangec)*steps) {gl.config.boundaryConditions = gl.config.BCs2;}
             ++stat_counter;
 
         } //gl.t > gl.config.Stats block	
@@ -128,13 +136,20 @@ int main(int argc, char **argv) {
 	//   }
 	    
 	gl.next_bath();
+#ifdef T_FIELD
 	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
 		   << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
 		   << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		   << std::endl;	    
+#else
+	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+                   << ", next_bath() call, T in site is " << gl.T
+                   << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+                   << std::endl;
+#endif
 	
 	if(
-	   ((gl.t >= gl.config.startdiffT) &&
+	   ((gl.t >= gl.config.start_evolveT) &&
 	    (gl.config.evolveT == 1))
 	   )
           {

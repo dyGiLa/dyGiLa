@@ -69,6 +69,10 @@ struct dyGiLaConf {
       real_t beta4;
       real_t beta5;
 
+      real_t IniHx;
+      real_t IniHy;
+      real_t IniHz;
+   
       int initialConditionT;
       real_t IniT;
       real_t ampT;
@@ -124,6 +128,7 @@ struct dyGiLaConf {
       int write_eigen;
 
       int evolveT;
+      real_t start_evolveT;
       int Tevolvetype;
       real_t startdiffT;
       real_t diffT;

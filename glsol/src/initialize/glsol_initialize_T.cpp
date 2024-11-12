@@ -27,7 +27,7 @@ void glsol::initializeT() {
       dT[X] = 0.0;
     }
 
-     hila::out0 << "COnstant T \n";
+    hila::out0 << "Constant T to T="<<config.IniT<<"mK \n";
     
     break;
   }

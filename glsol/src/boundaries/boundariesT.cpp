@@ -12,8 +12,17 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
-const real_t glsol::periodic_T(real_t T1) {
+real_t glsol::periodic_T(real_t T1) {
 
   return T1;
 }
 
+real_t glsol::fixedT() {
+
+  real_t Tbc;
+
+  Tbc=config.T_boundary;
+
+  return Tbc;
+
+}

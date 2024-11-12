@@ -33,6 +33,7 @@ public:
   
   void initializeT();
   void initializep();
+  void initializeH();
   
   void point_params(real_t T, real_t p, real_t beta[6]);
   
@@ -47,16 +48,18 @@ public:
   void nextT();
   void hotbloob();
 
-  const phi_t shift(phi_t phip ,phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir);  
-  const phi_t periodic(phi_t phi1);
-  const phi_t maximal();
-  const	phi_t BphaseBoundary();
-  const	phi_t AphaseBoundary();
-  const	phi_t normalBoundary();
-  const phi_t RobinBoundary(phi_t phiI, int oorN, real_t bt, int face);
+  phi_t shift(phi_t phip ,phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir);  
+  phi_t shift_talk(phi_t phip ,phi_t phi0, phi_t phim, CoordinateVector p, Direction d, int dir);
+  phi_t periodic(phi_t phi1);
+  phi_t maximal();
+  phi_t BphaseBoundary();
+  phi_t AphaseBoundary();
+  phi_t normalBoundary();
+  phi_t RobinBoundary(phi_t phiI, int oorN, real_t bt, int face);
 
-  const real_t shiftT(real_t Tp, real_t T0, real_t Tm, CoordinateVector p, Direction d, int dir);
-  const real_t periodic_T(real_t T1);
+  real_t shiftT(real_t Tp, real_t T0, real_t Tm, CoordinateVector p, Direction d, int dir);
+  real_t periodic_T(real_t T1);
+  real_t fixedT();
   
   Field<phi_t> A;
   Field<phi_t> pi;

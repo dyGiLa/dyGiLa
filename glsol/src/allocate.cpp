@@ -19,6 +19,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     hila::initialize(argc, argv);
     hila::input parameters(fname);
 
+    // First set the simulation box
     
     config.lx = parameters.get("Nx");
     config.ly = parameters.get("Ny");
@@ -26,16 +27,16 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.dx = parameters.get("dx");
     config.dtdxRatio = parameters.get("dtdxRatio");
 
-    config.tThermalizationWaiting = parameters.get("tThermalizationWaiting");
-    config.tauQ1                  = parameters.get("tauQ1");
-    config.tauQ2                  = parameters.get("tauQ2");    
-    config.has1stQStop            = parameters.get_item("has1stQStop",{"no", "yes"});
-    if (config.has1stQStop == 1)
-      {
-	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
-	config.tQ1Waiting = parameters.get("tQ1Waiting");
-      }    
-    config.Ttd_Qend = parameters.get("Ttd_Qend");
+    //config.tThermalizationWaiting = parameters.get("tThermalizationWaiting");
+    //config.tauQ1                  = parameters.get("tauQ1");
+    //config.tauQ2                  = parameters.get("tauQ2");    
+    //config.has1stQStop            = parameters.get_item("has1stQStop",{"no", "yes"});
+    //if (config.has1stQStop == 1)
+    //  {
+    //	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
+    //	config.tQ1Waiting = parameters.get("tQ1Waiting");
+    //  }    
+    //config.Ttd_Qend = parameters.get("Ttd_Qend");
     config.tStart = parameters.get("tStart");
     config.tEnd = parameters.get("tEnd");
     config.tdif = parameters.get("tdif");
@@ -97,6 +98,8 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /*  with gamma1(2) reading end here       */
     /******************************************/        
 
+    // Initialize the order parameter
+    
     config.initialCondition = parameters.get_item("initialCondition",{"gaussrand"             //0
 								      ,"kgaussrand"           //1
 								      ,"normal_phase_real1"   //2
@@ -117,7 +120,30 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
 
-    //initialCondition-T
+    //Boundary conditions for order parameter
+
+    config.bcx0 = parameters.get_item("bcx0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcxN = parameters.get_item("bcxN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcy0 = parameters.get_item("bcy0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcyN = parameters.get_item("bcyN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bcz0 = parameters.get_item("bcz0",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.bczN = parameters.get_item("bczN",{"periodic", "A", "B","Normal", "Maximal", "Robin"});
+    config.robinbt_x0 = parameters.get("robinbt_x0");
+    config.robinbt_xN = parameters.get("robinbt_xN");
+    config.robinbt_y0 = parameters.get("robinbt_y0");
+    config.robinbt_yN = parameters.get("robinbt_yN");
+    config.robinbt_z0 = parameters.get("robinbt_z0");
+    config.robinbt_zN = parameters.get("robinbt_zN");
+
+    //set how the order parameter is going to be evolved
+    
+    config.useTbath = parameters.get_item("useTbath",{"no","yes"});
+    config.Tbath_start = parameters.get("Tbath_start");
+
+    //set boundary conditions for temperature
+    
+    // Initialize temperature
+    
     config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
     if(config.initialConditionT == 0)
       {
@@ -137,10 +163,43 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	config.sigTz = parameters.get("sigTz");
       }
 
-    //initialCondition-p
+    // set how the temperature is going to be evolved
+
+    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
+#ifndef T_FIELD
+    hila::out0 << "Tenperature set to a scalar, same over the whole box, only manual T evolution available"<< "\n";
+    //config.evolveT=0;                                                                                                                                                                                                                                                                    
+#endif
+
+    if(config.evolveT ==1)
+      {
+        config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave","homogeneousQuench"});
+	config.start_evolveT = parameters.get("start_evolveT");
+        if (config.Tevolvetype == 0 || config.Tevolvetype == 1)
+          {
+           config.startdiffT = parameters.get("startdiffT");
+           config.diffT = parameters.get("diffT");
+          }
+      }
+
+    config.bcTx0 = parameters.get_item("bcTx0",{"periodic", "fixed"});
+    config.bcTxN = parameters.get_item("bcTxN",{"periodic", "fixed"});
+    config.bcTy0 = parameters.get_item("bcTy0",{"periodic", "fixed"});
+    config.bcTyN = parameters.get_item("bcTyN",{"periodic", "fixed"});
+    config.bcTz0 = parameters.get_item("bcTz0",{"periodic", "fixed"});
+    config.bcTzN = parameters.get_item("bcTzN",{"periodic", "fixed"});
+
+    
+    // Initialize pressure
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     config.Inip	= parameters.get("Inip");
     
+
+    //Initialize magnetic field
+    config.IniHx = parameters.get("IniHx");
+    config.IniHy = parameters.get("IniHy");
+    config.IniHz = parameters.get("IniHz");
+
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
@@ -150,61 +209,8 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     // xdmf file name, which is provided through config file
     config.xmf2_fname = parameters.get("xmf2_file");
 
-    /*----------------------------------------*/
-    /* >>>>>>>  boundary conditions  <<<<<<<<<*/
-    /*----------------------------------------*/
-    config.BCs1 = parameters.get_item("BCs1",{"periodic",
-					       "AB",
-					       "PairBreaking",
-                                               "PB_y",
-                                               "PairB_yz",
-                                               "BB",
-                                               "phaseVortices"});
-    
-    config.BCs2 = parameters.get_item("BCs2",{"periodic",
-					      "AB",
-					      "PairBreaking",
-                                              "PB_y",
-                                              "PairB_yz",
-                                              "BB",
-                                              "phaseVortices"});
-    
-    // config.Wn = parameters.get("BoundaryPhaseWindingNO");
-    
-    config.BCchangec = parameters.get("BCchangec");
-       
-    /*if(config.positions==1)
-      {
-	config.npositionout = parameters.get("npositionout");
-	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
-	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
-      }*/
+
         
-    config.evolveT = parameters.get_item("evolveT",{"no","yes"});
-#ifndef T_FIELD
-    hila::out0 << "Tenperature set to a scalar, same over the whole box, only manual T evolution available"<< "\n";
-    //config.evolveT=0;
-#endif
-
-    if(config.evolveT ==1)
-      {
-	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave","homogeneousQuench"});
-	if (config.Tevolvetype == 0 || config.Tevolvetype == 1)
-	  {
-	   config.startdiffT = parameters.get("startdiffT");
-	   config.diffT = parameters.get("diffT");
-	  }
-      }
-    // config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
-    // if(config.bloob_after== 1)
-    //   {
-    // 	config.theat = parameters.get("theat");
-    //   }
-
-    config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-    config.Tbath_start = parameters.get("Tbath_start");
-
-    
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/

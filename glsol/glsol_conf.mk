@@ -32,6 +32,7 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
                 build/glsol_initialize_p.o    \
+		build/glsol_initialize_H.o    \
                 build/point_params.o          \
                 build/hot_bloob.o             \
 		build/shift.o		      \

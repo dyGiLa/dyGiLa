@@ -22,6 +22,8 @@ void glsol::nextT() {
   real_t time_steps=1.0;
   real_t dt=config.dt;
 
+#ifdef T_FIELD
+  
   switch (config.Tevolvetype){
    case 0: {
      // case heat
@@ -78,6 +80,11 @@ void glsol::nextT() {
       } // onsite(ALL) block
 
     } // for loop block
+#else
 
+
+
+  
+#endif  
 } // nextT() ends here
 

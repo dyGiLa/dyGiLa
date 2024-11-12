@@ -16,6 +16,7 @@
 
 void glsol::write_energies() {
 
+  
   Matrix<3,3,Complex<double>> sumA;
   sumA = 0.0;
 
@@ -30,6 +31,12 @@ void glsol::write_energies() {
   Complex<double> sumkin(0);
   Complex<double> sumkin_we(0);
 
+#ifndef T_FIELD
+  real_t ebfe=fmin(MP.f_A_td(p, T),MP.f_B_td(p, T));
+  real_t beta[6];
+  point_params(T, p,beta);
+#endif
+  
   hila::set_allreduce(false);
   onsites(ALL) {
 
@@ -40,14 +47,17 @@ void glsol::write_energies() {
     Complex<double> bfe(0);
     double b1 = 0;
 
-    real_t ebfe=fmin(MP.f_A_td(p, T[X]),MP.f_B_td(p, T[X])); 
-
+#ifdef T_FIELD 
+    real_t ebfe=fmin(MP.f_A_td(p, T[X]),MP.f_B_td(p, T[X]));
+    real_t beta[6];
+    point_params(T[X], p,beta);
+#endif
     //real_t ebfe=fmin(MP.f_A_td(20.0, 2.2),MP.f_B_td(20.0, 2.2));
      
     //real_t ebfe = 1.0;
       
-    real_t beta[6];
-    point_params(T[X], p,beta);
+    //real_t beta[6];
+    //point_params(T[X], p,beta);
 
     gapA = sqrt((A[X]*(A[X].dagger())).trace());
     
@@ -67,7 +77,7 @@ void glsol::write_energies() {
 
             
     kin = (pi[X]*pi[X].dagger()).trace();
-      
+
     foralldir(j) foralldir (k) foralldir(al){
       k1 += squarenorm(A[X + k].e(al,j) - A[X - k].e(al,j)) / (4.0*sqr(config.dx));
       k2 += (A[X + j].e(al,j) - A[X - j].e(al,j)) * (A[X + k].e(al,k) - A[X - k].e(al,k)).conj() / (4.0*sqr(config.dx));
@@ -81,6 +91,7 @@ void glsol::write_energies() {
 	//       * (A[X + j].conj().column(k) - A[X - j].conj().column(k)).e(al)/(4.0*config.dx*config.dx);
     }
 
+    
     sumgapA += gapA;
     sumA += A[X];
     
@@ -116,16 +127,21 @@ void glsol::write_energies() {
 
   } // onsites block end here
 
+  
   // calculate sqrt of tr(sumA.sumA^dagger)
   sumAgap = sqrt((sumA*(sumA.dagger())).trace()); 
 
   std::initializer_list<int> coordsList {0,0,0};
   const CoordinateVector originpoints(coordsList);
+#ifdef T_FIELD
   real_t T000 = T.get_element(originpoints);
+#else
+  real_t T000 = T;
+#endif
   
   if (hila::myrank() == 0) {
         double vol = lattice.volume();
-        config.stream << t << " " << T000 << " " 
+        config.stream << t << " " << T000 << " "
 	              << sumAgap.re / vol << " " << sumAgap.im / vol << " "
 	              << sumgapA.re / vol << " " << sumgapA.im / vol << " "	  
 	              << sumkin.re / vol << " " << sumkin.im / vol << " "

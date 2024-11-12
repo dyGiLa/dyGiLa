@@ -74,9 +74,11 @@ void glsol::write_positions() {
         gap[X] = real(sqrt((A[X]*A[X].dagger()).trace()));}
 
       gap.write("points/gap-t"+std::to_string(int(round(t/config.dt))),false);
-      
-      T.write("points/temp-t"+std::to_string(int(round(t/config.dt))),false);
 
+#ifdef T_FIELD
+      T.write("points/temp-t"+std::to_string(int(round(t/config.dt))),false);
+#endif
+      
     }
 
   if(config.write_eigen==1)

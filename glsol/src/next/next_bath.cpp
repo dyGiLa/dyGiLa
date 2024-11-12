@@ -23,16 +23,12 @@ void glsol::next_bath() {
   Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
   real_t tb =  config.IniT/MP.Tcp_mK(config.Inip); // note that the bath tenperature could change. get corretc number
 
-  
+  hila::out0<<"ep2=: "<<ep2<<" and tb= "<<tb<<"\n";
+
   //int bc=config.boundaryConditions;
 
   next_timer.start();
 
-
-#ifndef T_FIELD
-    real_t gapa = MP.gap_A_td(p, T);
-    real_t gapb = MP.gap_B_td(p, T);
-#endif
   
   onsites(ALL) {
 
@@ -43,6 +39,7 @@ void glsol::next_bath() {
 #ifndef T_FIELD
     real_t beta[6];
     point_params(T, p,beta);
+    hila::out0<<" b0= "<<beta[0]<<" b1= "<<beta[1]<<" b2= "<<beta[2]<<" b3= "<<beta[3]<<" b4= "<<beta[4]<<" b5= "<<beta[5]<<"\n";
 #endif
   
   onsites (ALL) {
@@ -51,6 +48,7 @@ void glsol::next_bath() {
     real_t beta[6];
     point_params(T[X], p,beta);
 #endif
+
     
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
@@ -117,15 +115,16 @@ void glsol::next_bath() {
 
   onsites (ALL) {
 
-    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,0)//A[X + e_x] + A[X - e_x]
-						      + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,0) //+ A[X + e_y] + A[X - e_y]
-						      + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,0) //+ A[X + e_z] + A[X - e_z]
-						      - 6.0 * A[X]);
+        
+    deltaPi[X] +=  (1.0 / (4.0*config.dx * config.dx)) * (shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,1) + shift(A[X+e_x],A[X], A[X-e_x],X.coordinates(),e_x,0)
+    							  + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,1) + shift(A[X+e_y],A[X], A[X-e_y],X.coordinates(),e_y,0)
+    							  + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,1) + shift(A[X+e_z],A[X], A[X-e_z],X.coordinates(),e_z,0)
+    							  - 6.0 * A[X]);
     
-    //deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-    //                                               + A[X + e_y] + A[X - e_y]
-    //                                               + A[X + e_z] + A[X - e_z]
-    //                                               - 6.0*A[X]);
+    // deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+    //                                         + A[X + e_y] + A[X - e_y]
+    //                                         + A[X + e_z] + A[X - e_z]
+    //                                         - 6.0*A[X]);
 
   }
 
@@ -148,7 +147,7 @@ void glsol::next_bath() {
 	  }
 	else
 	  {
-	    pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+	    pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt;
 	  }
       }
       

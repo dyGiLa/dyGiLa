@@ -14,7 +14,7 @@
 #include "matep.hpp"
 
 
-const real_t glsol::shiftT(real_t Tp, real_t T0, real_t Tm, CoordinateVector p, Direction d, int dir) {
+real_t glsol::shiftT(real_t Tp, real_t T0, real_t Tm, CoordinateVector p, Direction d, int dir) {
 
   real_t Tbc;
   CoordinateVector box;

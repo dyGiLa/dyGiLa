@@ -15,6 +15,7 @@
 
 void glsol::hotbloob() {
 
+#ifdef T_FIELD
   onsites(ALL){
       auto xcoord = X.coordinate(e_x);
       auto ycoord = X.coordinate(e_y);
@@ -28,4 +29,6 @@ void glsol::hotbloob() {
     }
 
   hila::out0 << "Hot Spot created at t="<<t<<" \n";
+#endif
+  
 }
