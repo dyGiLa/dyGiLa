@@ -36,10 +36,13 @@ public:
         real_t Fa0p(real_t p);                 //dimensionless Landau Coefficient
         real_t Tcp(real_t p);                  // in unit of Kelvin
         real_t Tcp_mK(real_t p);               // in unit of mK
-  
+
+        real_t tauQP(real_t p, real_t T);      // Fitted QP releaxing time in \mus
         real_t mEffp(real_t p);                // quisiparticle effective mass 
         real_t vFp(real_t p);                  // Fermi velocity
         real_t xi0p(real_t p);                 // zero Temperature coherent length
+        real_t xi0GLp(real_t p);               // zero temperature GL choherent length
+        real_t tGL(real_t p);                  // GL time, time unit
         double N0p(real_t p);                  // deisty of state on Fermi surface
         
 
@@ -53,6 +56,9 @@ public:
         real_t beta3_td(real_t p, real_t T);
         real_t beta4_td(real_t p, real_t T);
         real_t beta5_td(real_t p, real_t T);
+
+        // damping term coefficient gamma, in unit of tGL^-1
+        real_t gamma_td(real_t p, real_t T);        
 
         // Quadratic H-term coefficient gz_td
         real_t gz_td(real_t p);        
@@ -91,7 +97,7 @@ private:
         std::string Switch /*= "OFF"*/; 
 
         // physical constants for he3
-        static const real_t u, m3, nm, hbar, kb ,zeta3, c_betai, gammahbar;
+        static const real_t u, m3, nm, mus, hbar, kb ,zeta3, c_betai, gammahbar;
  
        
         // SC-data sheets arries, All associate to SCCO class

@@ -34,6 +34,19 @@ real_t
 Matep::Tcp_mK(real_t p) {return lininterp(Tc_arr, p);
 }
 
+real_t
+Matep::tauQP(real_t p, real_t T){
+
+  real_t t = T/Tcp_mK(p);
+  
+  return (-2.8277653941154503e6
+	  + 6.284350363777282e7*t - 6.286343309406481e8*std::pow(t,2) + 3.7463162643827033e9*std::pow(t,3)
+	  - 1.4784434682274881e10*std::pow(t,4) + 4.042411599324316e10*std::pow(t,5) - 7.713192342581464e10*std::pow(t,6)
+	  + 9.84181184085264e10*std::pow(t,7) - 6.836431172791403e10*std::pow(t,8) - 1.4180711852241095e10*std::pow(t,9)
+	  + 9.61270986677446e10*std::pow(t,10) - 1.2002060849381773e11*std::pow(t,11) + 8.539279623542038e10*std::pow(t,12)
+	  - 3.750912433469162e10*std::pow(t,13) + 9.530297512559393e9*std::pow(t,14) - 1.0790099723106315e9*std::pow(t,15));
+
+}
 
 real_t
 Matep::mEffp(real_t p){  
@@ -53,6 +66,12 @@ Matep::xi0p(real_t p){
   real_t xi0 = lininterp(XI0_arr, p)*nm;
   return xi0;
 }  
+
+real_t
+Matep::xi0GLp(real_t p){ return xi0p(p)*std::sqrt((7.f*zeta3)/20.f); }
+
+real_t
+Matep::tGL(real_t p){ return 1.290994449*(xi0GLp(p)/vFp(p)); }
 
 double
 Matep::N0p(real_t p){
@@ -120,7 +139,11 @@ Matep::gz_td(real_t p){
               *(gammahbar/(kb*Tcp(p)));
 
   return gz;
-}  
+}
+
+real_t
+Matep::gamma_td(real_t p, real_t T){ return tGL(p)/(tauQP(p, T)*mus); }  
+
 
 //**********************************************************************
 //***                 beta_A, beta_B and Gaps                        ***
