@@ -20,7 +20,6 @@ void glsol::next_bath_UniT_quench_Hfield() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
   //real_t tb =  config.IniT/MP.Tcp_mK(config.Inip);
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
@@ -34,6 +33,8 @@ void glsol::next_bath_UniT_quench_Hfield() {
 
   std::initializer_list<int> coordsList {0,0,0};
   const CoordinateVector originpoints(coordsList);
+
+  // update the Temperature field
   if ( T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip)) )
     {
      if (
@@ -48,13 +49,17 @@ void glsol::next_bath_UniT_quench_Hfield() {
 	// however, if tauQ1 in fact equal to tauQ2, as well as config.has1stQStop == false
 	// calling this functionequal to homogenous quench with one tauQ continously 
 	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
-	 
+        	 
         // Temperature update for uniform quench
         T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
 
        }
     }
+
+  // update the random weight in Langevin eqn with updated gamma
+  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
+  
       
   onsites(ALL) {
 

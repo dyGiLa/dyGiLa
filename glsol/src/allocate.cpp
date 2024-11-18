@@ -47,7 +47,11 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /*   gamma1 and gamma2 are used to hold   */
     /*   different values of gamma.           */
     /*   gamma change is triggered in main()  */
-    /******************************************/    
+    /******************************************/
+
+    // switch for turning on the T-dependent gamma
+    config.TDependnetgamma = parameters.get_item("TDependnetgamma",{"no", "yes"});
+    
     //config.gamma = parameters.get("gamma");
     std::vector<real_t> tmp1 = parameters.get("gamma1");
     std::vector<real_t> tmp2 = parameters.get("gamma2");    

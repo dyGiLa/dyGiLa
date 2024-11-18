@@ -45,6 +45,7 @@ struct dyGiLaConf {
       real_t tdis;
 
       //real_t gamma;
+      unsigned int TDependnetgamma;
       Complex<real_t> gamma;
       Complex<real_t> gamma1;
       Complex<real_t> gamma2;
