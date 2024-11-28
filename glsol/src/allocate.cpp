@@ -11,7 +11,7 @@
 #include "plumbing/fft.h"
 
 #include "glsol.hpp"
-#include "matep.hpp"
+//#include "matep.hpp"
 
 
 const std::string glsol::allocate(const std::string &fname, int argc, char **argv) {

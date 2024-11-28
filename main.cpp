@@ -10,11 +10,20 @@
 
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
+#include "plumbing/globals.h" 
 
 #include "glsol.hpp"
+#include "matep_namespace_utils.hpp" 
+//#include "matep.hpp"
+
+#if defined USE_PARIO 
 #include "pario.hpp"
+#endif
+
+
 
 int main(int argc, char **argv) {
+
     glsol gl;
     
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
@@ -28,6 +37,8 @@ int main(int argc, char **argv) {
     // initialize pressure field
     gl.initializep();
 
+    matep::init_wrapper_mp();
+    //init_wrapper_mp();
     //int bloob_created=0;
     
     int stepspos;
