@@ -66,10 +66,13 @@ test*.CC
 test*.cpp~
 test*.hpp~
 
+# temperary backup
+*.bk
+*.bak
+
 # emacs autosave
 *.sh~
 *.cpp~
 *.hpp~
 *.py~
-pd/*.py~
 *~
