@@ -54,7 +54,7 @@ void glsol::next_bath_UniT_quench() {
       
   onsites(ALL) {
 
-    Matep MPonsites;
+    matep::Matep MPonsites;
     // MP. call cause compiling error on mahti-cuda
     // alling a __host__ function from a __host__ __device__ function is not allowed
     real_t gapa = MPonsites.gap_A_td(p[X], T[X]);
@@ -116,7 +116,7 @@ void glsol::next_bath_UniT_quench() {
 
   onsites (ALL) {
 
-    Matep MPonsites;
+    matep::Matep MPonsites;
     // real_t beta[6];
     //point_params(T[X], p[X], beta);
     
@@ -184,7 +184,7 @@ void glsol::next_bath_UniT_quench() {
 	phi_t rad_mat;       	
 	rad_mat.gaussian_random();
 
-	Matep MPonsites;
+	matep::Matep MPonsites;
 	
 	pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;

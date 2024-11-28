@@ -34,7 +34,7 @@ void glsol::next_bath() {
 
   onsites(ALL) {
 
-    Matep MPonsites;
+    matep::Matep MPonsites;
     
     real_t gapa = MPonsites.gap_A_td(p[X], T[X]);
     real_t gapb = MPonsites.gap_B_td(p[X], T[X]);
@@ -94,7 +94,7 @@ void glsol::next_bath() {
 
   onsites (ALL) {
 
-    Matep MPonsites;
+    matep::Matep MPonsites;
     //real_t beta[6];
     //point_params(T[X], p[X],beta);
 
