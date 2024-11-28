@@ -20,8 +20,16 @@
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
-// Define a convenience enum for addressing the reductions - could use numbers too
+// Define convenient enum for addressing the reductions - could use numbers too
+
+/* enumeration counter type  for matrix reduction */
+// enum class Matreduc { i_sumA, N_MatREDUCTION };
+enum class matreduc { i_sumA, N_MatREDUCTION };
+
+/* enumeration counter type for scalar reduction */
+//enum class reduc {
 enum {
+  i_sumgapA,
   i_suma, i_sumb1, i_sumb2, i_sumb3, i_sumb4, i_sumb5,
   i_suma_we, i_sumb1_we, i_sumb2_we, i_sumb3_we, i_sumb4_we, i_sumb5_we,
   i_sumk1, i_sumk2, i_sumk3, i_sumk1_we, i_sumk2_we, i_sumk3_we,
@@ -71,7 +79,7 @@ public:
   real_t t;
   real_t tc = 0;
 
-  Matep MP;
+  matep::Matep MP;
 
   dyGiLaConf config;
 
