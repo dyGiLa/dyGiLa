@@ -44,7 +44,22 @@ public:
         real_t xi0GLp(real_t p);               // zero temperature GL choherent length
         real_t tGL(real_t p);                  // GL time, time unit
         double N0p(real_t p);                  // deisty of state on Fermi surface
-        
+        real_t Dd(real_t p);                   // diffusion constant/ diffusive coefficient
+
+  // ************************************************************************* //
+  // >> APIs of key properties of spheric hot bloob; SC-correction parts: <<<< //
+  // ************************************************************************* //
+
+        // time when fountier of Tc achieve maximum
+        real_t t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
+  
+        // time when fountier of Tc achieve maximum  
+        real_t r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
+
+        // time when fountier of Tc shriks to vanish
+        // after this T < Tc over box
+        real_t t_TcVanish_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
+  
 
   // ************************************************************************* //
   // >>>>  interfaces of dimensionless coeficients; SC-correction parts: <<<<< //
@@ -58,7 +73,8 @@ public:
         real_t beta5_td(real_t p, real_t T);
 
         // damping term coefficient gamma, in unit of tGL^-1
-        real_t gamma_td(real_t p, real_t T);        
+        /* Hagen Kleinert's damping coefficient */
+        real_t gamma_td(real_t p, real_t T);          
 
         // Quadratic H-term coefficient gz_td
         real_t gz_td(real_t p);        
@@ -88,7 +104,8 @@ public:
 private:
         // SI unit
         static constexpr real_t Kelvin = 1.0f, J = 1.0f, s = 1.0f, m = 1.0f, kg = 1.0f, mT = 1.0f
-	                        ,pi = 3.14159265358979323846264338328f, p_pcp = 21.22f;
+	                        ,pi = 3.14159265358979323846264338328f, E = 2.718281828459045235360287471352f
+	                        ,p_pcp = 21.22f;
 
         // temperature switch Greywall or PLTS2000
         std::string temperature_scale;
@@ -97,7 +114,7 @@ private:
         std::string Switch /*= "OFF"*/; 
 
         // physical constants for he3
-        static const real_t u, m3, nm, mus, hbar, kb ,zeta3, c_betai, gammahbar;
+        static const real_t u, m3, nm, mus, hbar, kb ,zeta3, c_betai, gammahbar, tau0N;
  
        
         // SC-data sheets arries, All associate to SCCO class

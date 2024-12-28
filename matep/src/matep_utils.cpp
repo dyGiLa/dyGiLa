@@ -23,12 +23,13 @@
 const real_t Matep::kb = 1.380649*(std::pow(10.0f, -23))*J*1.0f;
 const real_t Matep::u = 1.66053906660f*(std::pow(10.0f,-27))*kg;
 const real_t Matep::m3 = 3.016293f*u;
-const real_t Matep::nm = (std::pow(10.0f, -9))*m;
+const real_t Matep::nm = 1.0e-9F; // (std::pow(10.0f, -9))*m;
 const real_t Matep::mus = 1e-6*s;
 const real_t Matep::hbar = 1.054571817f*(std::pow(10.0f,-34))*J*s;
 const real_t Matep::zeta3 = std::riemann_zeta(3.0f);
 const real_t Matep::c_betai = (7.0f*zeta3)/(80.0f*pi*pi);
 const real_t Matep::gammahbar = -34.2040866*(std::pow(10.0f,-31))*J*1.0f; // in unit of J-mT^-1
+const real_t Matep::tau0N = 0.3e-6*s; // normal phase QP life time 0.3 mus in unit of s
 
 
 // *******************************************************************

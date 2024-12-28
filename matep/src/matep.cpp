@@ -83,6 +83,54 @@ Matep::N0p(real_t p){
   return N0;
 }
 
+real_t
+Matep::Dd(real_t p){
+  real_t vF = vFp(p);
+  real_t xi0GL = xi0GLp(p);
+
+  // convert ratio is made from SI unit value number
+  real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
+  // return diffussion constant in unit of xiGL^2.tGL^-1
+  return vF * vF * tau0N * tGLxiGL2_ratio;
+}
+
+// ************************************************************************* //
+// >> APIs of key properties of spheric hot bloob; SC-correction parts: <<<< //
+// ************************************************************************* //
+
+
+real_t
+Matep::t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
+
+  // t1 could be in unit of tGL, Tx has same 
+  real_t TcpmK  = Tcp_mK(p);
+  real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
+  real_t T0     = Ttdb0 * TcpmK;
+  
+  return (std::pow(-1, 0.6666666666666666) * t1 * std::pow(Tx, 0.6666666666666666))
+         /(E * std::pow((T0 - TcpmK), 0.6666666666666666));
+}
+
+real_t
+Matep::r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
+
+  real_t TcpmK  = Tcp_mK(p);  
+  real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
+  real_t T0     = Ttdb0 * TcpmK;
+  
+  return sqrt(6./E) * sqrt(Dd(p) * t1)* std::pow((Tx/(-T0 + TcpmK)),0.3333333333333333);
+}
+
+real_t
+Matep::t_TcVanish_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
+  real_t TcpmK = Tcp_mK(p);  
+  real_t Tx    = (Ttdb1 - Ttdb0) * TcpmK;
+  real_t T0    = Ttdb0 * TcpmK;
+  
+  return (std::pow(-1., 0.6666666666666666) * t1 * std::pow(Tx, 0.6666666666666666))
+         /std::pow((T0 - TcpmK), 0.6666666666666666);
+}
+
 
 //**********************************************************************
 //***    member functions, interfaces of dimensionless coefficients  ***
@@ -141,8 +189,23 @@ Matep::gz_td(real_t p){
   return gz;
 }
 
+// real_t
+// Matep::gamma_td(real_t p, real_t T){ return tGL(p)/(tauQP(p, T)*mus); }  
+
 real_t
-Matep::gamma_td(real_t p, real_t T){ return tGL(p)/(tauQP(p, T)*mus); }  
+Matep::gamma_td(real_t p, real_t T){
+  real_t gamma_C = ((pi*pi)/4) * sqrt(3./5.) * sqrt(20./(7.*zeta3))
+         ,gtd;
+  
+  if (T >= Tcp_mK(p))
+     gtd = 1.;
+  else
+    gtd = std::pow((T/Tcp_mK(p)), 4.);
+  
+
+  return gtd * gamma_C;
+
+}  
 
 
 //**********************************************************************
