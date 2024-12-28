@@ -24,10 +24,10 @@ endif
 
 # absolute UNIX path of dyGiLa folder
 ifeq ($(ARCH), lumi)
- DYGILA_DIR := /projappl/project_462000465/dyGiLa
+ DYGILA_DIR := /projappl/project_462000465/dyGiLa-blob
 else
   ifeq ($(ARCH), mahti)
-   DYGILA_DIR := /projappl/project_2006478/dyGiLa
+   DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
   endif
 endif
 
