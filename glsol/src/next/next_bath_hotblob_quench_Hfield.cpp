@@ -61,8 +61,8 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   
   // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
 
-  // update the random weight in Langevin eqn with updated gamma
-  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
+  // update the random weight in Langevin eqn with updated uniform gamma 
+  // Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
   
 
   
@@ -151,9 +151,11 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   else if (t < config.tdis && config.useTbath == 1 )
     {
       onsites(ALL){
+
+        Complex<real_t> ep2 = 1.0-exp(-2.0 * MP.gamma_td(config.Inip, T[X]) * config.dt);
+	
 	phi_t rad_mat;
 	rad_mat.gaussian_random();
-
 	
 	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	
 	pi[X] = pi[X] + (deltaPi[X] - 1.0 * MP.gamma_td(config.Inip, T[X]) * pi[X])*(config.dt/2.0);	
