@@ -29,8 +29,8 @@ void glsol::next() {
   
   onsites(ALL) {
 
-    real_t gapa = MP.gap_A_td(p[X], T[X]);
-    real_t gapb = MP.gap_B_td(p[X], T[X]);
+    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
 
     
     A[X] += config.dt * pi[X];
@@ -183,7 +183,7 @@ void glsol::next() {
 	  
       } // bc = 6 block, phase vortices ends here
     /*------------    phaseVortices BC ends ---------------*/
-    
+  t  
   } // onsites(ALL) block ends here
 
   /* --------------------------------------------------------------- */  
@@ -193,7 +193,7 @@ void glsol::next() {
   onsites (ALL) {
 
     real_t beta[6];
-    point_params(T[X], p[X],beta);
+    point_params(T[X], config.Inip, beta);
       
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
@@ -226,7 +226,7 @@ void glsol::next() {
   
   onsites(ALL) {
 
-    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
+    deltaPi[X] +=  (1.0 / (4.0*config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]
 						      + A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
@@ -241,7 +241,10 @@ void glsol::next() {
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
       //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
+
+      /* this 2.0 infront gamma is not right */
+      /* the despative term indeeds gives 2.0, however, this 2.0 later be absorbed into newly defined \gamma */
+      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
       t += config.dt;
     }
   else

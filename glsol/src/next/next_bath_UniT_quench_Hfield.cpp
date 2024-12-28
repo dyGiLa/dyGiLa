@@ -63,8 +63,8 @@ void glsol::next_bath_UniT_quench_Hfield() {
       
   onsites(ALL) {
 
-    real_t gapa = MP.gap_A_td(p[X], T[X]);
-    real_t gapb = MP.gap_B_td(p[X], T[X]);
+    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -122,7 +122,7 @@ void glsol::next_bath_UniT_quench_Hfield() {
   onsites (ALL) {
 
     real_t beta[6];
-    point_params(T[X], p[X], beta);
+    point_params(T[X], config.Inip, beta);
 
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
@@ -133,7 +133,7 @@ void glsol::next_bath_UniT_quench_Hfield() {
       - 2.0*beta[3]*AxAt*A[X].conj()
       - 2.0*beta[4]*AxAd*A[X]
       - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X]
-      - MP.gz_td(p[X])*H[X]*(H[X].transpose()*A[X]);
+      - MP.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
   }
 
@@ -157,7 +157,7 @@ void glsol::next_bath_UniT_quench_Hfield() {
   onsites (ALL) {
 
     //Matep MP;
-    //real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
+    //real_t tb = config.IniT/ MP.Tcp_mK(config.Inip);
     //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
     //phi_t rad_mat;
     
@@ -181,64 +181,16 @@ void glsol::next_bath_UniT_quench_Hfield() {
       onsites(ALL){
 	phi_t rad_mat;
 	rad_mat.gaussian_random();
-	pi[X] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+
+	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
+	pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
 	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*(T[X]/MP.Tcp_mK(config.Inip))*rad_mat;
 	//modP += sqrt(ep2)*tb*rad_mat.norm();
       }
 
-      // deltaPi[ALL] = 0.0;
-
-      // onsites (ALL) {
-
-      // 	real_t beta[6];
-      // 	point_params(T[X], p[X],beta);
-	
-      //   auto AxAt = A[X]*A[X].transpose();
-      //   auto AxAd = A[X]*A[X].dagger();
-
-      //   deltaPi[X] = - beta[0]*A[X]
-      //     - 2.0*beta[1]*A[X].conj()*AxAt.trace()
-      //     - 2.0*beta[2]*A[X]*AxAd.trace()
-      //     - 2.0*beta[3]*AxAt*A[X].conj()
-      //     - 2.0*beta[4]*AxAd*A[X]
-      //     - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X];
-      // }
-
-      // onsites(ALL) {
-      //   djAaj[X] = 0;
-      //   foralldir(j) {
-      //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-      //   }
-      // }
-
-      // onsites(ALL) {
-      //   phi_t mat;
-      //   foralldir(d) {
-      //     auto col = djAaj[X+d] - djAaj[X-d];
-      //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-      //   }
-
-      //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-      // }
-
-      // onsites (ALL) {
-
-      // 	//Matep MP;
-      // 	//real_t tb = config.IniT/ MP.Tcp_mK(p[X]);
-      // 	//real_t sig = sqrt(2.0*tb*config.gamma);
-      // 	//phi_t rad_mat;
-	
-      //   deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-      //                                                + A[X + e_y] + A[X - e_y]
-      //                                                + A[X + e_z] + A[X - e_z]
-      // 							 - 6.0*A[X]);
-      // 	//rad_mat.gaussian_random();
-      // 	//deltaPi[X] += sig*rad_mat; 
-      // }
-
-
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt/2.0);
+      // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
+      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
 
       t += config.dt;
     }
