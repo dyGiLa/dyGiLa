@@ -74,10 +74,15 @@ struct dyGiLaConf {
       // T-filed initialing & control parameters
       int initialConditionT;
       real_t IniT;
-      real_t ampT;
-      real_t sigTx;
-      real_t sigTy;
-      real_t sigTz;
+      real_t ampT; //sine wave profile
+      /*-----------------------------------------*/
+      /* hot blob Temeprature profile parameters */
+      /* Ttdbx mean T in unit of Tc              */
+      real_t Ttdb1;
+      real_t Ttdb0;
+      real_t t1;
+      /*-----------------------------------------*/  
+ 
 
       // p-filed initialing & control parameters
       int initialConditionp;
@@ -121,21 +126,45 @@ struct dyGiLaConf {
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
       unsigned int do_gapA_clip;
-      real_t gapA_clip_point_x, gapA_clip_point_y, gapA_clip_point_z,
-             gapA_clip_norm_x, gapA_clip_norm_y, gapA_clip_norm_z;
+      real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,
+             gapA_clip1_norm_x, gapA_clip1_norm_y, gapA_clip1_norm_z;
+      real_t gapA_clip2_point_x, gapA_clip2_point_y, gapA_clip2_point_z,
+             gapA_clip2_norm_x, gapA_clip2_norm_y, gapA_clip2_norm_z;
 
+      unsigned int do_gapA_slice;
+      real_t gapA_slice1_point_x, gapA_slice1_point_y, gapA_slice1_point_z,
+             gapA_slice1_norm_x, gapA_slice1_norm_y, gapA_slice1_norm_z;
+      real_t gapA_slice2_point_x, gapA_slice2_point_y, gapA_slice2_point_z,
+             gapA_slice2_norm_x, gapA_slice2_norm_y, gapA_slice2_norm_z;
+ 
+  
       unsigned int do_fed_clip;
       real_t fed_clip_point_x, fed_clip_point_y, fed_clip_point_z,
              fed_clip_norm_x, fed_clip_norm_y, fed_clip_norm_z;
+
+      unsigned int do_Temperature_clip;
+      real_t Temperature_clip_point_x, Temperature_clip_point_y, Temperature_clip_point_z,
+	     Temperature_clip_norm_x, Temperature_clip_norm_y, Temperature_clip_norm_z,
+             Temperature_clamp;
+
+      unsigned int do_Temperature_slice;
+      real_t Temperature_slice_point_x, Temperature_slice_point_y, Temperature_slice_point_z,
+	     Temperature_slice_norm_x, Temperature_slice_norm_y, Temperature_slice_norm_z;
   
+  
+      unsigned int do_Temperature_isosurface;
+      std::vector<double> Temperature_iso_values_vector;
+
       unsigned int do_gapA_isosurface;
       std::vector<double> iso_values_vector;
+  
+  
       //              do_gapA_3slice,
       //              do_fe_slice,
       //              do_gapA_slice;
 
-     unsigned int hdf5_A_matrix_output;
-     real_t hdf5Ststart, hdf5Stend;	
+      unsigned int hdf5_A_matrix_output;
+      real_t hdf5Ststart, hdf5Stend;	
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
      unsigned int  hdf5_mass_current_output,
@@ -144,7 +173,8 @@ struct dyGiLaConf {
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t clamp_bias_fed_Min, clamp_bias_fed_Max;      
-      real_t camera_azi, camera_ele;
+  real_t camera1_azi, camera1_ele,
+         camera2_azi, camera2_ele;
       /*----------------------------------------*/
       /*    parallel IO parameter end           */
       /*----------------------------------------*/
