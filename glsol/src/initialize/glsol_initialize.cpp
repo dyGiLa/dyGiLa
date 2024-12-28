@@ -211,78 +211,47 @@ void glsol::initialize() {
   } // case 7: Aphase_full
 
   case 8: {
-    // pi = 0;
-    // real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-    // real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);    
-    // // hila::out0<<"Gap A: "<<gap<<"\n";
-    // // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
-    
-    // onsites (ALL) {
-    // if (
-    // 	(X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-    // 	&& ((X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54))
-    // 	&& ((X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54))
-    //    )
-    //   {	
-    // 	    foralldir(d1)foralldir(d2){
-    // 	      if (d1==d2){
-    // 		A[X].e(d1,d2).re = 1.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	      else {
-    // 		A[X].e(d1,d2).re = 0.0;
-    // 		A[X].e(d1,d2).im = 0.0;}
-    //           }
-    // 	    A[X] = gapb * A[X]/sqrt(3.0);
-    //    }
-    // //else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-    // else if (
-    // 	     (X.coordinate(e_x) > 10 and X.coordinate(e_x) < (config.lx - 10))
-    // 	     || (
-    // 	         (X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-    // 		 && (!(
-    //                     (X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54)
-    // 	                && (X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54)
-    //                   ))
-    //             )
-    // 	    )    
-    // 	  {
-    // 	    foralldir(d1)foralldir(d2){
-    // 	      if (d1==0 && d2==0){
-    // 		A[X].e(d1,d2).re = 1.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	      else if (d1==0 && d2==1){
-    // 		A[X].e(d1,d2).re = 0.0;  
-    // 		A[X].e(d1,d2).im = 1.0;
-    // 	      }
-    // 	      else {
-    // 		A[X].e(d1,d2).re = 0.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	    }
-    // 	    A[X] = gapa * A[X]/sqrt(2.0);
-    // 	  }
-    // }
 
-    // hila::out0 << "B domain in supercooling A \n";
+    pi = 0;
+    A  = 0; // set all sites to be normal phase
+    
+    onsites(ALL) {
+            
+      if (T[X] < MP.Tcp_mK(config.Inip))
+	{
+         foralldir(al) foralldir(i)
+	   {	
+	    if ((al==0) && (i==0))
+	      { A[X].e(al,i).re = 1.; }
+	    else if ((al==0) && (i==1))
+	      { A[X].e(al,i).im = 1.; } // put bulk A-phase elements into OP
+           } // doralldir end here
+
+         A[X]=A[X] * (MP.gap_A_td(config.Inip, T[X])/sqrt(2.));		 
+	  
+	} // Temeprature judgement block
+
+    } // onsites(ALL) end here
+
+    hila::out0 << "OP field initialized according to the hotblob profile! " << std::endl;
 
     break;
   } // case 8 block end here
-    
-  default: {
 
-    // #pragma hila ast_dump
-    pi = 0.0; //set derivative matrix to zero
-    onsites (ALL) {
-      A[X].fill(1.0);
-    }
+  case 9:
+    {/*empty block*/}
     
-    hila::out0 << "Field matrix set to 1 everywhere \n";
+  default:
+    {
+     // #pragma hila ast_dump
+     pi = 0.0; //set derivative matrix to zero
+     onsites (ALL) { A[X].fill(1.0); }
+    
+     hila::out0 << "Field matrix set to 1 everywhere \n";
 
-    break;
-  }
-  }
+     break;
+    } // default block
+  } // switch block ends here
 
 
 } // initialize() call end here
