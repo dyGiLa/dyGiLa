@@ -25,12 +25,13 @@ PARIO_OBJECTS = build/xdmf.o     \
                 build/init.o     \
                 build/shutdown.o \
                 build/mesh.o     \
-                build/mesh_gapA_FEDensity.o   \
+                build/mesh_insitu.o   \
+                build/mesh_insitu_Temperature.o \
                 build/mesh_massCurrent.o      \
                 build/mesh_spinCurrent.o      \
                 build/mesh_AMatrix.o          \
                 build/mesh_addGhost_verify.o  \
-                build/actions_gapA_FEDensity.o  \
+                build/actions_insitu.o  \
                 build/actions_massCurrent.o \
                 build/actions_spinCurrent.o \
                 build/actions_AMatrix.o     \

@@ -14,10 +14,8 @@
 #include "matep.hpp"
 #include "pario.hpp"
 
-//#if defined USE_ASCENT
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
-//#endif
 
 void parIO::pstream(glsol &sol) {
 
@@ -58,6 +56,10 @@ void parIO::pstream(glsol &sol) {
     } //onsite(All) end here
 
     feDensity.copy_local_data_with_halo(feDensityOrdered);
+
+    /*-------------------- Temperature field --------------------*/
+    Temperature_field[ALL] = sol.T[X];
+    Temperature_field.copy_local_data_with_halo(Temperature);
     
     // /*----------------------     trace A    ----------------------*/
     // if (config.hdf5_trA_output == 1){
