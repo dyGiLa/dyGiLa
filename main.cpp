@@ -1,4 +1,4 @@
-//#define USE_PARIO 
+#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -21,19 +21,18 @@ int main(int argc, char **argv) {
     
     const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
 
-    // initialize OP field
-    gl.initialize();
-
     // initialize Temperature field
     gl.initializeT();
 
     // initialize pressure field
-    gl.initializep();
+    // gl.initializep();
 
     // initilize static H-field
     gl.initializeH();
-    
-    //int bloob_created=0;
+
+    // initialize OP field
+    gl.initialize();
+       
     
     int stepspos;
 
@@ -108,6 +107,7 @@ int main(int argc, char **argv) {
 	      //gl.write_moduli();
 	      gl.write_energies();
 	      //gl.write_phases();
+	      hila::out0 << "write_energies() call is done " << std::endl;
 
 #if defined USE_PARIO
 	      if (
@@ -123,11 +123,12 @@ int main(int argc, char **argv) {
 		       && (
                            (gl.config.do_gapA_clip == 1)
 			   || (gl.config.do_fed_clip == 1)
+			   || (gl.config.do_Temperature_clip == 1)
 			   || (gl.config.do_gapA_isosurface == 1)
                           )
                       )
 		paraio.pstream(gl);		
-	      //hila::out0 << "paraio.pstream() call is done " << std::endl;
+	      hila::out0 << "paraio.pstream() call is done " << std::endl;
 #endif	            
 	      meas_timer.stop();
 	   } // streaming block
@@ -140,9 +141,14 @@ int main(int argc, char **argv) {
 	       )
 	      // update gl.config.gamma if T-dependency of gamma is turned on
 	      {
-		gl.config.gamma = (gl.T.get_element(originpoints) < gl.MP.Tcp_mK(gl.config.Inip))
-		  ? gl.MP.gamma_td(gl.config.Inip, gl.T.get_element(originpoints))
-		  : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip));
+		if (gl.config.initialConditionT != 2)
+		  {
+		   gl.config.gamma = (gl.T.get_element(originpoints) < gl.MP.Tcp_mK(gl.config.Inip))
+		      ? gl.MP.gamma_td(gl.config.Inip, gl.T.get_element(originpoints))
+		      : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip));
+
+		  }
+		
 	      }
 	    else if (stat_counter >= (gl.config.gammaoffc)*steps)
       	      // Set gamma to 2nd value after certain momentum no matter what
@@ -154,14 +160,29 @@ int main(int argc, char **argv) {
 
 	    ++stat_counter;
 
-        } //gl.t > gl.config.Stats block	
+        } //gl.t > gl.config.Stats block
+
+	/*******************************************************************/
+	/* the following if else blocks are different system synamic updates  
+         *  all next_xxx() functions call happen here.
+         */
+	/*******************************************************************/	
 	
-	// if (gl.config.bloob_after==1 && gl.t>gl.config.theat && bloob_created==0)
-	//   {
-	//     gl.hotbloob();
-	//     bloob_created=1;
-	//   }
-	    
+	if (
+	    (gl.config.initialConditionT == 2)
+	    && (gl.config.evolveT == 1)
+	   )
+	  {
+	    //hila::out0 << "just before call next-blob() " << std::endl;
+	    gl.next_bath_hotblob_quench_Hfield();
+	    hila::out0 << "gl.t is " << gl.t 
+		       << ", next_bath_hotblob_quench_Hfield() call " 
+		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << ", Ttdb0 is " << gl.config.Ttdb0	      
+	               << std::endl;
+	  } // heterogenous quench, hot blob T-profile 
+	else
+	  { // homogenous quench block starts from here
 	if (
 	    ((gl.config.useTbath == 1)
 	     && (gl.t >= gl.config.Tbath_start)
@@ -226,14 +247,10 @@ int main(int argc, char **argv) {
 		       << std::endl;	    
 	    
 	  }
-	
-	// if(/*(gl.t > gl.config.startdiffT) &&*/
-	//    gl.config.evolveT == 1
-	//   )
-	//   {
-	//     gl.nextT();
-	//   }
-	
+
+	  } // homogenous quench block
+	    
+		
     } // gl.t evolves while loop ends here
     run_timer.stop();
 
