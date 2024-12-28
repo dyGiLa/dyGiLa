@@ -159,8 +159,10 @@ void glsol::next_bath_hotblob_quench_Hfield() {
 	
 	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	
 	pi[X] = pi[X] + (deltaPi[X] - 1.0 * MP.gamma_td(config.Inip, T[X]) * pi[X])*(config.dt/2.0);	
+
 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*(T[X]/MP.Tcp_mK(config.Inip))*rad_mat; 
+	/* Langevin refresh  */
+	pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2) * (T[X]/MP.Tcp_mK(config.Inip)) * rad_mat; 
 	//modP += sqrt(ep2)*tb*rad_mat.norm();
       }
 
