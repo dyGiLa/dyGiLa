@@ -49,12 +49,14 @@ public:
   void write_positions();
   void write_phases();
   
+  void phaseMarking();
+  
   void next();
   void next_bath();
   void next_bath_UniT_quench();
   void next_bath_UniT_quench_Hfield();
   void next_bath_hotblob_quench_Hfield();      
-  void nextT();
+  //void nextT();
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -65,6 +67,8 @@ public:
   Field<real_t> p;
 
   Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
+
+  Field<real_t> phaseMarker;
   
   real_t t;
   real_t tc = 0;

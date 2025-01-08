@@ -23,7 +23,7 @@ void glsol::initialize() {
   real_t dx = config.dx;
 
   real_t ttc = MP.Tcp_mK(config.Inip);
-  hila::out0 <<"T_AB: "<<MP.tAB_RWS(config.Inip)*ttc<<"\n";
+  hila::out0 <<"T_AB: "<< MP.tAB_RWS(config.Inip)*ttc << "\n";
   
   switch (config.initialCondition) {
     
@@ -253,6 +253,7 @@ void glsol::initialize() {
     } // default block
   } // switch block ends here
 
+  phaseMarker = 0.0f;
 
 } // initialize() call end here
 
