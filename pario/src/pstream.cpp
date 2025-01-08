@@ -58,8 +58,12 @@ void parIO::pstream(glsol &sol) {
     feDensity.copy_local_data_with_halo(feDensityOrdered);
 
     /*-------------------- Temperature field --------------------*/
-    Temperature_field[ALL] = sol.T[X];
-    Temperature_field.copy_local_data_with_halo(Temperature);
+    sol.T.copy_local_data_with_halo(Temperature);
+
+    
+    /*-------------------- phaseMarker field --------------------*/
+    sol.phaseMarker.copy_local_data_with_halo(phaseMarker);    
+
     
     // /*----------------------     trace A    ----------------------*/
     // if (config.hdf5_trA_output == 1){

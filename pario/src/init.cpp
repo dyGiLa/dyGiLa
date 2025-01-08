@@ -28,6 +28,7 @@ void parIO::init(glsol &sol) {
     gapAOrdered.reserve(latticeVolumeWithGhost);
     feDensityOrdered.reserve(latticeVolumeWithGhost);
     Temperature.reserve(latticeVolumeWithGhost);
+    phaseMarker.reserve(latticeVolumeWithGhost);
 
     // if (config.hdf5_trA_output == 1){
     //   trA_reOrdered.reserve(latticeVolumeWithGhost);
@@ -107,6 +108,7 @@ void parIO::init(glsol &sol) {
     describeMesh(sol);
     describeMesh_gapA_FEDensity();
     describeMesh_Temperature();
+    describeMesh_phaseMarker();
 
     if (sol.config.hdf5_mass_current_output == 1) {describeMesh_gapA_FEDensity();}
     if (sol.config.hdf5_spin_current_output == 1) {describeMesh_massCurrent();}
@@ -133,8 +135,7 @@ void parIO::init(glsol &sol) {
     /*********************************/
     /*   all defineActions calls     */
     /*********************************/        
-    defineActions_gapA_FEDensity(sol);
-    //    defineActions_Temperature(sol);
+    defineActions_insitu(sol);
 
     if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent();}
     if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent();}
