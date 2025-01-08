@@ -18,7 +18,7 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::defineActions_gapA_FEDensity(glsol &sol) {
+void parIO::defineActions_insitu(glsol &sol) {
 
     conduit::Node &add_act = actions.append();    
     add_act["action"] = "add_scenes";
@@ -323,6 +323,37 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
        scenes["s9/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
     }
     
+    /* >>>>>>>>>>>>>> pipleline phaseMarker slice <<<<<<<<<<<<< */
+    
+    if (sol.config.do_phaseMarker_slice == 1)
+      {
+       pipelines2["pl5/f1/type"] = "exaslice";
+       conduit::Node &slice_params3 = pipelines2["pl5/f1/params"];
+
+       slice_params3["point/x"] = sol.config.pMarker_slice_point_x;
+       slice_params3["point/y"] = sol.config.pMarker_slice_point_y;
+       slice_params3["point/z"] = sol.config.pMarker_slice_point_z;
+       slice_params3["normal/x"] = sol.config.pMarker_slice_norm_x;
+       slice_params3["normal/y"] = sol.config.pMarker_slice_norm_y;
+       slice_params3["normal/z"] = sol.config.pMarker_slice_norm_z;
+
+       scenes["s6/plots/p1/type"] = "pseudocolor";
+       scenes["s6/plots/p1/pipeline"] = "pl5";
+       scenes["s6/plots/p1/field"] = "phaseMarker";
+       scenes["s6/plots/p1/color_table/name"] = "Jet";
+
+       //???????????????
+
+       scenes["s6/plots/p1/min_value"]
+	 = 0.0f;/*sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip);*/
+    
+       scenes["s6/plots/p1/max_value"]
+	 = 4.0f; /*matep.Tcp_mK(sol.config.Inip);*/
+
+       scenes["s6/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes["s6/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
+       scenes["s6/renders/r1/image_prefix"] = "pMarker-slice_t-%05d";
+      }
     
 } // defineActions() call end here
 
