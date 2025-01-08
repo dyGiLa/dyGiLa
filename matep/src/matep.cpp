@@ -193,18 +193,28 @@ Matep::gz_td(real_t p){
 // Matep::gamma_td(real_t p, real_t T){ return tGL(p)/(tauQP(p, T)*mus); }  
 
 real_t
-Matep::gamma_td(real_t p, real_t T){
+Matep::gamma_td(real_t p, real_t T, real_t pM){
   real_t gamma_C = ((pi*pi)/4) * sqrt(3./5.) * sqrt(20./(7.*zeta3))
          ,gtd;
+  real_t t = T/Tcp_mK(p);
   
-  if (T >= Tcp_mK(p))
+  if (t >= 1.0 /*T >= Tcp_mK(p)*/)
      gtd = 1.;
   else
-    gtd = std::pow((T/Tcp_mK(p)), 4.);
-  
+    {
+      if ( pM == 4.0 )
+	gtd = std::pow(t, 4.); // A-Phase
+      else if ( pM == 2.0f )
+	gtd = exp(3.349621654292973*(1 - 1./t)); // B-phase
+      else if ( pM == 1.0f )
+	gtd = std::pow(t, 4.); // planar-phase
+      else if ( pM == 3.0f )
+	gtd = std::pow(t, 4.); // polar-phase
+      else if ( pM == 0.0f )
+	gtd = std::pow(t, 4.);		
+    }
 
   return gtd * gamma_C;
-
 }  
 
 

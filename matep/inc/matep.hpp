@@ -74,7 +74,7 @@ public:
 
         // damping term coefficient gamma, in unit of tGL^-1
         /* Hagen Kleinert's damping coefficient */
-        real_t gamma_td(real_t p, real_t T);          
+        real_t gamma_td(real_t p, real_t T, real_t pM);          
 
         // Quadratic H-term coefficient gz_td
         real_t gz_td(real_t p);        
