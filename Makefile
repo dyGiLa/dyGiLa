@@ -8,8 +8,9 @@
 # Absolute UNIX path of library HILA
 # Absolute UNIX path of parallel io library Ascent
 ifeq ($(ARCH), lumi)
-HILA_DIR:= /projappl/project_462000465/insHILA
+HILA_DIR:= /projappl/project_462000465/insHILA-II
 ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
+#ASCENT_DIR := /projappl/project_462000465/ascent-0.9.3/scripts/build_ascent/install/ascent-develop
 else
   ifeq ($(ARCH), mahti)
    HILA_DIR:= /projappl/project_2006478/insHILA
