@@ -115,6 +115,8 @@ struct dyGiLaConf {
       int write_phases;
       int write_eigen;
 
+      real_t ptol;
+  
       int evolveT;
       int Tevolvetype;
       real_t startdiffT;
@@ -157,8 +159,11 @@ struct dyGiLaConf {
 
       unsigned int do_gapA_isosurface;
       std::vector<double> iso_values_vector;
-  
-  
+
+      unsigned int do_phaseMarker_slice;
+      real_t pMarker_slice_point_x, pMarker_slice_point_y, pMarker_slice_point_z,
+	     pMarker_slice_norm_x, pMarker_slice_norm_y, pMarker_slice_norm_z;
+    
       //              do_gapA_3slice,
       //              do_fe_slice,
       //              do_gapA_slice;
@@ -173,8 +178,8 @@ struct dyGiLaConf {
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
       real_t clamp_bias_fed_Min, clamp_bias_fed_Max;      
-  real_t camera1_azi, camera1_ele,
-         camera2_azi, camera2_ele;
+      real_t camera1_azi, camera1_ele,
+             camera2_azi, camera2_ele;
       /*----------------------------------------*/
       /*    parallel IO parameter end           */
       /*----------------------------------------*/

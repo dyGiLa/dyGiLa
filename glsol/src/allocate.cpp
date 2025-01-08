@@ -223,6 +223,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.useTbath = parameters.get_item("useTbath",{"no","yes"});
     config.Tbath_start = parameters.get("Tbath_start");
 
+    config.ptol = parameters.get("ptol");
     
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
@@ -328,6 +329,16 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
         for (auto i : tmp3) { config.Temperature_iso_values_vector.push_back(i * TcpmK); }
       } // gapA clip control parammeters
 
+    config.do_phaseMarker_slice = parameters.get_item("do_phaseMarker_slice",{"no","yes"});
+    if (config.do_phaseMarker_slice == 1)
+      {
+        config.pMarker_slice_point_x = parameters.get("pMarker_slice_point_x");
+	config.pMarker_slice_point_y = parameters.get("pMarker_slice_point_y");
+	config.pMarker_slice_point_z = parameters.get("pMarker_slice_point_z");
+        config.pMarker_slice_norm_x = parameters.get("pMarker_slice_norm_x");
+	config.pMarker_slice_norm_y = parameters.get("pMarker_slice_norm_y");
+	config.pMarker_slice_norm_z = parameters.get("pMarker_slice_norm_z");
+      }
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
