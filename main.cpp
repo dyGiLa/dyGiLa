@@ -107,7 +107,9 @@ int main(int argc, char **argv) {
 	      //gl.write_moduli();
 	      gl.write_energies();
 	      //gl.write_phases();
-	      hila::out0 << "write_energies() call is done " << std::endl;
+	      hila::out0 << "write_energies() call is done "
+                         << ", phaseMarking() call is done. "
+			 << std::endl;
 
 #if defined USE_PARIO
 	      if (
@@ -144,8 +146,8 @@ int main(int argc, char **argv) {
 		if (gl.config.initialConditionT != 2)
 		  {
 		   gl.config.gamma = (gl.T.get_element(originpoints) < gl.MP.Tcp_mK(gl.config.Inip))
-		      ? gl.MP.gamma_td(gl.config.Inip, gl.T.get_element(originpoints))
-		      : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip));
+		     ? gl.MP.gamma_td(gl.config.Inip, gl.T.get_element(originpoints), gl.phaseMarker.get_element(originpoints))
+		     : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip), gl.phaseMarker.get_element(originpoints));
 
 		  }
 		
@@ -161,6 +163,8 @@ int main(int argc, char **argv) {
 	    ++stat_counter;
 
         } //gl.t > gl.config.Stats block
+
+        gl.phaseMarking();	
 
 	/*******************************************************************/
 	/* the following if else blocks are different system synamic updates  
