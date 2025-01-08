@@ -27,12 +27,12 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/write_positions.o       \
                 build/write_phases.o          \
                 build/write_moduli.o          \
+                build/phaseMarking.o          \
                 build/next.o                  \
                 build/next_bath.o             \
                 build/next_bath_UniT_quench.o \
                 build/next_bath_UniT_quench_Hfield.o \
                 build/next_bath_hotblob_quench_Hfield.o \
-                build/next_T.o                \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
                 build/glsol_initialize_H.o    \

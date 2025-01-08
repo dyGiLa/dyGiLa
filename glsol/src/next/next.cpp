@@ -183,7 +183,7 @@ void glsol::next() {
 	  
       } // bc = 6 block, phase vortices ends here
     /*------------    phaseVortices BC ends ---------------*/
-  t  
+
   } // onsites(ALL) block ends here
 
   /* --------------------------------------------------------------- */  
