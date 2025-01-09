@@ -33,12 +33,13 @@ int main(int argc, char **argv) {
     // initialize pressure field
     // gl.initializep();
 
-    matep::init_wrapper_mp();
     // initilize static H-field
     gl.initializeH();
 
     // initialize OP field
     gl.initialize();
+
+    matep::init_wrapper_mp();    
            
     int stepspos;
 
