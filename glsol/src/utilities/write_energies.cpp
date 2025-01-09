@@ -18,8 +18,8 @@ void glsol::write_energies() {
   
   ReductionVector<Matrix<3,3,Complex<double>>> Matred(static_cast<int>(matreduc::N_MatREDUCTION));  
   ReductionVector<Complex<double>> red(/*reduc::*/N_REDUCTION);
-  red = 0;
-  //red.allreduce(false);
+  red = 0.f;
+  red.allreduce(true);
 
   // hila::set_allreduce(false);
   onsites(ALL) {
@@ -67,7 +67,6 @@ void glsol::write_energies() {
           k2 += (A[X + j].e(al,j) - A[X - j].e(al,j)) * (A[X + k].e(al,k) - A[X - k].e(al,k)).conj() / (4.0*sqr(config.dx));
           k3 += (A[X + k].e(al,j) - A[X - k].e(al,j)) * (A[X + j].e(al,k) - A[X - j].e(al,k)).conj() / (4.0*sqr(config.dx));
       } // block of gridient energy terms 
-
       
       /* accumulate values */
       
@@ -113,10 +112,10 @@ void glsol::write_energies() {
   const CoordinateVector originpoints(coordsList);
   real_t T000 = T.get_element(originpoints);
 
-  double vol = lattice.volume();  
-  if (hila::myrank() == 0) {
-    //double vol = lattice.volume();
-       
+  double vol = lattice.volume();
+  //if (hila::myrank() == 0)
+  {
+    //double vol = lattice.volume();       
        config.stream
 	 << t << " " << T000 << " " 
 	 /***************************/	 	 	 
