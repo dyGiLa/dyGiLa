@@ -11,6 +11,9 @@ ifeq ($(ARCH), lumi)
 HILA_DIR:= /projappl/project_462000465/insHILA
 ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
 else
+  ifeq ($(ARCH), lumi-hip-CC)
+   HILA_DIR:= /projappl/project_462000465/insHILA-II
+  endif
   ifeq ($(ARCH), mahti)
    HILA_DIR:= /projappl/project_2006478/insHILA
    ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
@@ -30,6 +33,9 @@ endif
 ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000465/dyGiLa
 else
+  ifeq ($(ARCH), lumi-hip-CC)
+   DYGILA_DIR := /projappl/project_462000465/dyGiLa-ROCm
+  endif
   ifeq ($(ARCH), mahti)
    DYGILA_DIR := /projappl/project_2006478/dyGiLa
   endif
