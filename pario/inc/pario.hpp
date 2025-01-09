@@ -55,13 +55,16 @@ private:
   void describeMesh(glsol &);
   void describeMesh_addGhost_verify();
   
-  void describeMesh_gapA_FEDensity();  
+  void describeMesh_gapA_FEDensity();
+  void describeMesh_Temperature();
+  void describeMesh_phaseMarker();
   void describeMesh_massCurrent();
   void describeMesh_spinCurrent();  
   void describeMesh_AMatrix();  
 
   /* actions definations */
-  void defineActions_gapA_FEDensity(glsol &);
+  void defineActions_insitu(glsol &);
+
   void defineActions_massCurrent();
   void defineActions_spinCurrent();
   void defineActions_AMatrix();    
@@ -72,6 +75,8 @@ private:
   
   Field<real_t> gapA;
   Field<real_t> feDensity;
+  Field<real_t> Temperature_field;
+  Field<real_t> phaseMarker_field;
     // Field<real_t> trA_re, trA_im;
   Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
   Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
@@ -84,7 +89,10 @@ private:
    
   std::vector<real_t> gapAOrdered;
   std::vector<real_t> feDensityOrdered;
-    // std::vector<real_t> trA_reOrdered, trA_imOrdered;
+  std::vector<real_t> Temperature;
+  std::vector<real_t> phaseMarker;  
+
+  // std::vector<real_t> trA_reOrdered, trA_imOrdered;
   std::vector<real_t> u11Ordered, u12Ordered, u13Ordered,
                       u21Ordered, u22Ordered, u23Ordered,
                       u31Ordered, u32Ordered, u33Ordered;
@@ -98,7 +106,7 @@ private:
                       js12O, js22O, js32O,
                       js13O, js23O, js33O;
   
-    /*--------------------------------*/
+  /*--------------------------------*/
   
   long long ghostVolume;
   long long latticeVolumeWithGhost;
@@ -110,7 +118,7 @@ private:
   conduit::Node pio_options;
   conduit::Node actions;
   conduit::Node mesh;
-
+  
   /*----------------------------------------*/
   /*      pario declearations end here      */
   /*----------------------------------------*/

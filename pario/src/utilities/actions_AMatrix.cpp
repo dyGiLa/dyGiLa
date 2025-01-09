@@ -27,11 +27,11 @@ void parIO::defineActions_AMatrix() {
 
      conduit::Node &extracts = add_act3["extracts"];
      extracts["e1/type"] = "relay";
-     extracts["e1/params/path"] = "sim-data";
+     extracts["e1/params/path"] = "dyGiLa-sim-data";
      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
-     extracts["e1/params/fields"].append().set("gapAOrdered");
-     extracts["e1/params/fields"].append().set("feDensityOrdered");
+     // extracts["e1/params/fields"].append().set("gapA");
+     // extracts["e1/params/fields"].append().set("feDensity");
     
      extracts["e1/params/fields"].append().set("u11Ordered");
      extracts["e1/params/fields"].append().set("u12Ordered");

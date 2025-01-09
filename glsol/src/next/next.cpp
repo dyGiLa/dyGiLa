@@ -30,9 +30,10 @@ void glsol::next() {
   onsites(ALL) {
 
     matep::Matep MPonsites;
-    
-    real_t gapa = MPonsites.gap_A_td(p[X], T[X]);
-    real_t gapb = MPonsites.gap_B_td(p[X], T[X]);
+
+    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
+
 
     
     A[X] += config.dt * pi[X];
@@ -185,7 +186,7 @@ void glsol::next() {
 	  
       } // bc = 6 block, phase vortices ends here
     /*------------    phaseVortices BC ends ---------------*/
-    
+
   } // onsites(ALL) block ends here
 
   /* --------------------------------------------------------------- */  
@@ -195,14 +196,13 @@ void glsol::next() {
   onsites (ALL) {
 
     matep::Matep MPonsites;
-    //real_t beta[6];
 
-    real_t beta0 = MPonsites.alpha_td(p[X], T[X]);
-    real_t beta1 = MPonsites.beta1_td(p[X], T[X]);
-    real_t beta2 = MPonsites.beta2_td(p[X], T[X]);
-    real_t beta3 = MPonsites.beta3_td(p[X], T[X]);
-    real_t beta4 = MPonsites.beta4_td(p[X], T[X]);
-    real_t beta5 = MPonsites.beta5_td(p[X], T[X]);    
+    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);    
       
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
@@ -235,7 +235,7 @@ void glsol::next() {
   
   onsites(ALL) {
 
-    deltaPi[X] +=  (1.0 / (config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
+    deltaPi[X] +=  (1.0 / (4.0*config.dx * config.dx)) * (A[X + e_x] + A[X - e_x]
 						      + A[X + e_y] + A[X - e_y]
 						      + A[X + e_z] + A[X - e_z]
 						      - 6.0 * A[X]);
@@ -250,7 +250,10 @@ void glsol::next() {
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
       //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
-      pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
+
+      /* this 2.0 infront gamma is not right */
+      /* the despative term indeeds gives 2.0, however, this 2.0 later be absorbed into newly defined \gamma */
+      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
       t += config.dt;
     }
   else

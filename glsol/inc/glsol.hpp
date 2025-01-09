@@ -20,6 +20,7 @@
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
+
 // Define convenient enum for addressing the reductions - could use numbers too
 
 /* enumeration counter type  for matrix reduction */
@@ -46,27 +47,33 @@ public:
   // read configration file and initiate scaling_sim.config 
   const std::string allocate(const std::string &fname, int argc, char **argv);
 
+  // OP field initialization
   void initialize();
 
+  // T-field initialization  
   void initializeT();
+  // p-field initialization    
+  // void initializep();
+  
+  // H-field initialization    
+  void initializeH();
 
-  void initializep();
-
-  //#pragma hila loop_function  
+  // bulk coefficients calculating tool
   void point_params(real_t T, real_t p, real_t beta[6]);
 
   void write_moduli();
   void write_energies();
   void write_positions();
   void write_phases();
-
-
+  
+  void phaseMarking();
+  
   void next();
   void next_bath();
   void next_bath_UniT_quench();
-  void nextT();
-
-  void hotbloob();
+  void next_bath_UniT_quench_Hfield();
+  void next_bath_hotblob_quench_Hfield();      
+  //void nextT();
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -75,6 +82,10 @@ public:
   Field<real_t> dT;
   Field<real_t> dT_from_local_TAB;  
   Field<real_t> p;
+
+  Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
+
+  Field<real_t> phaseMarker;
   
   real_t t;
   real_t tc = 0;

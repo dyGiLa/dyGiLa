@@ -19,32 +19,30 @@ void glsol::write_energies() {
   ReductionVector<Matrix<3,3,Complex<double>>> Matred(static_cast<int>(matreduc::N_MatREDUCTION));  
   ReductionVector<Complex<double>> red(/*reduc::*/N_REDUCTION);
   red = 0;
-  red.allreduce(false);
+  //red.allreduce(false);
 
   // hila::set_allreduce(false);
   onsites(ALL) {
 
-      //Matep MPonsites;
       matep::Matep MP;
 
       Complex<double> gapA{0.};
-      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
+      Complex<double> a(0),b1(0),b2(0),b3(0),b4(0),b5(0);
       Complex<double> kin(0);
       Complex<double> k1(0), k2(0), k3(0);
       Complex<double> bfe(0);
-      double b1 = 0;
+      //double b1 = 0;
 
-      real_t ebfe = MP.f_A_td(p[X], T[X]);// fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X]));
+      real_t ebfe = MP.f_A_td(config.Inip, T[X]);// fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X]));
       
       // local array of alpha, beta_i, alpha = beta[0]
       real_t beta[6];
-      beta[0] = MP.alpha_td(p[X], T[X]);
-      beta[1] = MP.beta1_td(p[X], T[X]);
-      beta[2] = MP.beta2_td(p[X], T[X]);
-      beta[3] = MP.beta3_td(p[X], T[X]);
-      beta[4] = MP.beta4_td(p[X], T[X]);
-      beta[5] = MP.beta5_td(p[X], T[X]);
-      // point_params(T[X], p[X], beta);
+      beta[0] = MP.alpha_td(config.Inip, T[X]);
+      beta[1] = MP.beta1_td(config.Inip, T[X]);
+      beta[2] = MP.beta2_td(config.Inip, T[X]);
+      beta[3] = MP.beta3_td(config.Inip, T[X]);
+      beta[4] = MP.beta4_td(config.Inip, T[X]);
+      beta[5] = MP.beta5_td(config.Inip, T[X]);
 
       gapA = sqrt((A[X]*A[X].dagger()).trace());
       
@@ -84,15 +82,14 @@ void glsol::write_energies() {
       red[/*reduc::*/i_sumk1_we] += bfe * k1;
 
       red[/*reduc::*/i_sumk2] += k2;
-      red[/*reduc::*/i_sumk2_we] += bfe *	k2;
+      red[/*reduc::*/i_sumk2_we] += bfe * k2;
 
       red[/*reduc::*/i_sumk3] += k3;
-      red[/*reduc::*/i_sumk3_we] += bfe *	k3;
+      red[/*reduc::*/i_sumk3_we] += bfe * k3;
       
       red[/*reduc::*/i_suma] += a;
       red[/*reduc::*/i_suma_we] += bfe * a;
 
-      // sumb1 += b1;
       red[/*reduc::*/i_sumb1] += b1;
       red[/*reduc::*/i_sumb1_we] += bfe * b1;
 
@@ -111,12 +108,17 @@ void glsol::write_energies() {
 
   Complex<double> sumAgap = sqrt((Matred[static_cast<int>(matreduc::i_sumA)]
 				  *Matred[static_cast<int>(matreduc::i_sumA)].dagger()).trace());
-  
+
+  std::initializer_list<int> coordsList {0,0,0};
+  const CoordinateVector originpoints(coordsList);
+  real_t T000 = T.get_element(originpoints);
+
+  double vol = lattice.volume();  
   if (hila::myrank() == 0) {
-       double vol = lattice.volume();
+    //double vol = lattice.volume();
        
        config.stream
-	 << t << " "
+	 << t << " " << T000 << " " 
 	 /***************************/	 	 	 
 	 << sumAgap.re / vol << " " << sumAgap.im / vol
 	 /***************************/	 	 

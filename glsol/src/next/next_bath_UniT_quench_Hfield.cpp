@@ -14,14 +14,12 @@
 #include "matep.hpp"
 
 
-void glsol::next_bath_UniT_quench() {
+void glsol::next_bath_UniT_quench_Hfield() {
 
   static hila::timer next_timer("timestep");
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
-  const real_t Tcp_mK_Inip = MP.Tcp_mK(config.Inip);
   //real_t tb =  config.IniT/MP.Tcp_mK(config.Inip);
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
@@ -35,6 +33,8 @@ void glsol::next_bath_UniT_quench() {
 
   std::initializer_list<int> coordsList {0,0,0};
   const CoordinateVector originpoints(coordsList);
+
+  // update the Temperature field
   if ( T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip)) )
     {
      if (
@@ -45,25 +45,30 @@ void glsol::next_bath_UniT_quench() {
        {/*empty block*/}
      else
        {
-	// 1st quench and 2nd quench has different tauQ
+	// 1st quench and 2nd quench may have different tauQ
+	// however, if tauQ1 in fact equal to tauQ2, as well as config.has1stQStop == false
+	// calling this functionequal to homogenous quench with one tauQ continously 
 	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
-	 
+        	 
         // Temperature update for uniform quench
-        T[ALL] = T[X] - ((config.dt/config.tauQ) * Tcp_mK_Inip);
+        T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
 
        }
     }
+
+  // update the random weight in Langevin eqn with updated gamma
+  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
+  
       
   onsites(ALL) {
 
-    matep::Matep MPonsites;
-    real_t gapa = MPonsites.gap_A_td(config.Inip, T[X]);
-    real_t gapb = MPonsites.gap_B_td(config.Inip, T[X]);
+    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
 
     A[X] += config.dt * pi[X];
 
-    if (bc == 1) // you don't want use this, especially on GPU
+    if (bc == 1)
       {
         if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
           {
@@ -116,24 +121,19 @@ void glsol::next_bath_UniT_quench() {
 
   onsites (ALL) {
 
-    matep::Matep MPonsites;
-    
-    real_t beta0 = MPonsites.alpha_td(p[X], T[X]);
-    real_t beta1 = MPonsites.beta1_td(p[X], T[X]);
-    real_t beta2 = MPonsites.beta2_td(p[X], T[X]);
-    real_t beta3 = MPonsites.beta3_td(p[X], T[X]);
-    real_t beta4 = MPonsites.beta4_td(p[X], T[X]);
-    real_t beta5 = MPonsites.beta5_td(p[X], T[X]);
+    real_t beta[6];
+    point_params(T[X], config.Inip, beta);
 
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - beta0*A[X]
-      - 2.0*beta1*A[X].conj()*AxAt.trace()
-      - 2.0*beta2*A[X]*AxAd.trace()
-      - 2.0*beta3*AxAt*A[X].conj()
-      - 2.0*beta4*AxAd*A[X]
-      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X];
+    deltaPi[X] = - beta[0]*A[X]
+      - 2.0*beta[1]*A[X].conj()*AxAt.trace()
+      - 2.0*beta[2]*A[X]*AxAd.trace()
+      - 2.0*beta[3]*AxAt*A[X].conj()
+      - 2.0*beta[4]*AxAd*A[X]
+      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X]
+      - MP.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
   }
 
@@ -170,7 +170,7 @@ void glsol::next_bath_UniT_quench() {
 
   }
 
-  //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
+    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
@@ -179,20 +179,17 @@ void glsol::next_bath_UniT_quench() {
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
       onsites(ALL){
-	phi_t rad_mat;       	
+	phi_t rad_mat;
 	rad_mat.gaussian_random();
 
-	matep::Matep MPonsites;	
-
-	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	
-	pi[X] = pi[X] + (deltaPi[X] - 1.0 * MP.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
-
+	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
+	pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*(T[X]/Tcp_mK_Inip)*rad_mat;
+	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*(T[X]/MP.Tcp_mK(config.Inip))*rad_mat;
 	//modP += sqrt(ep2)*tb*rad_mat.norm();
       }
 
-      // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	      
+      // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
       pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
 
       t += config.dt;
