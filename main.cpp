@@ -1,5 +1,6 @@
 //#define USE_PARIO 
-#define USE_MPI 
+#define USE_MPI
+#define USE_PARIO
 #include <sstream>
 #include <iostream>
 #include <iomanip>
