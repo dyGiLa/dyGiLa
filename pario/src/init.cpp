@@ -1,4 +1,4 @@
-#define USE_MPI 
+#define USE_MPI
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -119,10 +119,10 @@ void parIO::init(glsol &sol) {
 
     pio_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
     pio_options["runtime/type"] = "ascent";
-#if defined CUDA
+
     pio_options["runtime/vtkm/backend"] = "cuda";
     pio_options["cuda/init"] = "false";
-#endif
+
     pio_options["timings"] = "false";
     
     pio.open(pio_options);

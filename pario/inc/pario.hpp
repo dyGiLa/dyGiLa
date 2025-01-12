@@ -29,7 +29,7 @@ class parIO{
 public:
   parIO() = default;                     // default constructor
   
-  Matep matep;
+  matep::Matep matep;
   
   /*----------------------------------------*/
   /*  parallel-IO memember functions        */ 
