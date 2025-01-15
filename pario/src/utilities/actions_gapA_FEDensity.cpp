@@ -34,14 +34,9 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
     scenes["s1/plots/p1/field"] = "gapA";
 
     // color map clamping. min_value will be set to 0.0 if initialCondtion is 2, 7 i.e., normal_phase, Aphase_full
-    scenes["s1/plots/p1/min_value"]
-      = (sol.config.initialCondition == 7 || sol.config.initialCondition == 2 || sol.config.initialCondition == 0)
-         ? 0.0 :  (matep.gap_A_td(sol.config.Inip, sol.config.IniT)
-		   * (1. + sol.config.clamp_bias_gapMin));
-
-    scenes["s1/plots/p1/max_value"]
-      = matep.gap_B_td(sol.config.Inip, sol.config.IniT)
-        * (1. + sol.config.clamp_bias_gapMax);
+    scenes["s1/plots/p1/min_value"] = 0.0;
+    scenes["s1/plots/p1/max_value"] = matep.gap_B_td(sol.config.Inip, sol.config.IniT)
+                                      * (1. + sol.config.clamp_bias_gapMax);
     
     scenes["s1/renders/r1/image_prefix"] = "gapA_t-%04d";
     scenes["s1/renders/r1/camera/azimuth"] = sol.config.camera_azi/*35.0*/;
@@ -70,9 +65,11 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
        scenes["s2/plots/p1/pipeline"] = "pl1";
        scenes["s2/plots/p1/field"] = "gapA";
 
-       scenes["s2/plots/p1/min_value"] = matep.gap_A_td(sol.config.Inip, (sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMin);
+       scenes["s2/plots/p1/min_value"] = matep.gap_A_td(sol.config.Inip, (sol.config.IniT * matep.Tcp_mK(sol.config.Inip)))
+	                                 * (1. + sol.config.clamp_bias_gapMin);
     
-       scenes["s2/plots/p1/max_value"] = matep.gap_B_td(sol.config.Inip, (sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
+       scenes["s2/plots/p1/max_value"] = matep.gap_B_td(sol.config.Inip, (sol.config.IniT * matep.Tcp_mK(sol.config.Inip)))
+	                                 * (1. + sol.config.clamp_bias_gapMax);
 
        scenes["s2/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s2/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
@@ -106,7 +103,7 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
 
        scenes["s3/plots/p1/min_value"] = 0.0;
 
-       scenes["s3/plots/p1/max_value"] = matep.gap_B_td(sol.config.Inip, (sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
+       scenes["s3/plots/p1/max_value"] = matep.gap_B_td(sol.config.Inip, (sol.config.IniT * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
 
        scenes["s3/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s3/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
@@ -149,9 +146,10 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
     scenes["s5/plots/p1/type"] = "pseudocolor";
     scenes["s5/plots/p1/field"] = "feDensity";
 
-    scenes["s5/plots/p1/min_value"] = matep.f_B_td(sol.config.Inip, sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip)) * (1. + sol.config.clamp_bias_fed_Min);
+    scenes["s5/plots/p1/min_value"] = matep.f_B_td(sol.config.Inip, sol.config.IniT * matep.Tcp_mK(sol.config.Inip))
+                                      * (1. + sol.config.clamp_bias_fed_Min);
 
-    scenes["s5/plots/p1/max_value"] = 1.0 * (1. + sol.config.clamp_bias_fed_Max);    
+    scenes["s5/plots/p1/max_value"] = 0.0 * (1. + sol.config.clamp_bias_fed_Max);    
     
     scenes["s5/renders/r1/image_prefix"] = "feDensity_t-%04d";
     scenes["s5/renders/r1/camera/azimuth"] = sol.config.camera_azi/*35.0*/;
@@ -176,7 +174,8 @@ void parIO::defineActions_gapA_FEDensity(glsol &sol) {
        scenes["s6/plots/p1/pipeline"] = "pl4";
        scenes["s6/plots/p1/field"] = "feDensity";
 
-       scenes["s6/plots/p1/min_value"] = matep.f_B_td(sol.config.Inip, sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip)) * (1. + sol.config.clamp_bias_fed_Min);
+       scenes["s6/plots/p1/min_value"] = matep.f_B_td(sol.config.Inip, sol.config.IniT * matep.Tcp_mK(sol.config.Inip))
+	                                 * (1. + sol.config.clamp_bias_fed_Min);
 
        scenes["s6/plots/p1/max_value"] = 1.0 * (1. + sol.config.clamp_bias_fed_Max);    
 
