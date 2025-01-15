@@ -24,7 +24,7 @@ void glsol::write_energies() {
   // hila::set_allreduce(false);
   onsites(ALL) {
 
-      matep::Matep MP;
+      matep::Matep MPonsites;
 
       Complex<double> gapA{0.};
       Complex<double> a(0),b1(0),b2(0),b3(0),b4(0),b5(0);
@@ -33,16 +33,16 @@ void glsol::write_energies() {
       Complex<double> bfe(0);
       //double b1 = 0;
 
-      real_t ebfe = MP.f_A_td(config.Inip, T[X]);// fmin(MP.f_A_td(p[X], T[X]),MP.f_B_td(p[X], T[X]));
+      real_t ebfe = MPonsites.f_A_td(config.Inip, T[X]); // fmin(MP.f_A_td(config.Inip, T[X]),MP.f_B_td(config.Inip, T[X]));
       
       // local array of alpha, beta_i, alpha = beta[0]
       real_t beta[6];
-      beta[0] = MP.alpha_td(config.Inip, T[X]);
-      beta[1] = MP.beta1_td(config.Inip, T[X]);
-      beta[2] = MP.beta2_td(config.Inip, T[X]);
-      beta[3] = MP.beta3_td(config.Inip, T[X]);
-      beta[4] = MP.beta4_td(config.Inip, T[X]);
-      beta[5] = MP.beta5_td(config.Inip, T[X]);
+      beta[0] = MPonsites.alpha_td(config.Inip, T[X]);
+      beta[1] = MPonsites.beta1_td(config.Inip, T[X]);
+      beta[2] = MPonsites.beta2_td(config.Inip, T[X]);
+      beta[3] = MPonsites.beta3_td(config.Inip, T[X]);
+      beta[4] = MPonsites.beta4_td(config.Inip, T[X]);
+      beta[5] = MPonsites.beta5_td(config.Inip, T[X]);
 
       gapA = sqrt((A[X]*A[X].dagger()).trace());
       
@@ -117,11 +117,11 @@ void glsol::write_energies() {
   {
     //double vol = lattice.volume();       
        config.stream
-	 << t << " " << T000 << " " 
+	 << t << " " << T000 << " " << " "
 	 /***************************/	 	 	 
-	 << sumAgap.re / vol << " " << sumAgap.im / vol
+	 << sumAgap.re / vol << " " << sumAgap.im / vol << " "
 	 /***************************/	 	 
-	 << red[/*reduc::*/i_sumgapA].re / vol << " " << red[/*reduc::*/i_sumgapA].im / vol
+	 << red[/*reduc::*/i_sumgapA].re / vol << " " << red[/*reduc::*/i_sumgapA].im / vol << " "
 	 /***************************/	 
 	 << red[/*reduc::*/i_sumkin].re / vol << " " << red[/*reduc::*/i_sumkin].im / vol << " "
          << red[/*reduc::*/i_sumkin_we].re / vol << " " << red[/*reduc::*/i_sumkin_we].re / vol << " "
