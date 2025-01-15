@@ -20,11 +20,8 @@ void glsol::next_bath_UniT_quench_Hfield() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  //real_t tb =  config.IniT/MP.Tcp_mK(config.Inip);
-
+  const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
-
-  //double modP=0.0;
   
   int bc=config.boundaryConditions;
   // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
@@ -51,20 +48,22 @@ void glsol::next_bath_UniT_quench_Hfield() {
 	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
         	 
         // Temperature update for uniform quench
-        T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
+        // T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
+	onsites(ALL)
+	  {
+	   // matep::Matep MPonsites;
+	    T[X] = T[X] - ((config.dt/config.tauQ) * Tcp_mK); /*MPonsites.Tcp_mK(config.Inip));*/
+	  }
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
 
        }
     }
-
-  // update the random weight in Langevin eqn with updated gamma
-  Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
-  
       
   onsites(ALL) {
+    matep::Matep MPonsites;    
 
-    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
-    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
+    real_t gapa = MPonsites.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MPonsites.gap_B_td(config.Inip, T[X]);
 
     A[X] += config.dt * pi[X];
 
@@ -120,20 +119,25 @@ void glsol::next_bath_UniT_quench_Hfield() {
   } // onsite() block ends here
 
   onsites (ALL) {
+    matep::Matep MPonsites;
 
-    real_t beta[6];
-    point_params(T[X], config.Inip, beta);
-
+    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
+    
     auto AxAt = A[X]*A[X].transpose();
     auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - beta[0]*A[X]
-      - 2.0*beta[1]*A[X].conj()*AxAt.trace()
-      - 2.0*beta[2]*A[X]*AxAd.trace()
-      - 2.0*beta[3]*AxAt*A[X].conj()
-      - 2.0*beta[4]*AxAd*A[X]
-      - 2.0*beta[5]*A[X].conj()*A[X].transpose()*A[X]
-      - MP.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
+    deltaPi[X] = - beta0*A[X]
+      - 2.0*beta1*A[X].conj()*AxAt.trace()
+      - 2.0*beta2*A[X]*AxAd.trace()
+      - 2.0*beta3*AxAt*A[X].conj()
+      - 2.0*beta4*AxAd*A[X]
+      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
+      - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
   }
 
@@ -176,21 +180,29 @@ void glsol::next_bath_UniT_quench_Hfield() {
       pi[ALL] = deltaPi[X]/(config.difFac);
       t += config.dt/config.difFac;
     }
-  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
+  else if (
+	   (t < config.tdis)
+	   && (config.useTbath == 1)
+	  )
     {
       onsites(ALL){
+	
 	phi_t rad_mat;
 	rad_mat.gaussian_random();
 
-	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
-	pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
-	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*(T[X]/MP.Tcp_mK(config.Inip))*rad_mat;
-	//modP += sqrt(ep2)*tb*rad_mat.norm();
-      }
+	matep::Matep MPonsites;
 
-      // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
-      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*(config.dt/2.0);
+        real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);	
+
+	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
+	pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+
+	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+	pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2) * (T[X]/Tcp_mK) * rad_mat;
+	
+        // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
+        pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+      }
 
       t += config.dt;
     }
