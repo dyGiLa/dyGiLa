@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
     // initialize OP field
     gl.initialize();
 
+    // initialize blobal matep wrapper
     matep::init_wrapper_mp();    
            
     int stepspos;
@@ -115,7 +116,6 @@ int main(int argc, char **argv) {
 	      gl.write_energies();
 	      //gl.write_phases();
 	      hila::out0 << "write_energies() call is done "
-                         << ", phaseMarking() call is done. "
 			 << std::endl;
 
 #if defined USE_PARIO
@@ -171,7 +171,10 @@ int main(int argc, char **argv) {
 
         } //gl.t > gl.config.Stats block
 
-        gl.phaseMarking();	
+        gl.phaseMarking();        
+        hila::out0 << "phaseMarking() call is done. "
+    		   << std::endl;
+	
 
 	/*******************************************************************/
 	/* the following if else blocks are different system synamic updates  
