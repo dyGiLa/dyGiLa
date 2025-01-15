@@ -52,7 +52,8 @@ public:
 
   // T-field initialization  
   void initializeT();
-  // p-field initialization    
+
+  // p-field initialization
   // void initializep();
   
   // H-field initialization    
@@ -80,8 +81,8 @@ public:
 
   Field<real_t> T;
   Field<real_t> dT;
-  Field<real_t> dT_from_local_TAB;  
-  Field<real_t> p;
+  // Field<real_t> dT_from_local_TAB;  
+  // Field<real_t> p;
 
   Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
 

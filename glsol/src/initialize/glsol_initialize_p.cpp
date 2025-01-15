@@ -18,18 +18,16 @@ void glsol::initializep() {
 
   switch (config.initialConditionp) {
 
-  case 0: {
+   case 0: {
 
     onsites(ALL) {
-
       p[X] = config.Inip;
-
     }
 
      hila::out0 << "Constant p \n";
 
      break;
-  }
+   }
   } // switch config.initialConfiguraionp block end
 }
 
