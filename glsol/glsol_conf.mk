@@ -31,10 +31,10 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/next_bath.o             \
                 build/next_bath_UniT_quench.o \
                 build/next_bath_UniT_quench_Hfield.o \
+                build/next_UniT_Hfield_constrained.o \
                 build/next_T.o                \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
-                build/glsol_initialize_p.o    \
                 build/glsol_initialize_H.o    \
                 build/point_params.o          \
                 build/hot_bloob.o

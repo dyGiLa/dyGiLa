@@ -1,4 +1,4 @@
-//#define USE_PARIO 
+#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     gl.initializeT();
 
     // initialize pressure field
-    gl.initializep();
+    // gl.initializep();
 
     // initilize static H-field
     gl.initializeH();
@@ -155,12 +155,6 @@ int main(int argc, char **argv) {
 	    ++stat_counter;
 
         } //gl.t > gl.config.Stats block	
-	
-	// if (gl.config.bloob_after==1 && gl.t>gl.config.theat && bloob_created==0)
-	//   {
-	//     gl.hotbloob();
-	//     bloob_created=1;
-	//   }
 	    
 	if (
 	    ((gl.config.useTbath == 1)
@@ -215,6 +209,19 @@ int main(int argc, char **argv) {
 		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 
+	  }
+	else if (
+                 (gl.config.constrained == 1)
+		 && (gl.config.useTbath == 0)
+		 && (gl.config.evolveT == 0)
+                )
+	  {
+	    gl.next_UniT_Hfield_constrained();
+	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << ", next_UniT_Hfield_constrained() call, T in site is " << gl.T.get_element(originpoints)
+	               << ", |H| is " << norm(gl.H.get_element(originpoints))
+		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    	    
 	  }
 	else
 	  {
