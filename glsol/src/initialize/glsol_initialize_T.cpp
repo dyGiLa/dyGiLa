@@ -62,14 +62,16 @@ void glsol::initializeT() {
       auto y = X.coordinate(e_y) - config.ly/2.0;
       auto z = X.coordinate(e_z) - config.lz/2.0;
 
-      real_t tm  = MP.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
-      real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+      matep::Matep MPonsites;
+      
+      real_t tm  = MPonsites.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
+      real_t Tcp_mK = MPonsites.Tcp_mK(config.Inip);
       
       auto r2 = x*x + y*y + z*z;
       
       T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
 	      * std::pow(config.t1/tm, 3./2.)
-	      * exp(-r2/(4. * MP.Dd(config.Inip) * tm)))
+	      * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
 	     + config.Ttdb0 * Tcp_mK;
 
     }

@@ -216,8 +216,9 @@ void glsol::initialize() {
     A  = 0; // set all sites to be normal phase
     
     onsites(ALL) {
-            
-      if (T[X] < MP.Tcp_mK(config.Inip))
+
+      matep::Matep MPonsites; 
+      if (T[X] < MPonsites.Tcp_mK(config.Inip))
 	{
          foralldir(al) foralldir(i)
 	   {	
@@ -227,7 +228,7 @@ void glsol::initialize() {
 	      { A[X].e(al,i).im = 1.; } // put bulk A-phase elements into OP
            } // doralldir end here
 
-         A[X]=A[X] * (MP.gap_A_td(config.Inip, T[X])/sqrt(2.));		 
+         A[X]=A[X] * (MPonsites.gap_A_td(config.Inip, T[X])/sqrt(2.));		 
 	  
 	} // Temeprature judgement block
 

@@ -31,10 +31,8 @@ void glsol::next() {
 
     matep::Matep MPonsites;
 
-    real_t gapa = MP.gap_A_td(config.Inip, T[X]);
-    real_t gapb = MP.gap_B_td(config.Inip, T[X]);
-
-
+    real_t gapa = MPonsites.gap_A_td(config.Inip, T[X]);
+    real_t gapb = MPonsites.gap_B_td(config.Inip, T[X]);
     
     A[X] += config.dt * pi[X];
 
