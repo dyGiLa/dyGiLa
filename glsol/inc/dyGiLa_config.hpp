@@ -116,7 +116,14 @@ struct dyGiLaConf {
       real_t diffT;
       int bloob_after;
       real_t theat;
-    
+
+      // constrained parameters
+      unsigned int constrained;
+      real_t lambda0; //Lagrangin multipler 0th
+      real_t lambda1; //Lagrangin multipler 1st
+      real_t confSmoothTime; //initial conf smooth time
+      real_t kappa;  // fraction index
+  
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/

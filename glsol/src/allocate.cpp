@@ -108,7 +108,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 								      ,"Bphase"               //5
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
-                                                                      ,"BinA"});              //8
+                                                                      ,"BnA"});              //8
 
     hila::out0 << "config.initialCondition is "
 	       << config.initialCondition
@@ -120,11 +120,19 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.IniMod = parameters.get("IniMod");
     config.Inilc = parameters.get("Inilc");
 
+    //initialCondition-p
+    config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
+    if (config.initialConditionp == 0)
+      {
+       config.Inip =  parameters.get("Inip");
+      }
+
     //initialCondition-T
     config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotspot"});
     if(config.initialConditionT == 0)
       {
-	config.IniT = parameters.get("IniT");
+	real_t Ttd  = parameters.get("IniT");
+	config.IniT = Ttd * MP.Tcp_mK(config.Inip);
       }
     else if (config.initialConditionT == 1)
       {
@@ -139,10 +147,6 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	config.sigTy = parameters.get("sigTy");
 	config.sigTz = parameters.get("sigTz");
       }
-
-    //initialCondition-p
-    config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
-    config.Inip	= parameters.get("Inip");
 
     //initialCondition-Hfield
     config.withHfield = parameters.get_item("withHfield",{"no", "yes"});
@@ -169,7 +173,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     /* >>>>>>>  boundary conditions  <<<<<<<<<*/
     /*----------------------------------------*/
     config.BCs1 = parameters.get_item("BCs1",{"periodic",
-					       "AB",
+					       "BA",
 					       "PairBreaking",
                                                "PB_y",
                                                "PairB_yz",
@@ -177,7 +181,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
                                                "phaseVortices"});
     
     config.BCs2 = parameters.get_item("BCs2",{"periodic",
-					      "AB",
+					      "BA",
 					      "PairBreaking",
                                               "PB_y",
                                               "PairB_yz",
@@ -205,15 +209,22 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	   config.diffT = parameters.get("diffT");
 	  }
       }
-    // config.bloob_after = parameters.get_item("bloob_after",{"no","yes"});
-    // if(config.bloob_after== 1)
-    //   {
-    // 	config.theat = parameters.get("theat");
-    //   }
 
-    config.useTbath = parameters.get_item("useTbath",{"no","yes"});
-    config.Tbath_start = parameters.get("Tbath_start");
+    config.useTbath     = parameters.get_item("useTbath",{"no","yes"});
+    if (config.useTbath == 1)
+      {
+       config.Tbath_start = parameters.get("Tbath_start");
+      }
 
+    // constrained parameters
+    config.constrained = parameters.get_item("constrained",{"no","yes"});
+    if (config.constrained == 1)
+      {
+       config.lambda0       = parameters.get("lambda0");
+       config.lambda1       = parameters.get("lambda1");
+       config.confSmoothTime = parameters.get("confSmoothTime");
+       config.kappa = parameters.get("kappa");       
+      }
     
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */

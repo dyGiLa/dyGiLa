@@ -36,7 +36,7 @@ public:
   // T-field initialization  
   void initializeT();
   // p-field initialization    
-  void initializep();
+  // void initializep();
   // H-field initialization    
   void initializeH();
 
@@ -51,7 +51,8 @@ public:
   void next();
   void next_bath();
   void next_bath_UniT_quench();
-  void next_bath_UniT_quench_Hfield();    
+  void next_bath_UniT_quench_Hfield();
+  void next_UniT_Hfield_constrained();
   void nextT();
   void hotbloob();
   
