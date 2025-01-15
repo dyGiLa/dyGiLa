@@ -211,61 +211,54 @@ void glsol::initialize() {
   } // case 7: Aphase_full
 
   case 8: {
-    // pi = 0;
-    // real_t gapa = MP.gap_A_td(Tp[1], Tp[0]);
-    // real_t gapb = MP.gap_B_td(Tp[1], Tp[0]);    
-    // // hila::out0<<"Gap A: "<<gap<<"\n";
-    // // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
+    pi = 0;
+    real_t gap_A = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gap_B = MP.gap_B_td(config.Inip, config.IniT);    
+    // hila::out0<<"Gap A: "<<gap<<"\n";
+    // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
     
-    // onsites (ALL) {
-    // if (
-    // 	(X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-    // 	&& ((X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54))
-    // 	&& ((X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54))
-    //    )
-    //   {	
-    // 	    foralldir(d1)foralldir(d2){
-    // 	      if (d1==d2){
-    // 		A[X].e(d1,d2).re = 1.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	      else {
-    // 		A[X].e(d1,d2).re = 0.0;
-    // 		A[X].e(d1,d2).im = 0.0;}
-    //           }
-    // 	    A[X] = gapb * A[X]/sqrt(3.0);
-    //    }
-    // //else if (X.coordinate(e_z) == (config.lz - 1) or X.coordinate(e_z) == (config.lz - 2))
-    // else if (
-    // 	     (X.coordinate(e_x) > 10 and X.coordinate(e_x) < (config.lx - 10))
-    // 	     || (
-    // 	         (X.coordinate(e_x) <= 10 or X.coordinate(e_x) >= (config.lx - 10))
-    // 		 && (!(
-    //                     (X.coordinate(e_y) <= 74 and X.coordinate(e_y) >= 54)
-    // 	                && (X.coordinate(e_z) <= 74 and X.coordinate(e_z) >= 54)
-    //                   ))
-    //             )
-    // 	    )    
-    // 	  {
-    // 	    foralldir(d1)foralldir(d2){
-    // 	      if (d1==0 && d2==0){
-    // 		A[X].e(d1,d2).re = 1.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	      else if (d1==0 && d2==1){
-    // 		A[X].e(d1,d2).re = 0.0;  
-    // 		A[X].e(d1,d2).im = 1.0;
-    // 	      }
-    // 	      else {
-    // 		A[X].e(d1,d2).re = 0.0;
-    // 		A[X].e(d1,d2).im = 0.0;
-    // 	      }
-    // 	    }
-    // 	    A[X] = gapa * A[X]/sqrt(2.0);
-    // 	  }
-    // }
+    onsites (ALL) {
+    if (
+	(X.coordinate(e_x) <= (config.lx/2.0))
+       )
+      {	
+	    foralldir(d1)foralldir(d2){
+	      if (d1==d2){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;}
+              }
+	    A[X] = gap_B * A[X]/sqrt(3.0);
+       }
+    else if (
+	     (X.coordinate(e_x) > (config.lx/2.0))	     
+	    )    
+	  {
+	    foralldir(d1)foralldir(d2){
+	      if (d1==0 && d2==0){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else if (d1==0 && d2==1){
+		A[X].e(d1,d2).re = 0.0;  
+		A[X].e(d1,d2).im = 1.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	    }
+	    A[X] = gap_A * A[X]/sqrt(2.0);
+	  }
+    } // onsites block ends here
 
-    // hila::out0 << "B domain in supercooling A \n";
+    hila::out0 << "B and A configuration is initialted "
+               << ", gapA^2 is " << gap_A * gap_A
+               << ", gapB^2 is " << gap_B * gap_B
+               << std::endl;
 
     break;
   } // case 8 block end here
