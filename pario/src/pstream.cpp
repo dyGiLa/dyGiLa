@@ -1,4 +1,4 @@
-#define USE_MPI 
+#define USE_MPI
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -14,10 +14,9 @@
 #include "matep.hpp"
 #include "pario.hpp"
 
-//#if defined USE_ASCENT
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
-//#endif
+
 
 void parIO::pstream(glsol &sol) {
 
@@ -90,16 +89,6 @@ void parIO::pstream(glsol &sol) {
       Field<Vector<3,double>> jmX;
       Field<Complex<real_t>>  phaseExp;
 
-      /*onsites(ALL){
-        foralldir(i) foralldir(j) foralldir(al){
-	  jmX[X].e(i) = ((A[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
-	                + (A[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
-			+ (A[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
-
-        } // foralldir() calls end here
-
-	} //onesite(ALL) call ends here*/
-
       onsites(ALL) {
 	jmX[X] = 0;
 	foralldir(i) foralldir(j) foralldir(al) {
@@ -140,8 +129,18 @@ void parIO::pstream(glsol &sol) {
 
       onsites(ALL) {
 	jsX[X] = 0;
+        /* >>>>>> Levi-Civita symbol <<<<<< */
+	/* It was implemented as menmber functions of matep::Matep.
+         * However, hilapp covert this function as const parameter of kernel.
+         * So, for a quick solution, better implement it locally at onsites.
+         */	
 	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
-          jsX[X].e(i,al) += -matep.epsilon(al,be,ga)
+	  const float epsilon = (
+                                 (al == 0 && be == 1 && ga == 2)   // 123
+			         ||(al == 1 && be == 2 && ga == 0) // 231
+			         ||(al == 2 && be == 0 && ga == 1) // 312
+			        ) ? 1.0f : -1.0f;	  
+          jsX[X].e(i,al) += -epsilon/*matep.epsilon(al,be,ga)*/
 	                     * (sol.A[X].e(be,i).conj() * (sol.A[X+j].e(ga,j) - sol.A[X-j].e(ga,j))
 			        + sol.A[X].e(be,j).conj() * (sol.A[X+i].e(ga,j) - sol.A[X-i].e(ga,j))
 			        + sol.A[X].e(be,j).conj() * (sol.A[X+j].e(ga,i) - sol.A[X-j].e(ga,i))).real();
