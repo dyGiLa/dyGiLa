@@ -31,11 +31,10 @@ hila::global<matep::matep_consts> wrapper_mp;
 //*********************************************************************
 //***     member functions, interfaces of dimensional qualities     ***
 //*********************************************************************
-real_t
-Matep::Fa0p(real_t p) {return lininterp(Fa0_arr, p);
-}
-
 namespace matep {
+real_t
+Matep::Fa0p(real_t p) {return lininterp(wrapper_mp().Fa0_arr, p);
+}
 
 real_t
 Matep::Tcp(real_t p){
@@ -85,7 +84,7 @@ Matep::xi0p(real_t p){
 }  
 
 real_t
-Matep::xi0GLp(real_t p){ return xi0p(p)*std::sqrt((7.f*zeta3)/20.f); }
+Matep::xi0GLp(real_t p){ return xi0p(p)*std::sqrt((7.f*wrapper_mp().zeta3)/20.f); }
 
 real_t
 Matep::tGL(real_t p){ return 1.290994449*(xi0GLp(p)/vFp(p)); }
@@ -109,7 +108,7 @@ Matep::Dd(real_t p){
   // convert ratio is made from SI unit value number
   real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
   // return diffussion constant in unit of xiGL^2.tGL^-1
-  return vF * vF * tau0N * tGLxiGL2_ratio;
+  return vF * vF * wrapper_mp().tau0N * tGLxiGL2_ratio;
 }
 
 // ************************************************************************* //
@@ -126,7 +125,7 @@ Matep::t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
   real_t T0     = Ttdb0 * TcpmK;
   
   return (std::pow(-1, 0.6666666666666666) * t1 * std::pow(Tx, 0.6666666666666666))
-         /(E * std::pow((T0 - TcpmK), 0.6666666666666666));
+         /(wrapper_mp().E * std::pow((T0 - TcpmK), 0.6666666666666666));
 }
 
 real_t
@@ -136,7 +135,7 @@ Matep::r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
   real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
   real_t T0     = Ttdb0 * TcpmK;
   
-  return sqrt(6./E) * sqrt(Dd(p) * t1)* std::pow((Tx/(-T0 + TcpmK)),0.3333333333333333);
+  return sqrt(6./wrapper_mp().E) * sqrt(Dd(p) * t1)* std::pow((Tx/(-T0 + TcpmK)),0.3333333333333333);
 }
 
 real_t
@@ -198,10 +197,10 @@ Matep::beta5_td(real_t p, real_t T){
 
 real_t
 Matep::gz_td(real_t p){
-  real_t gz = 5.f*c_betai
-              *(1./((1+Fa0p(p))*(1+Fa0p(p))))
-              *(gammahbar/(kb*Tcp(p)))
-              *(gammahbar/(kb*Tcp(p)));
+  real_t gz = 5.f*wrapper_mp().c_betai
+                 *(1./((1+Fa0p(p))*(1+Fa0p(p))))
+                 *(wrapper_mp().gammahbar/(wrapper_mp().kb*Tcp(p)))
+                 *(wrapper_mp().gammahbar/(wrapper_mp().kb*Tcp(p)));
 
   return gz;
 }
@@ -211,7 +210,7 @@ Matep::gz_td(real_t p){
 
 real_t
 Matep::gamma_td(real_t p, real_t T, real_t pM){
-  real_t gamma_C = ((pi*pi)/4) * sqrt(3./5.) * sqrt(20./(7.*zeta3))
+  real_t gamma_C = ((wrapper_mp().pi*wrapper_mp().pi)/4) * sqrt(3./5.) * sqrt(20./(7.*wrapper_mp().zeta3))
          ,gtd;
   real_t t = T/Tcp_mK(p);
   

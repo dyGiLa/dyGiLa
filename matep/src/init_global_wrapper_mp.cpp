@@ -39,6 +39,7 @@ namespace matep {
     mp_consts.m = 1.f;
     mp_consts.kg = 1.f;
     mp_consts.pi = 3.14159265358979323846264338328f;
+    mp_consts.E = 2.718281828459045235360287471352f;
     mp_consts.p_pcp = 21.22f;
 
     mp_consts.u = 1.66053906660f*(10.0e-27)*mp_consts.kg;
@@ -48,6 +49,8 @@ namespace matep {
     mp_consts.kb = 1.380649*(10.0e-23)*mp_consts.J*1.0f;
     mp_consts.zeta3 = 1.2020569031595942;
     mp_consts.c_betai = (7.0f*mp_consts.zeta3)/(80.0f*mp_consts.pi*mp_consts.pi);
+    mp_consts.gammahbar = -34.2040866*(10.0e-31f)*mp_consts.J*1.0f; // in unit of J-mT^-1
+    mp_consts.tau0N = 0.3e-6*mp_consts.s; // normal phase QP life time 0.3 mus in unit of s
 
     real_t c1_ARR[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};
     for (unsigned int i = 0; i<18; ++i) { mp_consts.c1_arr[i] = c1_ARR[i]; }
@@ -64,7 +67,9 @@ namespace matep {
     real_t c5_ARR[18] = {-0.0899, -0.1277, -0.1602, -0.1880, -0.2119, -0.2324, -0.2503, -0.2660, -0.2801, -0.2930, -0.3051, -0.3167, -0.3280, -0.3392, -0.3502, -0.3611, -0.3717, -0.3815};
     for (unsigned int i = 0; i<18; ++i) { mp_consts.c5_arr[i] = c5_ARR[i]; }
 
-
+    real_t Fa0_ARR[18] = {-0.7226, -0.7317, -0.7392, -0.7453, -0.7503, -0.7544, -0.7580, -0.7610, -0.7637, -0.7661, -0.7684, -0.7705, -0.7725, -0.7743, -0.7758, -0.7769, -0.7775, -0.7775};
+    for (unsigned int i = 0; i<18; ++i) { mp_consts.Fa0_arr[i] = Fa0_ARR[i]; }    
+    
     real_t Tc_ARR[18] = {0.929, 1.181, 1.388, 1.560, 1.705, 1.828, 1.934, 2.026, 2.106, 2.177, 2.239, 2.293, 2.339, 2.378, 2.411, 2.438, 2.463, 2.486}; // mK
     for (unsigned int i = 0; i<18; ++i) { mp_consts.Tc_arr[i] = Tc_ARR[i]; }
 
