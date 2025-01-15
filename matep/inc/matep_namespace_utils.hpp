@@ -36,6 +36,7 @@ namespace matep {
          m,
          kg,
          pi,
+         E,
          p_pcp;
 
   // physical constants for he3
@@ -45,7 +46,9 @@ namespace matep {
          hbar,
          kb,
          zeta3,
-         c_betai;
+         c_betai,
+         gammahbar,
+         tau0N;
 
   real_t c1_arr[18];
   real_t c2_arr[18];
@@ -54,6 +57,7 @@ namespace matep {
   real_t c5_arr[18];
 
   // ***************************************************
+  real_t Fa0_arr[18];// Landau parameter  
   real_t Tc_arr[18]; // mK;
   real_t Ms_arr[18]; // in unit of helium-3 atom;
   real_t VF_arr[18]; // fermi velosity, m.s^-1;

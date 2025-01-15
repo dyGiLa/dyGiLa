@@ -65,15 +65,16 @@ namespace matep {
   // ************************************************************************* //
   // >> APIs of key properties of spheric hot bloob; SC-correction parts: <<<< //
   // ************************************************************************* //
-
         // time when fountier of Tc achieve maximum
+#pragma hila loop_function         
         real_t t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
-  
-        // time when fountier of Tc achieve maximum  
+
+        // time when fountier of Tc achieve maximum     
+#pragma hila loop_function         
         real_t r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
 
-        // time when fountier of Tc shriks to vanish
-        // after this T < Tc over box
+        // time when fountier of Tc shriks to vanish after this T < Tc over box   
+#pragma hila loop_function         
         real_t t_TcVanish_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
   
 
@@ -97,9 +98,11 @@ namespace matep {
 
         // damping term coefficient gamma, in unit of tGL^-1
         /* Hagen Kleinert's damping coefficient */
+#pragma hila loop_function     
         real_t gamma_td(real_t p, real_t T, real_t pM);          
 
         // Quadratic H-term coefficient gz_td
+#pragma hila loop_function     
         real_t gz_td(real_t p);        
 
   // >>>>>>>>>    interfaces for beta_A, beta_B, gaps and tAB_RWS    <<<<<<<<< //
