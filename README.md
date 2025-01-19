@@ -1,5 +1,5 @@
-### dyGiLa -- dynamical simulation of GL Effective Theory
-HPC software for simulating the order parameter dynamics of superfluid Helium-3 with Time-Dependent Ginzburg-Landau (TDGL) effective theory.
+### dyGiLa -- dynamical simulation of p-wave GL Effective Theory
+HPC software for simulating the order parameter dynamics of p-wave Time-Dependent Ginzburg-Landau (TDGL) effective theory for superfluid Helium-3.
 This software is being developed as part of the STFC-funded project Quantum-Enhanced Superfluid Technologies for Dark Matter and Cosmology (QUEST-DMC).
 
 dyGiLa started as a descendant of `onsim` developed by Dr. Asier Lopez-Eiguren. 
@@ -7,7 +7,10 @@ Same as `onsim`, dyGiLa uses [HILA](https://cft-hy.github.io/HILA.home) as its C
 
 After couple of years' develpment, Dr. Kuang Zhang has added parallel simulaton data stream feature (`pario`) and strong coupling corrections functions `matep` into dyGiLa.
 Moreover, implemented by Dr. Asier Lopez-Eiguren, and generalized by Dr. Kuang Zhang, GL EOM with Langevin noise i.e., GL-Langevin equation has been introduced into dyGiLa
-with many different temperature profiles. 
+with many different temperature profiles.
+
+The significant development milestone is Dr. Kuang Zhang itegrated `HILA` lattice envirament and `pario` stream engine with both Nvidia
+`CUDA` and AMD `ROCm` support. These accelration features have been tested both both on `N100` and `MI250` clusters.
 
 #### Home page and documentation of [dyGiLa](https://dygila.github.io) project: https://dygila.github.io
 
@@ -48,7 +51,6 @@ with many different temperature profiles.
  | |-sim_config_pario_Temperature_field.txt
  | |-sim_T0.txt
  | |-sim_config_dyGiLa-Langevin.txt
- |-he3sim.cpp
  |-pario
  | |-src
  | | |-pstream.cpp
