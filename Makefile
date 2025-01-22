@@ -13,7 +13,8 @@ ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
 #ASCENT_DIR := /projappl/project_462000465/ascent-0.9.3/scripts/build_ascent/install/ascent-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   HILA_DIR:= /projappl/project_462000465/insHILA-II
+   HILA_DIR:= /projappl/project_462000809/insHILA
+   ASCENT_DIR := /projappl/project_462000809/ascent/scripts/build_ascent/install/ascent-develop
   endif
   ifeq ($(ARCH), mahti)
    HILA_DIR:= /projappl/project_2006478/insHILA
@@ -35,7 +36,7 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000465/dyGiLa-blob
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   DYGILA_DIR := /projappl/project_462000465/dyGiLa-ROCm
+   DYGILA_DIR := /projappl/project_462000809/dyGiLa
   endif
   ifeq ($(ARCH), mahti)
    DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
@@ -55,26 +56,26 @@ APP_OPTS := -DNDIM=3
 # Read in the main makefile contents, incl. platforms
 include $(HILA_DIR)/libraries/main.mk     \
         $(DYGILA_DIR)/glsol/glsol_conf.mk \
-	$(DYGILA_DIR)/matep/matep_conf.mk
-#        $(DYGILA_DIR)/pario/pario_conf.mk
+	$(DYGILA_DIR)/matep/matep_conf.mk \
+        $(DYGILA_DIR)/pario/pario_conf.mk
 
 # With multiple targets we want to use "make target", not "make build/target".
 # This is needed to carry the dependencies to build-subdir
 dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
-# build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+               build/main.o \
+               $(HILA_OBJECTS) $(HEADERS)
+	$(LD) -o $@ $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+		build/main.o \
+		$(HILA_OBJECTS) \
+		$(LDFLAGS) $(LDLIBS)
+
+# build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
 #               build/main.o \
 #               $(HILA_OBJECTS) $(HEADERS)
-# 	$(LD) -o $@ $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+# 	$(LD) -o $@ $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
 #               build/main.o \
 # 	      $(HILA_OBJECTS) \
 # 	      $(LDFLAGS) $(LDLIBS)
-
-build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-              build/main.o \
-              $(HILA_OBJECTS) $(HEADERS)
-	$(LD) -o $@ $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-              build/main.o \
-	      $(HILA_OBJECTS) \
-	      $(LDFLAGS) $(LDLIBS)
