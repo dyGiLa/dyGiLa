@@ -145,9 +145,10 @@ void parIO::pstream(glsol &sol) {
       Field<Matrix<3,3,double>> jsX; // column is alpha for spin, row is i for spatial
 
       onsites(ALL) {
+	matep::Matep MPonsites;
 	jsX[X] = 0;
 	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
-          jsX[X].e(i,al) += -matep.epsilon(al,be,ga)
+          jsX[X].e(i,al) += -MPonsites.epsilon(al,be,ga)
 	                     * (sol.A[X].e(be,i).conj() * (sol.A[X+j].e(ga,j) - sol.A[X-j].e(ga,j))
 			        + sol.A[X].e(be,j).conj() * (sol.A[X+i].e(ga,j) - sol.A[X-i].e(ga,j))
 			        + sol.A[X].e(be,j).conj() * (sol.A[X+j].e(ga,i) - sol.A[X-j].e(ga,i))).real();
