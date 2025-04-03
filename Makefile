@@ -13,8 +13,9 @@ ASCENT_DIR := /projappl/project_462000465/ascent/install/ascent-v0.9.0
 #ASCENT_DIR := /projappl/project_462000465/ascent-0.9.3/scripts/build_ascent/install/ascent-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   HILA_DIR:= /projappl/project_462000809/insHILA
-   ASCENT_DIR := /projappl/project_462000809/ascent/scripts/build_ascent/install/ascent-develop
+   HILA_DIR:= /projappl/project_462000836/insHILA-II
+   # HILA_DIR:= /projappl/project_462000836/insHILA-809
+   ASCENT_DIR := /projappl/project_462000836/ascent-v0.9.3-build/install/ascent-v0.9.3
   endif
   ifeq ($(ARCH), mahti)
    HILA_DIR:= /projappl/project_2006478/insHILA
@@ -36,7 +37,7 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000465/dyGiLa-blob
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   DYGILA_DIR := /projappl/project_462000809/dyGiLa
+   DYGILA_DIR := /projappl/project_462000836/dyGiLa-IO
   endif
   ifeq ($(ARCH), mahti)
    DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
