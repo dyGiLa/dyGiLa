@@ -27,6 +27,7 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/write_positions.o       \
                 build/write_phases.o          \
                 build/write_moduli.o          \
+                build/gaussianLP_matrix.o     \
                 build/phaseMarking.o          \
                 build/next.o                  \
                 build/next_bath.o             \
