@@ -7,7 +7,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -66,6 +65,9 @@ public:
   void write_energies();
   void write_positions();
   void write_phases();
+
+  // Gaussian Low Pass filters
+  void GaussianLPfilter_matrix(Field<phi_t> &);
   
   void phaseMarking();
   
