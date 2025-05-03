@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -16,12 +15,21 @@
 
 void glsol::phaseMarking() {
 
+
+  Field<phi_t> AwT = A;
+  if (config.useGaussianLP_filter == 1)
+    { GaussianLPfilter_matrix(AwT);} // shortwave noise removed A filed preperation
+  
   onsites (ALL) {
 
     real_t R1{0},R2{0},R3{0},R4{0},R5{0};
     
     // reduced OP matrix; TrAr.Ar^dagger = 1
-    phi_t Ar=A[X]/sqrt((A[X]*A[X].dagger()).trace());
+    // phi_t Ar=A[X]/sqrt((A[X]*A[X].dagger()).trace());
+
+    phi_t Ar = (config.useGaussianLP_filter == 1)
+               ? AwT[X]/sqrt((AwT[X]*AwT[X].dagger()).trace())
+               : A[X]/sqrt((A[X]*A[X].dagger()).trace());
 
     R1 = ((Ar*Ar.transpose()).trace()).squarenorm();
 
@@ -32,6 +40,7 @@ void glsol::phaseMarking() {
     R4 = real(((Ar*Ar.dagger()*Ar*Ar.dagger()).trace()));
 
     R5 = real(((Ar*Ar.dagger()*Ar.conj()*Ar.transpose()).trace()));
+    
 
     /* >>>>>>>>> phase marking logic <<<<<<<<  */
     if (
