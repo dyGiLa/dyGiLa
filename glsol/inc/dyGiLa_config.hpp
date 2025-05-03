@@ -116,7 +116,19 @@ struct dyGiLaConf {
       int write_eigen;
 
       real_t ptol;
-  
+
+      /*----------------------------------------*/
+      /* Approx. Gaussian LP filter parameters  */
+      /*----------------------------------------*/
+    
+      unsigned int useGaussianLP_filter;
+      unsigned int numIterGLPfilter;
+      real_t GLPfc1, GLPfc2;
+
+      /*----------------------------------------*/
+      /* Approx. GLP filter parameters ends     */  
+      /*----------------------------------------*/
+    
       int evolveT;
       int Tevolvetype;
       real_t startdiffT;

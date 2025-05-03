@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -224,6 +223,19 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.Tbath_start = parameters.get("Tbath_start");
 
     config.ptol = parameters.get("ptol");
+
+    /*----------------------------------------*/    
+    /* Approx. Gaussian LP filter parameters  */
+    /*----------------------------------------*/
+    config.useGaussianLP_filter = parameters.get_item("useGaussianLP_filter",{"no","yes"});
+    if (config.useGaussianLP_filter == 1)
+      {
+       config.numIterGLPfilter = parameters.get("numIterGLPfilter");
+       // config.GLPfc1 = parameters.get("GLPfc1");
+       config.GLPfc2 = parameters.get("GLPfc2");
+       /* 3d finite difference coefficients relation */
+       config.GLPfc1 = 1. - 6.*config.GLPfc2; 
+      }
     
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
