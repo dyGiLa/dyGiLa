@@ -4,9 +4,7 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
-
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 
@@ -21,7 +19,7 @@ void parIO::pstream(glsol &sol) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
     gapA[ALL] = real(sqrt((sol.A[X]*(sol.A[X].dagger())).trace()));  
-    gapA.copy_local_data_with_halo(gapAOrdered);
+    gapA.copy_local_data_with_halo(gapAContainer);
 
     /*--------------------     feDensity      --------------------*/
     real_t ebfe=fmin(matep.f_A_td(sol.config.Inip, sol.config.IniT), matep.f_B_td(sol.config.Inip, sol.config.IniT));
@@ -55,7 +53,7 @@ void parIO::pstream(glsol &sol) {
       feDensity[X] = real(k1 + k2 + k3 + bfe);
     } //onsite(All) end here
 
-    feDensity.copy_local_data_with_halo(feDensityOrdered);
+    feDensity.copy_local_data_with_halo(feDensityContainer);
 
     /*-------------------- Temperature field --------------------*/
     sol.T.copy_local_data_with_halo(Temperature);
@@ -65,32 +63,6 @@ void parIO::pstream(glsol &sol) {
     sol.phaseMarker.copy_local_data_with_halo(phaseMarker);    
 
     
-    // /*----------------------     trace A    ----------------------*/
-    // if (config.hdf5_trA_output == 1){
-    //   trA_re[ALL] = (A[X].trace()).real();
-    //   trA_im[ALL] = (A[X].trace()).imag();      
-    //   trA_re.copy_local_data_with_halo(trA_reOrdered);
-    //   trA_im.copy_local_data_with_halo(trA_imOrdered);      
-    // }
-
-    // /*----------------------  eigen values of A ------------------*/
-    // if (config.hdf5_eigvA_output == 1){
-    //   Field<Vector<3,double>> eval;
-    //   Field<Matrix<3,3,Complex<double>>> evec;
-
-    //   onsites(ALL){
-    // 	A[X].eigen_jacobi(eval[X],evec[X]/*,hila::sort::ascending*/);
-    //   }
-
-    //   eigAv1[ALL] = eval[X].e(0); 
-    //   eigAv2[ALL] = eval[X].e(1); 
-    //   eigAv3[ALL] = eval[X].e(2); 
-
-    //   eigAv1.copy_local_data_with_halo(eigAv1Ordered);
-    //   eigAv2.copy_local_data_with_halo(eigAv2Ordered);
-    //   eigAv3.copy_local_data_with_halo(eigAv3Ordered);
-    // }
-
     /*------------------ mass current components ------------------*/
     if (sol.config.hdf5_mass_current_output == 1){
       Field<Vector<3,double>> jmX;
@@ -130,14 +102,14 @@ void parIO::pstream(glsol &sol) {
       phaseExpAngle[ALL]   = std::atan2(phaseExp[X].imag(), phaseExp[X].real())/2.;
       /* >>>>>>>> phase angle and modulus end here   <<<<<<*/
 
-      jm1.copy_local_data_with_halo(jm1Ordered);
-      jm2.copy_local_data_with_halo(jm2Ordered);
-      jm3.copy_local_data_with_halo(jm3Ordered);
+      jm1.copy_local_data_with_halo(jm1Container);
+      jm2.copy_local_data_with_halo(jm2Container);
+      jm3.copy_local_data_with_halo(jm3Container);
 
-      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusO);
-      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleO);
-      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReO);
-      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImO);            
+      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusContanier);
+      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleContanier);
+      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReContanier);
+      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImContanier);            
     }
 
     // /*------------------ spin current components ------------------*/
@@ -167,17 +139,17 @@ void parIO::pstream(glsol &sol) {
       js23[ALL] = jsX[X].e(1,2);
       js33[ALL] = jsX[X].e(2,2);
       
-      js11.copy_local_data_with_halo(js11O);
-      js21.copy_local_data_with_halo(js21O);
-      js31.copy_local_data_with_halo(js31O);
+      js11.copy_local_data_with_halo(js11Contanier);
+      js21.copy_local_data_with_halo(js21Contanier);
+      js31.copy_local_data_with_halo(js31Contanier);
       
-      js12.copy_local_data_with_halo(js12O);
-      js22.copy_local_data_with_halo(js22O);
-      js32.copy_local_data_with_halo(js32O);
+      js12.copy_local_data_with_halo(js12Contanier);
+      js22.copy_local_data_with_halo(js22Contanier);
+      js32.copy_local_data_with_halo(js32Contanier);
       
-      js13.copy_local_data_with_halo(js13O);
-      js23.copy_local_data_with_halo(js23O);
-      js33.copy_local_data_with_halo(js33O);
+      js13.copy_local_data_with_halo(js13Contanier);
+      js23.copy_local_data_with_halo(js23Contanier);
+      js33.copy_local_data_with_halo(js33Contanier);
 
     }
 
@@ -193,15 +165,15 @@ void parIO::pstream(glsol &sol) {
      u32[ALL] = sol.A[X].e(2,1).re; v32[ALL] = sol.A[X].e(2,1).im;
      u33[ALL] = sol.A[X].e(2,2).re; v33[ALL] = sol.A[X].e(2,2).im;
 
-     u11.copy_local_data_with_halo(u11Ordered); v11.copy_local_data_with_halo(v11Ordered);
-     u12.copy_local_data_with_halo(u12Ordered); v12.copy_local_data_with_halo(v12Ordered);
-     u13.copy_local_data_with_halo(u13Ordered); v13.copy_local_data_with_halo(v13Ordered);
-     u21.copy_local_data_with_halo(u21Ordered); v21.copy_local_data_with_halo(v21Ordered);
-     u22.copy_local_data_with_halo(u22Ordered); v22.copy_local_data_with_halo(v22Ordered);
-     u23.copy_local_data_with_halo(u23Ordered); v23.copy_local_data_with_halo(v23Ordered);
-     u31.copy_local_data_with_halo(u31Ordered); v31.copy_local_data_with_halo(v31Ordered);
-     u32.copy_local_data_with_halo(u32Ordered); v32.copy_local_data_with_halo(v32Ordered);
-     u33.copy_local_data_with_halo(u33Ordered); v33.copy_local_data_with_halo(v33Ordered);        
+     u11.copy_local_data_with_halo(u11Container); v11.copy_local_data_with_halo(v11Container);
+     u12.copy_local_data_with_halo(u12Container); v12.copy_local_data_with_halo(v12Container);
+     u13.copy_local_data_with_halo(u13Container); v13.copy_local_data_with_halo(v13Container);
+     u21.copy_local_data_with_halo(u21Container); v21.copy_local_data_with_halo(v21Container);
+     u22.copy_local_data_with_halo(u22Container); v22.copy_local_data_with_halo(v22Container);
+     u23.copy_local_data_with_halo(u23Container); v23.copy_local_data_with_halo(v23Container);
+     u31.copy_local_data_with_halo(u31Container); v31.copy_local_data_with_halo(v31Container);
+     u32.copy_local_data_with_halo(u32Container); v32.copy_local_data_with_halo(v32Container);
+     u33.copy_local_data_with_halo(u33Container); v33.copy_local_data_with_halo(v33Container);        
     }
     
     /*------------------------------------------------------------*/
