@@ -28,17 +28,17 @@ void parIO::defineActions_spinCurrent() {
       extracts["e1/params/path"] = "sim-data";
       extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
-      extracts["e1/params/fields"].append().set("gapAOrdered");
-      extracts["e1/params/fields"].append().set("feDensityOrdered");
-      extracts["e1/params/fields"].append().set("js11O");
-      extracts["e1/params/fields"].append().set("js21O");
-      extracts["e1/params/fields"].append().set("js31O");
-      extracts["e1/params/fields"].append().set("js12O");
-      extracts["e1/params/fields"].append().set("js22O");
-      extracts["e1/params/fields"].append().set("js32O");
-      extracts["e1/params/fields"].append().set("js13O");
-      extracts["e1/params/fields"].append().set("js23O");
-      extracts["e1/params/fields"].append().set("js33O");      
+      extracts["e1/params/fields"].append().set("gapAContainer");
+      extracts["e1/params/fields"].append().set("feDensityContainer");
+      extracts["e1/params/fields"].append().set("js11Container");
+      extracts["e1/params/fields"].append().set("js21Container");
+      extracts["e1/params/fields"].append().set("js31Container");
+      extracts["e1/params/fields"].append().set("js12Container");
+      extracts["e1/params/fields"].append().set("js22Container");
+      extracts["e1/params/fields"].append().set("js32Container");
+      extracts["e1/params/fields"].append().set("js13Container");
+      extracts["e1/params/fields"].append().set("js23Container");
+      extracts["e1/params/fields"].append().set("js33Container");      
     
 } // defineActions() call end here
 

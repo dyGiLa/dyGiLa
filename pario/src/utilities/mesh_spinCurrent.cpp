@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -20,41 +19,41 @@
 
 void parIO::describeMesh_spinCurrent() {
 
-      mesh["fields/js11O/association"] = "vertex";
-      mesh["fields/js11O/topology"] = "topo";
-      mesh["fields/js11O/values"].set_external(js11O.data(), latticeVolumeWithGhost);
+      mesh["fields/js11Container/association"] = "vertex";
+      mesh["fields/js11Container/topology"] = "topo";
+      mesh["fields/js11Container/values"].set_external(js11Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js21O/association"] = "vertex";
-      mesh["fields/js21O/topology"] = "topo";
-      mesh["fields/js21O/values"].set_external(js21O.data(), latticeVolumeWithGhost);
+      mesh["fields/js21Container/association"] = "vertex";
+      mesh["fields/js21Container/topology"] = "topo";
+      mesh["fields/js21Container/values"].set_external(js21Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js31O/association"] = "vertex";
-      mesh["fields/js31O/topology"] = "topo";
-      mesh["fields/js31O/values"].set_external(js31O.data(), latticeVolumeWithGhost);
+      mesh["fields/js31Container/association"] = "vertex";
+      mesh["fields/js31Container/topology"] = "topo";
+      mesh["fields/js31Container/values"].set_external(js31Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js12O/association"] = "vertex";
-      mesh["fields/js12O/topology"] = "topo";
-      mesh["fields/js12O/values"].set_external(js12O.data(), latticeVolumeWithGhost);
+      mesh["fields/js12Container/association"] = "vertex";
+      mesh["fields/js12Container/topology"] = "topo";
+      mesh["fields/js12Container/values"].set_external(js12Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js22O/association"] = "vertex";
-      mesh["fields/js22O/topology"] = "topo";
-      mesh["fields/js22O/values"].set_external(js22O.data(), latticeVolumeWithGhost);
+      mesh["fields/js22Container/association"] = "vertex";
+      mesh["fields/js22Container/topology"] = "topo";
+      mesh["fields/js22Container/values"].set_external(js22Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js32O/association"] = "vertex";
-      mesh["fields/js32O/topology"] = "topo";
-      mesh["fields/js32O/values"].set_external(js32O.data(), latticeVolumeWithGhost);
+      mesh["fields/js32Container/association"] = "vertex";
+      mesh["fields/js32Container/topology"] = "topo";
+      mesh["fields/js32Container/values"].set_external(js32Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js13O/association"] = "vertex";
-      mesh["fields/js13O/topology"] = "topo";
-      mesh["fields/js13O/values"].set_external(js13O.data(), latticeVolumeWithGhost);
+      mesh["fields/js13Container/association"] = "vertex";
+      mesh["fields/js13Container/topology"] = "topo";
+      mesh["fields/js13Container/values"].set_external(js13Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js23O/association"] = "vertex";
-      mesh["fields/js23O/topology"] = "topo";
-      mesh["fields/js23O/values"].set_external(js23O.data(), latticeVolumeWithGhost);
+      mesh["fields/js23Container/association"] = "vertex";
+      mesh["fields/js23Container/topology"] = "topo";
+      mesh["fields/js23Container/values"].set_external(js23Container.data(), latticeVolumeWithGhost);
 
-      mesh["fields/js33O/association"] = "vertex";
-      mesh["fields/js33O/topology"] = "topo";
-      mesh["fields/js33O/values"].set_external(js33O.data(), latticeVolumeWithGhost);
+      mesh["fields/js33Container/association"] = "vertex";
+      mesh["fields/js33Container/topology"] = "topo";
+      mesh["fields/js33Container/values"].set_external(js33Container.data(), latticeVolumeWithGhost);
    
 } // describeMesh() end here
 

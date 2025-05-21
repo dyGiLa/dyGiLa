@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -23,12 +22,12 @@ void parIO::describeMesh_gapA_FEDensity() {
     // create an vertex associated field named gapAOrdered
     mesh["fields/gapA/association"] = "vertex";
     mesh["fields/gapA/topology"] = "topo";
-    mesh["fields/gapA/values"].set_external(gapAOrdered.data(), latticeVolumeWithGhost);
+    mesh["fields/gapA/values"].set_external(gapAContainer.data(), latticeVolumeWithGhost);
 
-    // create an vertex associated field named feDensityOrdered
+    // create an vertex associated field named feDensityContainer
     mesh["fields/feDensity/association"] = "vertex";
     mesh["fields/feDensity/topology"] = "topo";
-    mesh["fields/feDensity/values"].set_external(feDensityOrdered.data(), latticeVolumeWithGhost);
+    mesh["fields/feDensity/values"].set_external(feDensityContainer.data(), latticeVolumeWithGhost);
 
 } // describeMesh() end here
 

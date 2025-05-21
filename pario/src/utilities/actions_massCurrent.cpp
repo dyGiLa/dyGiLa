@@ -28,15 +28,15 @@ void parIO::defineActions_massCurrent() {
       extracts["e1/params/path"] = "sim-data";
       extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
-      extracts["e1/params/fields"].append().set("gapAOrdered");
-      extracts["e1/params/fields"].append().set("feDensityOrdered");
-      extracts["e1/params/fields"].append().set("jm1Ordered");
-      extracts["e1/params/fields"].append().set("jm2Ordered");
-      extracts["e1/params/fields"].append().set("jm3Ordered");
-      extracts["e1/params/fields"].append().set("phaseExpModulusO");
-      extracts["e1/params/fields"].append().set("phaseExpAngleO");
-      extracts["e1/params/fields"].append().set("phaseExp2ReO");
-      extracts["e1/params/fields"].append().set("phaseExp2ImO");                       
+      extracts["e1/params/fields"].append().set("gapAContainer");
+      extracts["e1/params/fields"].append().set("feDensityContainer");
+      extracts["e1/params/fields"].append().set("jm1Container");
+      extracts["e1/params/fields"].append().set("jm2Container");
+      extracts["e1/params/fields"].append().set("jm3Container");
+      extracts["e1/params/fields"].append().set("phaseExpModulusContainer");
+      extracts["e1/params/fields"].append().set("phaseExpAngleContainer");
+      extracts["e1/params/fields"].append().set("phaseExp2ReContainer");
+      extracts["e1/params/fields"].append().set("phaseExp2ImContainer");                       
     
 } // defineActions() call end here
 
