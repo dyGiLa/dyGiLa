@@ -99,11 +99,11 @@ private:
                       v31Container, v32Container, v33Container;
     // std::vector<real_t> eigAv1Container, eigAv2Container, eigAv3Container;
   std::vector<real_t> jm1Container, jm2Container, jm3Container;
-  std::vector<real_t> phaseExpModulusContanier, phaseExpAngleContanier /*acosphiContanier, asinphiContanier,*/
-                      ,phaseExp2ReContanier, phaseExp2ImContanier;
-  std::vector<real_t> js11Contanier, js21Contanier, js31Contanier,
-                      js12Contanier, js22Contanier, js32Contanier,
-                      js13Contanier, js23Contanier, js33Contanier;
+  std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer /*acosphiContainer, asinphiContainer,*/
+                      ,phaseExp2ReContainer, phaseExp2ImContainer;
+  std::vector<real_t> js11Container, js21Container, js31Container,
+                      js12Container, js22Container, js32Container,
+                      js13Container, js23Container, js33Container;
   
   /*--------------------------------*/
   

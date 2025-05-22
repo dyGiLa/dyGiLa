@@ -106,10 +106,10 @@ void parIO::pstream(glsol &sol) {
       jm2.copy_local_data_with_halo(jm2Container);
       jm3.copy_local_data_with_halo(jm3Container);
 
-      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusContanier);
-      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleContanier);
-      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReContanier);
-      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImContanier);            
+      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusContainer);
+      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleContainer);
+      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReContainer);
+      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImContainer);            
     }
 
     // /*------------------ spin current components ------------------*/
@@ -139,17 +139,17 @@ void parIO::pstream(glsol &sol) {
       js23[ALL] = jsX[X].e(1,2);
       js33[ALL] = jsX[X].e(2,2);
       
-      js11.copy_local_data_with_halo(js11Contanier);
-      js21.copy_local_data_with_halo(js21Contanier);
-      js31.copy_local_data_with_halo(js31Contanier);
+      js11.copy_local_data_with_halo(js11Container);
+      js21.copy_local_data_with_halo(js21Container);
+      js31.copy_local_data_with_halo(js31Container);
       
-      js12.copy_local_data_with_halo(js12Contanier);
-      js22.copy_local_data_with_halo(js22Contanier);
-      js32.copy_local_data_with_halo(js32Contanier);
+      js12.copy_local_data_with_halo(js12Container);
+      js22.copy_local_data_with_halo(js22Container);
+      js32.copy_local_data_with_halo(js32Container);
       
-      js13.copy_local_data_with_halo(js13Contanier);
-      js23.copy_local_data_with_halo(js23Contanier);
-      js33.copy_local_data_with_halo(js33Contanier);
+      js13.copy_local_data_with_halo(js13Container);
+      js23.copy_local_data_with_halo(js23Container);
+      js33.copy_local_data_with_halo(js33Container);
 
     }
 
