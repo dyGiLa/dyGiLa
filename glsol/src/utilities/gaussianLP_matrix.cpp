@@ -45,10 +45,14 @@ void glsol::GaussianLPfilter_matrix(Field<phi_t> &AwT /* Weierstrass Transformed
        {
         for (Parity par : {EVEN,ODD})
 	  {
+	   assert((par == Parity::even)||(par == Parity::odd));   
 	   onsites(par)
 	     {
-              AwT[X] *= config.GLPfc1;
-	      foralldir(d) AwT[X] += config.GLPfc2 * (AwT[X-d] + AwT[X+d]);
+              AwT[X] *= config.GLPfc1;	      
+	      foralldir(d)
+		{
+		  AwT[X] += config.GLPfc2 * (AwT[X-d] + AwT[X+d]);
+		}
 	     }
 	  }
        
