@@ -26,6 +26,14 @@ using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing t
 // enum class Matreduc { i_sumA, N_MatREDUCTION };
 enum class matreduc { i_sumA, N_MatREDUCTION };
 
+/* enumeration counter type for phase marker reduction */
+//enum class pxacc {
+enum {
+  p1_acc, p2_acc, p3_acc, p4_acc, p5_acc,
+  p6_acc, p7_acc, p8_acc, p9_acc,
+  N_PMREDUCTION
+};  
+
 /* enumeration counter type for scalar reduction */
 //enum class reduc {
 enum {
@@ -44,7 +52,7 @@ public:
   glsol() = default;                     // default constructor
   
   // read configration file and initiate scaling_sim.config 
-  const std::string allocate(const std::string &fname, int argc, char **argv);
+  const std::vector<std::string> allocate(const std::string &fname, int argc, char **argv);
 
   // OP field initialization
   void initialize();
@@ -58,8 +66,10 @@ public:
   // H-field initialization    
   void initializeH();
 
-  // bulk coefficients calculating tool
+  // bulk coefficients calculating tool, obselete fuc, remove
   void point_params(real_t T, real_t p, real_t beta[6]);
+
+  void fstreams_open(const std::vector<std::string> &);
 
   void write_moduli();
   void write_energies();
@@ -70,6 +80,7 @@ public:
   void GaussianLPfilter_matrix(Field<phi_t> &);
   
   void phaseMarking();
+  void phaseCounting();
   
   void next();
   void next_bath();
