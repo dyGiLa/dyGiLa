@@ -13,7 +13,7 @@
 //#include "matep.hpp"
 
 
-const std::string glsol::allocate(const std::string &fname, int argc, char **argv) {
+const std::vector<std::string> glsol::allocate(const std::string &fname, int argc, char **argv) {
   
     hila::initialize(argc, argv);
     hila::input parameters(fname);
@@ -172,7 +172,11 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     config.nOutputs = parameters.get("nOutputs");
 
     // output_file is the saving path of output file, which offered in congigration file
-    const std::string output_file = parameters.get("output_file");
+    // vector for return by names of stream files
+    const std::string output_file    = parameters.get("output_file");
+    const std::string pVcounter_file = parameters.get("pVcounter_file");
+
+    std::vector<std::string> name_files{output_file, pVcounter_file};
 
     // xdmf file name, which is provided through config file
     config.xmf2_fname = parameters.get("xmf2_file");
@@ -250,7 +254,8 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
     // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
-    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});        
+    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
+    config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});            
 
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     if ( config.do_gapA_clip ==1 )
@@ -351,6 +356,17 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
 	config.pMarker_slice_norm_y = parameters.get("pMarker_slice_norm_y");
 	config.pMarker_slice_norm_z = parameters.get("pMarker_slice_norm_z");
       }
+
+    config.do_phaseMarker_isosurface = parameters.get_item("do_phaseMarker_isosurface",{"no","yes"});
+    if (config.do_phaseMarker_isosurface == 1)
+      {
+	std::vector<real_t> tmp4 = parameters.get("phaseMarker_iso_values_vector");
+        for (auto i : tmp4) { config.phaseMarker_iso_values_vector.push_back(i); }
+      }
+
+    config.do_phaseMarker_fieldclip = parameters.get_item("do_phaseMarker_fieldclip",{"no","yes"});
+    config.do_phaseMarker_fieldclip_Bphase = parameters.get_item("do_phaseMarker_fieldclip_Bphase",{"no","yes"});
+    config.do_phaseMarker_fieldclip_Aphase = parameters.get_item("do_phaseMarker_fieldclip_Aphase",{"no","yes"});    
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
@@ -378,7 +394,7 @@ const std::string glsol::allocate(const std::string &fname, int argc, char **arg
     lattice.setup(box_dimensions);
     hila::seed_random(config.seed);
 
-    return output_file;
+    return name_files; //output_file pVfile;
     
 } // allocate() function ends here
 
