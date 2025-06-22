@@ -97,6 +97,7 @@ struct dyGiLaConf {
       real_t nOutputs;
 
       std::fstream stream;
+      std::fstream streampc;
       
       std::string  xmf2_fname;
 
@@ -175,6 +176,14 @@ struct dyGiLaConf {
       unsigned int do_phaseMarker_slice;
       real_t pMarker_slice_point_x, pMarker_slice_point_y, pMarker_slice_point_z,
 	     pMarker_slice_norm_x, pMarker_slice_norm_y, pMarker_slice_norm_z;
+
+      unsigned int do_phaseMarker_isosurface;
+      std::vector<double> phaseMarker_iso_values_vector;
+
+      unsigned int do_phaseMarker_fieldclip,
+	           do_phaseMarker_fieldclip_Bphase,
+	           do_phaseMarker_fieldclip_Aphase;
+  
     
       //              do_gapA_3slice,
       //              do_fe_slice,
@@ -185,7 +194,8 @@ struct dyGiLaConf {
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
      unsigned int  hdf5_mass_current_output,
-                   hdf5_spin_current_output;
+                   hdf5_spin_current_output,
+                   hdf5_pMarker_output;
 	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;

@@ -68,7 +68,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s2/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s2/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s2/renders/r1/image_prefix"] = "gapA-clip1_t-%05d";
+       scenes["s2/renders/r1/image_prefix"] = "insitu/gapA-clip1_t-%05d";
        scenes["s2/renders/r1/camera/azimuth"] = sol.config.camera1_azi;
        scenes["s2/renders/r1/camera/elevation"] = sol.config.camera1_ele;
       }
@@ -100,7 +100,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s3/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s3/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s3/renders/r1/image_prefix"] = "gapA-clip2-t-%05d";
+       scenes["s3/renders/r1/image_prefix"] = "insitu/gapA-clip2-t-%05d";
        scenes["s3/renders/r1/camera/azimuth"] = sol.config.camera2_azi/*35.0*/;
        scenes["s3/renders/r1/camera/elevation"] = sol.config.camera2_ele/*30.0*/;
       }
@@ -122,7 +122,6 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s4/plots/p1/type"] = "pseudocolor";
        scenes["s4/plots/p1/pipeline"] = "pl3";
        scenes["s4/plots/p1/field"] = "gapA";
-       // scenes["s4/image_prefix"] = "gapA-slice1_t-%05d";       
 
        scenes["s4/plots/p1/min_value"]
 	 = 0.0;
@@ -132,7 +131,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s4/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s4/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s4/renders/r1/image_prefix"] = "gapA-slice1_t-%05d";
+       scenes["s4/renders/r1/image_prefix"] = "insitu/gapA-slice1_t-%05d";
        // scenes["s4/renders/r1/camera/azimuth"] = -45./*sol.config.camera1_azi*/;
        // scenes["s4/renders/r1/camera/elevation"] = 0./*sol.config.camera1_ele*/;
       }
@@ -189,7 +188,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s6/plots/p1/type"] = "pseudocolor";
        scenes["s6/plots/p1/pipeline"] = "pl5";
        scenes["s6/plots/p1/field"] = "gapA";
-       scenes["s6/renders/r1/image_prefix"] = "gapA-iso_t-%05d";
+       scenes["s6/renders/r1/image_prefix"] = "insitu/gapA-iso_t-%05d";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes["s6/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -226,7 +225,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s7/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s7/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s7/renders/r1/image_prefix"] = "feDensity-clip_Camp-t-%05d";
+       scenes["s7/renders/r1/image_prefix"] = "insitu/feDensity-clip_Camp-t-%05d";
        scenes["s7/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s7/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
@@ -257,7 +256,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s8/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s8/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s8/renders/r1/image_prefix"] = "Temeperature-clip-t-%05d";
+       scenes["s8/renders/r1/image_prefix"] = "insitu/Temeperature-clip-t-%05d";
        scenes["s8/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s8/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
@@ -288,7 +287,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes2["s5/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes2["s5/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes2["s5/renders/r1/image_prefix"] = "Temperature-slice_t-%05d";
+       scenes2["s5/renders/r1/image_prefix"] = "insitu/Temperature-slice_t-%05d";
       }
 
     
@@ -310,7 +309,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s9/plots/p1/type"] = "pseudocolor";
        scenes["s9/plots/p1/pipeline"] = "pl8";
        scenes["s9/plots/p1/field"] = "Temperature";
-       scenes["s9/renders/r1/image_prefix"] = "Temperature-iso_t-%05d";
+       scenes["s9/renders/r1/image_prefix"] = "insitu/Temperature-iso_t-%05d";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes["s9/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -326,8 +325,8 @@ void parIO::defineActions_insitu(glsol &sol) {
     
     if (sol.config.do_phaseMarker_slice == 1)
       {
-       pipelines2["pl5/f1/type"] = "exaslice";
-       conduit::Node &slice_params3 = pipelines2["pl5/f1/params"];
+       pipelines2["pl9/f1/type"] = "exaslice";
+       conduit::Node &slice_params3 = pipelines2["pl9/f1/params"];
 
        slice_params3["point/x"] = sol.config.pMarker_slice_point_x;
        slice_params3["point/y"] = sol.config.pMarker_slice_point_y;
@@ -336,23 +335,140 @@ void parIO::defineActions_insitu(glsol &sol) {
        slice_params3["normal/y"] = sol.config.pMarker_slice_norm_y;
        slice_params3["normal/z"] = sol.config.pMarker_slice_norm_z;
 
-       scenes["s6/plots/p1/type"] = "pseudocolor";
-       scenes["s6/plots/p1/pipeline"] = "pl5";
-       scenes["s6/plots/p1/field"] = "phaseMarker";
-       scenes["s6/plots/p1/color_table/name"] = "Jet";
+       scenes["s10/plots/p1/type"] = "pseudocolor";
+       scenes["s10/plots/p1/pipeline"] = "pl9";
+       scenes["s10/plots/p1/field"] = "phaseMarker";
+       scenes["s10/plots/p1/color_table/name"] = "Jet";
+       // scenes["s10/plots/p1/color_table/discrete"] = "true";
 
        //???????????????
 
-       scenes["s6/plots/p1/min_value"]
-	 = 0.0f;/*sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip);*/
+       scenes["s10/plots/p1/min_value"]
+	 = 1.0f;
     
-       scenes["s6/plots/p1/max_value"]
-	 = 4.0f; /*matep.Tcp_mK(sol.config.Inip);*/
+       scenes["s10/plots/p1/max_value"]
+	 = 9.0f; 
 
-       scenes["s6/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
-       scenes["s6/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s6/renders/r1/image_prefix"] = "pMarker-slice_t-%05d";
+       scenes["s10/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes["s10/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
+       scenes["s10/renders/r1/image_prefix"] = "insitu/pMarker-slice_t-%05d";
       }
+
+    /* >>>>>>>>>>> phaseMarker isosurfece <<<<<<<<<<<<< */
+    
+    if (sol.config.do_phaseMarker_isosurface == 1)
+      {
+       pipelines2["pl10/f1/type"] = "contour";
+
+       conduit::Node &contour_params = pipelines2["pl10/f1/params"];
+       contour_params["field"] = "phaseMarker";
+
+       const unsigned int phaseMarker_iso_list_size = sol.config.phaseMarker_iso_values_vector.size();
+       double iso_vals[phaseMarker_iso_list_size];
+       for (unsigned int i = 0; i<phaseMarker_iso_list_size; ++i) {iso_vals[i] = sol.config.phaseMarker_iso_values_vector[i];}
+
+       contour_params["iso_values"].set(iso_vals, phaseMarker_iso_list_size);
+
+       scenes2["s11/plots/p1/type"] = "pseudocolor";
+       scenes2["s11/plots/p1/pipeline"] = "pl10";
+       scenes2["s11/plots/p1/field"] = "phaseMarker";
+       scenes2["s11/plots/p1/color_table/name"] = "Jet";       
+       scenes2["s11/renders/r1/image_prefix"] = "insitu/pMarker-iso_t-%05d";
+
+       double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
+       scenes2["s11/renders/r1/dataset_bounds"].set(box_bounds,6);
+       scenes2["s11/renders/r1/render_bg"] = "true";
+
+       scenes2["s11/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes2["s11/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);             
+       scenes2["s11/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
+       scenes2["s11/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
+    }
+
+    /* >>>>>>>>>>> phaseMarker fieldclip <<<<<<<<<<<<< */
+    
+    if (sol.config.do_phaseMarker_fieldclip == 1)
+      {
+       pipelines2["pl11/f1/type"] = "clip_with_field";
+
+       conduit::Node &clip_params = pipelines2["pl11/f1/params"];
+       clip_params["field"] = "phaseMarker";
+       clip_params["invert"] = "true";
+       clip_params["clip_value"] = 2.;
+
+       scenes2["s12/plots/p1/type"] = "pseudocolor";
+       scenes2["s12/plots/p1/pipeline"] = "pl11";
+       scenes2["s12/plots/p1/field"] = "phaseMarker";
+       scenes2["s12/plots/p1/color_table/name"] = "Default";
+       //scenes2["s12/plots/p1/color_table/discrete"] = "true";
+       scenes2["s12/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip_t-%05d";
+
+       double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
+       scenes2["s12/renders/r1/dataset_bounds"].set(box_bounds,6);
+       scenes2["s12/renders/r1/render_bg"] = "true";
+
+       scenes2["s12/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes2["s12/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);             
+       scenes2["s12/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
+       scenes2["s12/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
+    }
+
+    /* >>>>>>>>>>> phaseMarker B-isoVolume <<<<<<<<<<<<< */
+    
+    if (sol.config.do_phaseMarker_fieldclip_Bphase == 1)
+      {
+       pipelines2["pl12/f1/type"] = "isovolume";
+
+       conduit::Node &clip_params = pipelines2["pl12/f1/params"];
+       clip_params["field"] = "phaseMarker";
+       clip_params["min_value"] = 3.0;
+       clip_params["max_value"] = 6.0;
+
+       scenes2["s13/plots/p1/type"] = "pseudocolor";
+       scenes2["s13/plots/p1/pipeline"] = "pl12";
+       scenes2["s13/plots/p1/field"] = "phaseMarker";
+       scenes2["s13/plots/p1/color_table/name"] = "Green";
+       //scenes2["s13/plots/p1/color_table/discrete"] = "true";
+       scenes2["s13/renders/r1/image_prefix"] = "insitu/pMarker-isoVolume-Bphase_t-%05d";
+
+       double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
+       scenes2["s13/renders/r1/dataset_bounds"].set(box_bounds,6);
+       scenes2["s13/renders/r1/render_bg"] = "true";
+
+       scenes2["s13/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes2["s13/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);             
+       scenes2["s13/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
+       scenes2["s13/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
+    }
+
+    /* >>>>>>>>>>> phaseMarker A-phase fieldclip <<<<<<<<<<<<< */
+    
+    if (sol.config.do_phaseMarker_fieldclip_Aphase == 1)
+      {
+       pipelines2["pl13/f1/type"] = "clip_with_field";
+
+       conduit::Node &clip_params = pipelines2["pl13/f1/params"];
+       clip_params["field"] = "phaseMarker";
+       clip_params["invert"] = "false";
+       clip_params["clip_value"] = 8.;
+
+       scenes2["s14/plots/p1/type"] = "pseudocolor";
+       scenes2["s14/plots/p1/pipeline"] = "pl13";
+       scenes2["s14/plots/p1/field"] = "phaseMarker";
+       scenes2["s14/plots/p1/color_table/name"] = "Cold and Hot";
+       //scenes2["s14/plots/p1/color_table/discrete"] = "true";
+       scenes2["s14/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip-Aphase_t-%05d";
+
+       double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
+       scenes2["s14/renders/r1/dataset_bounds"].set(box_bounds,6);
+       scenes2["s14/renders/r1/render_bg"] = "true";
+
+       scenes2["s14/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes2["s14/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);             
+       scenes2["s14/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
+       scenes2["s14/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
+      }
+    
     
 } // defineActions() call end here
 
