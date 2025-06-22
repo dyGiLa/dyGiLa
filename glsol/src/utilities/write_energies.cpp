@@ -117,41 +117,41 @@ void glsol::write_energies() {
   {
     //double vol = lattice.volume();       
        config.stream
-	 << t << " " << T000 << " " << " "
+	 << t << "," << T000 << "," 
 	 /***************************/	 	 	 
-	 << sumAgap.re / vol << " " << sumAgap.im / vol << " "
+	 << sumAgap.re / vol << "," << sumAgap.im / vol << ","
 	 /***************************/	 	 
-	 << red[/*reduc::*/i_sumgapA].re / vol << " " << red[/*reduc::*/i_sumgapA].im / vol << " "
+	 << red[/*reduc::*/i_sumgapA].re / vol << "," << red[/*reduc::*/i_sumgapA].im / vol << ","
 	 /***************************/	 
-	 << red[/*reduc::*/i_sumkin].re / vol << " " << red[/*reduc::*/i_sumkin].im / vol << " "
-         << red[/*reduc::*/i_sumkin_we].re / vol << " " << red[/*reduc::*/i_sumkin_we].re / vol << " "
+	 << red[/*reduc::*/i_sumkin].re / vol << "," << red[/*reduc::*/i_sumkin].im / vol << ","
+         << red[/*reduc::*/i_sumkin_we].re / vol << "," << red[/*reduc::*/i_sumkin_we].im / vol << ","
 	 /***************************/
-         << red[/*reduc::*/i_sumk1].re / vol << " " << red[/*reduc::*/i_sumk1].im / vol << " "
-         << red[/*reduc::*/i_sumk1_we].re / vol << " " << red[/*reduc::*/i_sumk1_we].im / vol << " "
+         << red[/*reduc::*/i_sumk1].re / vol << "," << red[/*reduc::*/i_sumk1].im / vol << ","
+         << red[/*reduc::*/i_sumk1_we].re / vol << "," << red[/*reduc::*/i_sumk1_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumk2].re / vol << " " << red[/*reduc::*/i_sumk2].im / vol << " "
-         << red[/*reduc::*/i_sumk2_we].re / vol << " " << red[/*reduc::*/i_sumk2_we].im / vol << " "
+         << red[/*reduc::*/i_sumk2].re / vol << "," << red[/*reduc::*/i_sumk2].im / vol << ","
+         << red[/*reduc::*/i_sumk2_we].re / vol << "," << red[/*reduc::*/i_sumk2_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumk3].re / vol << " " << red[/*reduc::*/i_sumk3].im / vol << " "
-         << red[/*reduc::*/i_sumk3_we].re / vol << " " << red[/*reduc::*/i_sumk3_we].im / vol << " "
+         << red[/*reduc::*/i_sumk3].re / vol << "," << red[/*reduc::*/i_sumk3].im / vol << ","
+         << red[/*reduc::*/i_sumk3_we].re / vol << "," << red[/*reduc::*/i_sumk3_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_suma].re / vol << " " << red[/*reduc::*/i_suma].im / vol << " "
-         << red[/*reduc::*/i_suma_we].re / vol << " " << red[/*reduc::*/i_suma_we].im / vol << " "
+         << red[/*reduc::*/i_suma].re / vol << "," << red[/*reduc::*/i_suma].im / vol << ","
+         << red[/*reduc::*/i_suma_we].re / vol << "," << red[/*reduc::*/i_suma_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumb1].re / vol << " " << red[/*reduc::*/i_sumb1].im / vol << " "
-         << red[/*reduc::*/i_sumb1_we].re / vol << " " << red[/*reduc::*/i_sumb1_we].im / vol << " "
+         << red[/*reduc::*/i_sumb1].re / vol << "," << red[/*reduc::*/i_sumb1].im / vol << ","
+         << red[/*reduc::*/i_sumb1_we].re / vol << "," << red[/*reduc::*/i_sumb1_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumb2].re / vol << " " << red[/*reduc::*/i_sumb2].im / vol << " "
-         << red[/*reduc::*/i_sumb2_we].re / vol << " " << red[/*reduc::*/i_sumb2_we].im / vol << " "
+         << red[/*reduc::*/i_sumb2].re / vol << "," << red[/*reduc::*/i_sumb2].im / vol << ","
+         << red[/*reduc::*/i_sumb2_we].re / vol << "," << red[/*reduc::*/i_sumb2_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumb3].re / vol << " " << red[/*reduc::*/i_sumb3].im / vol << " " 
-         << red[/*reduc::*/i_sumb3_we].re / vol << " " << red[/*reduc::*/i_sumb3_we].im / vol << " "
+         << red[/*reduc::*/i_sumb3].re / vol << "," << red[/*reduc::*/i_sumb3].im / vol << "," 
+         << red[/*reduc::*/i_sumb3_we].re / vol << "," << red[/*reduc::*/i_sumb3_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumb4].re / vol << " " << red[/*reduc::*/i_sumb4].im / vol << " "
-         << red[/*reduc::*/i_sumb4_we].re / vol << " " << red[/*reduc::*/i_sumb4_we].im / vol << " "
+         << red[/*reduc::*/i_sumb4].re / vol << "," << red[/*reduc::*/i_sumb4].im / vol << ","
+         << red[/*reduc::*/i_sumb4_we].re / vol << "," << red[/*reduc::*/i_sumb4_we].im / vol << ","
 	 /***************************/	 
-         << red[/*reduc::*/i_sumb5].re / vol << " " << red[/*reduc::*/i_sumb5].im / vol << " "
-         << red[/*reduc::*/i_sumb5_we].re / vol << " " << red[/*reduc::*/i_sumb5_we].im / vol << " "
+         << red[/*reduc::*/i_sumb5].re / vol << "," << red[/*reduc::*/i_sumb5].im / vol << ","
+         << red[/*reduc::*/i_sumb5_we].re / vol << "," << red[/*reduc::*/i_sumb5_we].im / vol
 	 /***************************/	 
          << std::endl;
 
