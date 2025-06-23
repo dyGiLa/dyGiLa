@@ -374,6 +374,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s11/plots/p1/field"] = "phaseMarker";
        scenes2["s11/plots/p1/color_table/name"] = "Jet";       
        scenes2["s11/renders/r1/image_prefix"] = "insitu/pMarker-iso_t-%05d";
+       scenes2["s11/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes2["s11/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -385,7 +386,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s11/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
     }
 
-    /* >>>>>>>>>>> phaseMarker fieldclip <<<<<<<<<<<<< */
+    /* >>>>>>>>>>> phaseMarker pMarker < 2 fieldclip <<<<<<<<<<<<< */
     
     if (sol.config.do_phaseMarker_fieldclip == 1)
       {
@@ -402,6 +403,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s12/plots/p1/color_table/name"] = "Default";
        //scenes2["s12/plots/p1/color_table/discrete"] = "true";
        scenes2["s12/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip_t-%05d";
+       scenes2["s12/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes2["s12/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -430,6 +432,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s13/plots/p1/color_table/name"] = "Green";
        //scenes2["s13/plots/p1/color_table/discrete"] = "true";
        scenes2["s13/renders/r1/image_prefix"] = "insitu/pMarker-isoVolume-Bphase_t-%05d";
+       scenes2["s13/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes2["s13/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -458,6 +461,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s14/plots/p1/color_table/name"] = "Cold and Hot";
        //scenes2["s14/plots/p1/color_table/discrete"] = "true";
        scenes2["s14/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip-Aphase_t-%05d";
+       scenes2["s14/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes2["s14/renders/r1/dataset_bounds"].set(box_bounds,6);
