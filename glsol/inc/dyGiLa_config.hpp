@@ -180,6 +180,7 @@ struct dyGiLaConf {
       unsigned int do_phaseMarker_isosurface;
       std::vector<double> phaseMarker_iso_values_vector;
 
+      unsigned int remove_screen_annotations;
       unsigned int do_phaseMarker_fieldclip,
 	           do_phaseMarker_fieldclip_Bphase,
 	           do_phaseMarker_fieldclip_Aphase;

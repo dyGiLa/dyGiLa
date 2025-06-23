@@ -364,6 +364,7 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
         for (auto i : tmp4) { config.phaseMarker_iso_values_vector.push_back(i); }
       }
 
+    config.remove_screen_annotations = parameters.get_item("remove_screen_annotations",{"no","yes"});
     config.do_phaseMarker_fieldclip = parameters.get_item("do_phaseMarker_fieldclip",{"no","yes"});
     config.do_phaseMarker_fieldclip_Bphase = parameters.get_item("do_phaseMarker_fieldclip_Bphase",{"no","yes"});
     config.do_phaseMarker_fieldclip_Aphase = parameters.get_item("do_phaseMarker_fieldclip_Aphase",{"no","yes"});    
