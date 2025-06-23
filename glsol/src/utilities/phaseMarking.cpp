@@ -24,9 +24,6 @@ void glsol::phaseMarking() {
 
     real_t R1{0},R2{0},R3{0},R4{0},R5{0};
     
-    // reduced OP matrix; TrAr.Ar^dagger = 1
-    // phi_t Ar=A[X]/sqrt((A[X]*A[X].dagger()).trace());
-
     phi_t Ar = (config.useGaussianLP_filter == 1)
                ? AwT[X]/sqrt((AwT[X]*AwT[X].dagger()).trace())
                : A[X]/sqrt((A[X]*A[X].dagger()).trace());
@@ -43,20 +40,50 @@ void glsol::phaseMarking() {
     
 
     /* >>>>>>>>> phase marking logic <<<<<<<<  */
-    if (
-	(abs(R1-0.0) <= config.ptol)
-	&& (abs(R3-0.0) <= config.ptol)
-       )
+    if (abs(R1-0.0) <= config.ptol)
       {
 	// A-phase OP onsite
 	if (
 	    (abs(R2-1.0) <= config.ptol)
+	    && (abs(R3-0.0) <= config.ptol)
 	    && (abs(R4-1.0) <= config.ptol)
 	    && (abs(R5-1.0) <= config.ptol)
 	   )
-	  phaseMarker[X] = 4.0f;
+	  phaseMarker[X] = 9.0f;
+	// alpha-state OP onsite
+        else if (
+                 (abs(R2-1.0) <= config.ptol)
+	         && (abs(R3-(1.0/3.0)) <= config.ptol)
+	         && (abs(R4-(1.0/3.0)) <= config.ptol)
+	         && (abs(R5-(1.0/3.0)) <= config.ptol)
+                )
+	  phaseMarker[X] = 6.0f;
+	// bipolar-state OP onsite
+	else if (
+                 (abs(R2-1.0) <= config.ptol)
+	         && (abs(R3-(1.0/2.0)) <= config.ptol)
+	         && (abs(R4-(1.0/2.0)) <= config.ptol)
+	         && (abs(R5-(1.0/2.0)) <= config.ptol)
+                )
+	  phaseMarker[X] = 8.0f;
+	// beta-state OP onsite
+	else if (
+                 (abs(R2-1.0) <= config.ptol)
+	         && (abs(R3-1.0) <= config.ptol)
+	         && (abs(R4-1.0) <= config.ptol)
+	         && (abs(R5-0.0) <= config.ptol)
+                )
+	  phaseMarker[X] = 2.0f;
+	// gamma-state OP onsite
+	else if (
+                 (abs(R2-1.0) <= config.ptol)
+	         && (abs(R3-0.0) <= config.ptol)
+	         && (abs(R4-1.0) <= config.ptol)
+	         && (abs(R5-0.0) <= config.ptol)
+                )
+	  phaseMarker[X] = 4.0f;	
 	else
-	  phaseMarker[X] = 0.0f;	  
+	  phaseMarker[X] = 1.0f;	  
       }
     else if (abs(R1-1.0) <= config.ptol)
       {
@@ -67,7 +94,7 @@ void glsol::phaseMarking() {
 	    && (abs(R4-(1.0/3.0)) <= config.ptol)
 	    && (abs(R5-(1.0/3.0)) <= config.ptol)
            )
-	  phaseMarker[X] = 2.0f;
+	  phaseMarker[X] = 5.0f;
 	// planar-phase OP onsite
 	else if (
                  (abs(R2-1.0) <= config.ptol)
@@ -75,7 +102,7 @@ void glsol::phaseMarking() {
 	         && (abs(R4-(1.0/2.0)) <= config.ptol)
 	         && (abs(R5-(1.0/2.0)) <= config.ptol)
                 )
-	  phaseMarker[X] = 1.0f;
+	  phaseMarker[X] = 3.0f;
 	// polar-phase OP onsite
 	else if (
                  (abs(R2-1.0) <= config.ptol)
@@ -83,12 +110,12 @@ void glsol::phaseMarking() {
 	         && (abs(R4-1.0) <= config.ptol)
 	         && (abs(R5-1.0) <= config.ptol)
                 )
-	  phaseMarker[X] = 3.0f;
+	  phaseMarker[X] = 7.0f;
 	else
-	  phaseMarker[X] = 0.0f;
+	  phaseMarker[X] = 1.0f;
       }
     else
-      phaseMarker[X] = 0.0f;
+      phaseMarker[X] = 1.0f;
     /* >>>>>>>>> phase marking logic <<<<<<<<  */
     
   } // onsites block ends here
