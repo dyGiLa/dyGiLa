@@ -23,12 +23,14 @@ APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
 
 # pario objects, built by HILA pattern rules
 GLSOL_OBJECTS = build/allocate.o              \
+                build/fstreams.o              \
                 build/write_energies.o        \
                 build/write_positions.o       \
                 build/write_phases.o          \
                 build/write_moduli.o          \
                 build/gaussianLP_matrix.o     \
                 build/phaseMarking.o          \
+                build/phaseCounting.o         \
                 build/next.o                  \
                 build/next_bath.o             \
                 build/next_bath_UniT_quench.o \
