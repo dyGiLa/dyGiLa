@@ -23,7 +23,7 @@ void parIO::describeMesh(glsol &sol) {
    
     // conduit::Node mesh;
     mesh["state/time"].set_external(&sol.t);
-    // mesh["state/cycle"].set_external(&step);
+
 #if defined USE_MPI
     mesh["state/domain_id"] = lattice.mynode.rank;
 #endif
