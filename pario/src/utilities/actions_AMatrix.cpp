@@ -21,16 +21,17 @@ void parIO::defineActions_AMatrix() {
 
     // /* >>>>>>>>>>>>> extract hdf5 <<<<<<<<<<<<<< */
 
-     conduit::Node &add_act3 = actions.append();
-     add_act3["action"] = "add_extracts";
+     conduit::Node &add_act5 = actions.append();
+     add_act5["action"] = "add_extracts";
 
-     conduit::Node &extracts = add_act3["extracts"];
+     conduit::Node &extracts = add_act5["extracts"];
      extracts["e1/type"] = "relay";
-     extracts["e1/params/path"] = "dyGiLa-sim-data";
+     extracts["e1/params/path"] = "pio/dyGiLa-sim-data-Amatrix";
      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+     // extracts["e1/params/protocol"] = "hdf5";     
 
-     // extracts["e1/params/fields"].append().set("gapA");
-     // extracts["e1/params/fields"].append().set("feDensity");
+     extracts["e1/params/fields"].append().set("gapA");
+     extracts["e1/params/fields"].append().set("feDensity");
     
      extracts["e1/params/fields"].append().set("u11Container");
      extracts["e1/params/fields"].append().set("u12Container");
@@ -51,6 +52,6 @@ void parIO::defineActions_AMatrix() {
      extracts["e1/params/fields"].append().set("v31Container");
      extracts["e1/params/fields"].append().set("v32Container");
      extracts["e1/params/fields"].append().set("v33Container");
-    
+     
 } // defineActions() call end here
 

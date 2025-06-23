@@ -244,18 +244,23 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
-    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
-    if (config.hdf5_A_matrix_output == 1)
+    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
+    // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
+    // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
+    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
+    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
+    config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
+    if (
+        (config.hdf5_A_matrix_output == 1)
+	|| (config.hdf5_mass_current_output == 1)
+	|| (config.hdf5_spin_current_output == 1)
+	|| (config.hdf5_pMarker_output == 1)
+       )
       {
        config.hdf5Ststart = parameters.get("hdf5Ststart");
        config.hdf5Stend   = parameters.get("hdf5Stend");       
       }
     
-    // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
-    // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
-    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
-    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
-    config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});            
 
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     if ( config.do_gapA_clip ==1 )
