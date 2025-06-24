@@ -15,7 +15,7 @@
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
-void parIO::pstream(glsol &sol) {
+void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
     gapA[ALL] = real(sqrt((sol.A[X]*(sol.A[X].dagger())).trace()));  
@@ -177,7 +177,14 @@ void parIO::pstream(glsol &sol) {
     }
     
     /*------------------------------------------------------------*/
-         
+
+    // update mesh[state/cycle]
+    mesh["state/time"].set_external(&sol.t);
+    mesh["state/cycle"] = stat_counter;
+
+    // re-publish mesh with new cycle
+    pio.publish(mesh);
+    
     pio.execute(actions);
 
 } // pstream() end here

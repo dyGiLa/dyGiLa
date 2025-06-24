@@ -40,7 +40,7 @@ public:
 
   // called in main()  
   void init(glsol &);
-  void pstream(glsol &);
+  void pstream(glsol &, unsigned int &);
   void shutdown();
 
   // xdmf file fstream
@@ -66,7 +66,8 @@ private:
 
   void defineActions_massCurrent();
   void defineActions_spinCurrent();
-  void defineActions_AMatrix();    
+  void defineActions_AMatrix();
+  void defineActions_phaseMarker();
   
   void defineActions_printTree();  
 

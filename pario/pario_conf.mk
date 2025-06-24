@@ -27,7 +27,7 @@ PARIO_OBJECTS = build/xdmf.o     \
                 build/mesh.o     \
                 build/mesh_gapA_FEDensity.o   \
                 build/mesh_insitu_Temperature.o \
-                build/mesh_insitu_phaseMarker.o \
+                build/mesh_phaseMarker.o \
                 build/mesh_massCurrent.o      \
                 build/mesh_spinCurrent.o      \
                 build/mesh_AMatrix.o          \
@@ -36,6 +36,7 @@ PARIO_OBJECTS = build/xdmf.o     \
                 build/actions_massCurrent.o \
                 build/actions_spinCurrent.o \
                 build/actions_AMatrix.o     \
+                build/actions_phaseMarker.o \
                 build/actions_printTree.o
 
 .PHONY: pario

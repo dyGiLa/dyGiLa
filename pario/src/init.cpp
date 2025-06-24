@@ -130,6 +130,7 @@ void parIO::init(glsol &sol) {
     if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent();}
     if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent();}
     if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix();}
+    if (sol.config.hdf5_pMarker_output == 1) {defineActions_phaseMarker();}
 
     defineActions_printTree();
     
