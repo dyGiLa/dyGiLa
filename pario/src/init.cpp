@@ -98,8 +98,8 @@ void parIO::init(glsol &sol) {
     describeMesh_Temperature();
     describeMesh_phaseMarker();
 
-    if (sol.config.hdf5_mass_current_output == 1) {describeMesh_gapA_FEDensity();}
-    if (sol.config.hdf5_spin_current_output == 1) {describeMesh_massCurrent();}
+    if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
+    if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
     if (sol.config.hdf5_A_matrix_output == 1) {describeMesh_AMatrix();}
 
     describeMesh_addGhost_verify();

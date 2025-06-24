@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -24,21 +23,21 @@ void parIO::defineActions_spinCurrent() {
       add_act7["action"] = "add_extracts";
 
       conduit::Node &extracts = add_act7["extracts"];
-      extracts["e1/type"] = "relay";
-      extracts["e1/params/path"] = "sim-data";
-      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+      extracts["e3/type"] = "relay";
+      extracts["e3/params/path"] = "pio_Current/dyGiLa-sim-spinCurrent";
+      extracts["e3/params/protocol"] = "blueprint/mesh/hdf5";
 
-      extracts["e1/params/fields"].append().set("gapAContainer");
-      extracts["e1/params/fields"].append().set("feDensityContainer");
-      extracts["e1/params/fields"].append().set("js11Container");
-      extracts["e1/params/fields"].append().set("js21Container");
-      extracts["e1/params/fields"].append().set("js31Container");
-      extracts["e1/params/fields"].append().set("js12Container");
-      extracts["e1/params/fields"].append().set("js22Container");
-      extracts["e1/params/fields"].append().set("js32Container");
-      extracts["e1/params/fields"].append().set("js13Container");
-      extracts["e1/params/fields"].append().set("js23Container");
-      extracts["e1/params/fields"].append().set("js33Container");      
+      extracts["e3/params/fields"].append().set("gapAContainer");
+      extracts["e3/params/fields"].append().set("feDensityContainer");
+      extracts["e3/params/fields"].append().set("js11Container");
+      extracts["e3/params/fields"].append().set("js21Container");
+      extracts["e3/params/fields"].append().set("js31Container");
+      extracts["e3/params/fields"].append().set("js12Container");
+      extracts["e3/params/fields"].append().set("js22Container");
+      extracts["e3/params/fields"].append().set("js32Container");
+      extracts["e3/params/fields"].append().set("js13Container");
+      extracts["e3/params/fields"].append().set("js23Container");
+      extracts["e3/params/fields"].append().set("js33Container");      
     
 } // defineActions() call end here
 
