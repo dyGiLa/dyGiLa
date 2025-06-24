@@ -75,10 +75,10 @@ private:
   
   Field<real_t> gapA;
   Field<real_t> feDensity;
-    // Field<real_t> trA_re, trA_im;
+  // Field<real_t> trA_re, trA_im;
   Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
   Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
-    // Field<real_t> eigAv1, eigAv2, eigAv3;
+  // Field<real_t> eigAv1, eigAv2, eigAv3;
   Field<real_t> jm1, jm2, jm3;
   Field<real_t> phaseExpModulus, phaseExpAngle/*acosphi, asinphi,*/
                 ,phaseExp2Re, phaseExp2Im;
@@ -98,7 +98,7 @@ private:
   std::vector<real_t> v11Container, v12Container, v13Container,
                       v21Container, v22Container, v23Container,
                       v31Container, v32Container, v33Container;
-    // std::vector<real_t> eigAv1Container, eigAv2Container, eigAv3Container;
+  // std::vector<real_t> eigAv1Container, eigAv2Container, eigAv3Container;
   std::vector<real_t> jm1Container, jm2Container, jm3Container;
   std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer /*acosphiContainer, asinphiContainer,*/
                       ,phaseExp2ReContainer, phaseExp2ImContainer;

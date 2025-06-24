@@ -185,18 +185,13 @@ struct dyGiLaConf {
 	           do_phaseMarker_fieldclip_Bphase,
 	           do_phaseMarker_fieldclip_Aphase;
   
-    
-      //              do_gapA_3slice,
-      //              do_fe_slice,
-      //              do_gapA_slice;
-
       unsigned int hdf5_A_matrix_output;
-      real_t hdf5Ststart, hdf5Stend;	
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
-     unsigned int  hdf5_mass_current_output,
+      unsigned int hdf5_mass_current_output,
                    hdf5_spin_current_output,
                    hdf5_pMarker_output;
+      real_t hdf5Ststart, hdf5Stend;	  
 	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
