@@ -26,7 +26,7 @@ void parIO::defineActions_AMatrix() {
 
      conduit::Node &extracts = add_act5["extracts"];
      extracts["e1/type"] = "relay";
-     extracts["e1/params/path"] = "pio/dyGiLa-sim-data-Amatrix";
+     extracts["e1/params/path"] = "pio/dyGiLa-sim-Amatrix";
      extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
      // extracts["e1/params/protocol"] = "hdf5";     
 
