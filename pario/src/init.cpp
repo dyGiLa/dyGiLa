@@ -98,9 +98,12 @@ void parIO::init(glsol &sol) {
     describeMesh_Temperature();
     describeMesh_phaseMarker();
 
-    if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
-    if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
-    if (sol.config.hdf5_A_matrix_output == 1) {describeMesh_AMatrix();}
+    if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
+      {
+       if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
+       if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
+       if (sol.config.hdf5_A_matrix_output == 1) {describeMesh_AMatrix();}
+      }
 
     describeMesh_addGhost_verify();
     /*********************************/
@@ -127,10 +130,14 @@ void parIO::init(glsol &sol) {
     /*********************************/        
     defineActions_insitu(sol);
 
-    if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent();}
-    if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent();}
-    if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix();}
-    if (sol.config.hdf5_pMarker_output == 1) {defineActions_phaseMarker();}
+    if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
+      {
+       if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent();}
+       if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent();}
+       if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix();}
+       if (sol.config.hdf5_pMarker_output == 1) {defineActions_phaseMarker();}
+      }
+    
 
     defineActions_printTree();
     
