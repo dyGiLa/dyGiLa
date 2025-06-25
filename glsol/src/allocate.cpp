@@ -179,7 +179,10 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
     std::vector<std::string> name_files{output_file, pVcounter_file};
 
     // xdmf file name, which is provided through config file
-    config.xmf2_fname = parameters.get("xmf2_file");
+    config.xmf2_Amatrix_fname = parameters.get("xmf2_Amatrix_fname");
+    config.xmf2_pMarker_fname = parameters.get("xmf2_pMarker_fname");
+    config.xmf2_massCurrent_fname = parameters.get("xmf2_massCurrent_fname");
+    config.xmf2_spinCurrent_fname = parameters.get("xmf2_spinCurrent_fname");    
 
     /*----------------------------------------*/
     /* >>>>>>>  boundary conditions  <<<<<<<<<*/
