@@ -83,6 +83,6 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
 void glsol::fstreams_close() {
   config.stream.close();
   config.streampc.close();
-  system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
+  //system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
 }
   
