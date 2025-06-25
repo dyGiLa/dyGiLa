@@ -191,7 +191,7 @@ struct dyGiLaConf {
       unsigned int hdf5_mass_current_output,
                    hdf5_spin_current_output,
                    hdf5_pMarker_output;
-      real_t hdf5Ststart, hdf5Stend;	  
+      real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
 	
       
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
