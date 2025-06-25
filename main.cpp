@@ -5,7 +5,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -13,9 +12,7 @@
 #include "plumbing/globals.h" 
 
 #include "glsol.hpp"
-
 #include "matep_namespace_utils.hpp" 
-//#include "matep.hpp"
 
 #if defined USE_PARIO 
 #include "pario.hpp"
@@ -25,7 +22,7 @@ int main(int argc, char **argv) {
 
     glsol gl;
     
-    const std::string output_fname = gl.allocate("sim_params.txt", argc, argv);
+    const std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
 
     // initialize Temperature field
     gl.initializeT();
@@ -48,10 +45,8 @@ int main(int argc, char **argv) {
     const CoordinateVector originpoints(coordsList); 
     
     const unsigned int steps = (gl.config.tEnd - gl.config.tStats) 
-                               / (gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
+                               /(gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
     
-    // if (steps == 0)
-    //     steps = 1;
 
     if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } // initial gamma parameter if gamma is fixed
     
@@ -59,7 +54,7 @@ int main(int argc, char **argv) {
     
     if (gl.config.positions == 1) {
       stepspos = (gl.config.tEnd - gl.config.tStats) 
-                  / (gl.config.dt * gl.config.npositionout);
+                  /(gl.config.dt * gl.config.npositionout);
       if (stepspos == 0)
         stepspos = 1;
     }
@@ -67,9 +62,7 @@ int main(int argc, char **argv) {
     // measurement and stream counter
     unsigned int stat_counter = 0;
 
-    if (hila::myrank() == 0) {
-        gl.config.stream.open(output_fname, std::ios::out);
-    }
+    if (hila::myrank() == 0) { gl.fstreams_open(name_files); }
 
 #if defined USE_PARIO
     parIO paraio;
@@ -81,17 +74,21 @@ int main(int argc, char **argv) {
 	// || (gl.config.hdf5_eigvA_output        == 1)
 	|| (gl.config.hdf5_mass_current_output == 1)
 	|| (gl.config.hdf5_spin_current_output == 1)
+	|| (gl.config.hdf5_pMarker_output == 1)
        )
     {
-      paraio.xml(gl);
+      if (gl.config.hdf5_A_matrix_output == 1) paraio.xml_Amatrix(gl);
+      if (gl.config.hdf5_pMarker_output == 1) paraio.xml_pMarker(gl);
+      if (gl.config.hdf5_mass_current_output == 1) paraio.xml_massCurrent(gl);
+      if (gl.config.hdf5_spin_current_output == 1) paraio.xml_spinCurrent(gl);      
+     //paraio.xml(gl);
      //hila::synchronize();
     }
     
     paraio.init(gl);
 
-    if (hila::myrank() == 0) {paraio.xdmf(gl);}              
-    hila::out0 << "parallel IO enigne starts!" << "\n"
-               << std::endl;    
+    if (hila::myrank() == 0) paraio.xdmf(gl);              
+    hila::out0 << "parallel IO enigne starts!" << std::endl;    
 #endif    
     
     /*-------------------------------------------------------------------*/
@@ -107,36 +104,49 @@ int main(int argc, char **argv) {
       //gl.config.gamma = (stat_counter < gl.config.gammaoffc) ? gl.config.gamma1 : gl.config.gamma2;
       //hila::out0 << "gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
       
-        if (gl.t >= gl.config.tStats) {
+        if (gl.t > gl.config.tStats) {
 	  
 	   if (stat_counter % steps == 0) {
 
 	      meas_timer.start();
 	      //gl.write_moduli();
 	      gl.write_energies();
+	      gl.phaseCounting();
 	      //gl.write_phases();
 	      hila::out0 << "write_energies() call is done "
 			 << std::endl;
 
 #if defined USE_PARIO
 	      if (
-		  (gl.config.hdf5_A_matrix_output == 1)
-		  //ToDo: (gl.config.hdf5_mass_current_output == 1) ...
-		  //ToDo: (gl.config.hdf5_spin_current_output == 1) ...		  		  
+		  ((gl.config.hdf5_A_matrix_output == 1)
+		   || (gl.config.hdf5_pMarker_output == 1)
+		   || (gl.config.hdf5_mass_current_output == 1)
+		   || (gl.config.hdf5_spin_current_output == 1))
 		   && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
 		 )
-		paraio.pstream(gl);
+		paraio.pstream(gl, stat_counter);
 	      else if (
 		       // insitu visualization block, no parallel hd5 stream
                        (gl.config.hdf5_A_matrix_output != 1)
+		       && (gl.config.hdf5_pMarker_output != 1)
+		       && (gl.config.hdf5_mass_current_output != 1)
+		       && (gl.config.hdf5_spin_current_output != 1)		       
 		       && (
                            (gl.config.do_gapA_clip == 1)
+			   || (gl.config.do_gapA_slice == 1)
 			   || (gl.config.do_fed_clip == 1)
 			   || (gl.config.do_Temperature_clip == 1)
+			   || (gl.config.do_Temperature_slice == 1)
+			   || (gl.config.do_Temperature_isosurface == 1)			   
 			   || (gl.config.do_gapA_isosurface == 1)
+			   || (gl.config.do_phaseMarker_slice == 1)
+			   || (gl.config.do_phaseMarker_isosurface == 1)
+			   || (gl.config.do_phaseMarker_fieldclip == 1)
+			   || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
+			   || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
                           )
                       )
-		paraio.pstream(gl);		
+		paraio.pstream(gl, stat_counter);		
 	      hila::out0 << "paraio.pstream() call is done " << std::endl;
 #endif	            
 	      meas_timer.stop();
@@ -270,13 +280,10 @@ int main(int argc, char **argv) {
 
 #if defined USE_PARIO
     paraio.shutdown();
-    hila::out0 << "parallel IO engine shutdown! " << "\n"
-               << std::endl;    
+    hila::out0 << "parallel IO engine shutdown! " << std::endl;    
 #endif    
 
-    if (hila::myrank() == 0) {
-        gl.config.stream.close();
-    }
+    if (hila::myrank() == 0) { gl.fstreams_close(); }
 
     hila::finishrun();
     return 0;
