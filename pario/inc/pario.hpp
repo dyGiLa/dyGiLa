@@ -36,7 +36,10 @@ public:
 
   // called in main() before t-while-loop started
   void xdmf(glsol &);
-  void xml(glsol &);
+  void xml_Amatrix(glsol &);
+  void xml_pMarker(glsol &);
+  void xml_massCurrent(glsol &);
+  void xml_spinCurrent(glsol &);  
 
   // called in main()  
   void init(glsol &);

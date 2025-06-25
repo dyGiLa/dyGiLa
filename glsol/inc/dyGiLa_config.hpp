@@ -99,7 +99,8 @@ struct dyGiLaConf {
       std::fstream stream;
       std::fstream streampc;
       
-      std::string  xmf2_fname;
+      std::string xmf2_Amatrix_fname, xmf2_pMarker_fname,
+	          xmf2_massCurrent_fname, xmf2_spinCurrent_fname;
 
       int positions;
       int npositionout;

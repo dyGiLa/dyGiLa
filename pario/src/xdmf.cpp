@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
+
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -19,34 +19,149 @@
 #include "conduit_blueprint.hpp"
 
 void parIO::xdmf(glsol &sol){
-
+  /* -------------------------------------------- */
+  /* >>>>>>>>> hdf5 A-matrix xdf2 block <<<<<<<<< */
   unsigned int rank_no = 0/*hila::myrank()*/;
   std::fstream xml_file;
-  xdmf_out.open(sol.config.xmf2_fname, std::ios::out);
 
-  xdmf_out << "<?xml version=\"1.0\" ?>\n"
-           << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
-           << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
-           << "\n"
-           << "<Domain>\n"
-           << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
-           << "\n";
+  if (sol.config.hdf5_A_matrix_output == 1)
+    {
+     xdmf_out.open(sol.config.xmf2_Amatrix_fname, std::ios::out);
+
+     xdmf_out << "<?xml version=\"1.0\" ?>\n"
+              << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
+              << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
+              << "\n"
+              << "<Domain>\n"
+              << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
+              << "\n";
   
-  while(rank_no < hila::number_of_nodes()){
-    const std::string fname = "rank_xmls/" + sol.config.xmf2_fname + "_" + std::to_string(rank_no) + ".xml";
-    xml_file.open(fname, std::ios::in);
-    xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
-    xml_file.close();
+     while(rank_no < hila::number_of_nodes()){
+       const std::string fname = "rank_xmls/" + sol.config.xmf2_Amatrix_fname + "_" + std::to_string(rank_no) + ".xml";
+       xml_file.open(fname, std::ios::in);
+       xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
+       xml_file.close();
 
-    ++rank_no;
-  }
+       ++rank_no;
+     }
 
-  xdmf_out << "</Grid>"
-           << "\n"
-           << "</Domain>\n"
-           << "</Xdmf>"
-           << std::endl;
+     xdmf_out << "</Grid>"
+              << "\n"
+              << "</Domain>\n"
+              << "</Xdmf>"
+              << std::endl;
   
-  xdmf_out.close();
+     xdmf_out.close();
+    } // hdf5_A_matrix_output block ends  
+  /* >>>>>>>>> hdf5 A-matrix xdf2 block ends <<<<<<<<< */
+  /* ------------------------------------------------- */  
+
+  /* -------------------------------------------- */  
+  /* >>>>>>>>> hdf5 p-Marker xdf2 block <<<<<<<<< */  
+  rank_no = 0/*hila::myrank()*/;
+  if (sol.config.hdf5_pMarker_output == 1)
+    {
+     xdmf_out.open(sol.config.xmf2_pMarker_fname, std::ios::out);
+
+     xdmf_out << "<?xml version=\"1.0\" ?>\n"
+              << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
+              << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
+              << "\n"
+              << "<Domain>\n"
+              << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
+              << "\n";
+  
+     while(rank_no < hila::number_of_nodes()){
+       const std::string fname = "rank_xmls/" + sol.config.xmf2_pMarker_fname + "_" + std::to_string(rank_no) + ".xml";
+       xml_file.open(fname, std::ios::in);
+       xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
+       xml_file.close();
+
+       ++rank_no;
+     }
+
+     xdmf_out << "</Grid>"
+              << "\n"
+              << "</Domain>\n"
+              << "</Xdmf>"
+              << std::endl;
+  
+     xdmf_out.close();
+    } // hdf5_pMarker_output block ends
+  /* >>>>>>>>> hdf5 p-Marker xdf2 block ends <<<<<<<<< */
+  /* ------------------------------------------------- */    
+
+  /* ------------------------------------------ */    
+  /* >>>>>>>>> hdf5 mass-C xdf2 block <<<<<<<<< */    
+  rank_no = 0/*hila::myrank()*/;
+  if (sol.config.hdf5_mass_current_output == 1)
+    {
+     xdmf_out.open(sol.config.xmf2_massCurrent_fname, std::ios::out);
+
+     xdmf_out << "<?xml version=\"1.0\" ?>\n"
+              << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
+              << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
+              << "\n"
+              << "<Domain>\n"
+              << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
+              << "\n";
+  
+     while(rank_no < hila::number_of_nodes()){
+       const std::string fname = "rank_xmls/" + sol.config.xmf2_massCurrent_fname + "_" + std::to_string(rank_no) + ".xml";
+       xml_file.open(fname, std::ios::in);
+       xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
+       xml_file.close();
+
+       ++rank_no;
+     }
+
+     xdmf_out << "</Grid>"
+              << "\n"
+              << "</Domain>\n"
+              << "</Xdmf>"
+              << std::endl;
+  
+     xdmf_out.close();
+    } // hdf5_massCurrent_output block ends
+  /* >>>>>>>>> hdf5 mass-C xdf2 block ends <<<<<<<<< */
+  /* ----------------------------------------------- */    
+
+  /* ------------------------------------------ */    
+  /* >>>>>>>>> hdf5 spin-C xdf2 block <<<<<<<<< */      
+  rank_no = 0/*hila::myrank()*/;  
+  if (sol.config.hdf5_spin_current_output == 1)
+    {
+     xdmf_out.open(sol.config.xmf2_spinCurrent_fname, std::ios::out);
+
+     xdmf_out << "<?xml version=\"1.0\" ?>\n"
+              << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
+              << "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.0\">\n"
+              << "\n"
+              << "<Domain>\n"
+              << "<Grid GridType=\"Collection\" CollectionType=\"Collection\">"
+              << "\n";
+  
+     while(rank_no < hila::number_of_nodes()){
+       const std::string fname = "rank_xmls/" + sol.config.xmf2_spinCurrent_fname + "_" + std::to_string(rank_no) + ".xml";
+       xml_file.open(fname, std::ios::in);
+       xdmf_out << xml_file.rdbuf() << "\n" << std::endl;
+       xml_file.close();
+
+       ++rank_no;
+     }
+
+     xdmf_out << "</Grid>"
+              << "\n"
+              << "</Domain>\n"
+              << "</Xdmf>"
+              << std::endl;
+  
+     xdmf_out.close();
+    } // hdf5_spinCurrent_output block ends
+  /* >>>>>>>>> hdf5 mass-C xdf2 block ends <<<<<<<< */
+  /* ---------------------------------------------- */    
+  
+
+
 } // xdmf() end here
 
