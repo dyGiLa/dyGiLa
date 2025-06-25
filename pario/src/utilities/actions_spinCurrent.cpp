@@ -27,8 +27,11 @@ void parIO::defineActions_spinCurrent() {
       extracts["e3/params/path"] = "pio_Current/dyGiLa-sim-spinCurrent";
       extracts["e3/params/protocol"] = "blueprint/mesh/hdf5";
 
-      extracts["e3/params/fields"].append().set("gapAContainer");
-      extracts["e3/params/fields"].append().set("feDensityContainer");
+      // extracts["e3/params/fields"].append().set("gapAContainer");
+      // extracts["e3/params/fields"].append().set("feDensityContainer");
+      extracts["e3/params/fields"].append().set("gapA");
+      extracts["e3/params/fields"].append().set("feDensityr");
+      
       extracts["e3/params/fields"].append().set("js11Container");
       extracts["e3/params/fields"].append().set("js21Container");
       extracts["e3/params/fields"].append().set("js31Container");

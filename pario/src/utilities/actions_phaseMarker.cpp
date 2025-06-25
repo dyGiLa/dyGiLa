@@ -28,7 +28,10 @@ void parIO::defineActions_phaseMarker() {
      extracts["e4/type"] = "relay";
      extracts["e4/params/path"] = "pio/dyGiLa-sim-pMarker";
      extracts["e4/params/protocol"] = "blueprint/mesh/hdf5";
-    
+
+     extracts["e4/params/fields"].append().set("gapA");
+     extracts["e4/params/fields"].append().set("feDensity");
+     
      extracts["e4/params/fields"].append().set("phaseMarker");
     
 } // defineActions() call end here
