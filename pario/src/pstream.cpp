@@ -5,6 +5,8 @@
 #include <fstream>
 #include <string>
 #include <assert.h>
+#include <stdlib.h>
+
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
 
@@ -187,5 +189,6 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     
     pio.execute(actions);
 
+    system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
 } // pstream() end here
 

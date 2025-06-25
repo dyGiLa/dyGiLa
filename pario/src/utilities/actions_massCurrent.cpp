@@ -27,8 +27,11 @@ void parIO::defineActions_massCurrent() {
       extracts["e2/params/path"] = "pio_Current/dyGiLa-sim-massCurrent";
       extracts["e2/params/protocol"] = "blueprint/mesh/hdf5";
 
-      extracts["e2/params/fields"].append().set("gapAContainer");
-      extracts["e2/params/fields"].append().set("feDensityContainer");
+      // extracts["e2/params/fields"].append().set("gapAContainer");
+      // extracts["e2/params/fields"].append().set("feDensityContainer");
+      extracts["e2/params/fields"].append().set("gapA");
+      extracts["e2/params/fields"].append().set("feDensity");
+      
       extracts["e2/params/fields"].append().set("jm1Container");
       extracts["e2/params/fields"].append().set("jm2Container");
       extracts["e2/params/fields"].append().set("jm3Container");
