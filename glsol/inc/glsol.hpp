@@ -70,6 +70,7 @@ public:
   void point_params(real_t T, real_t p, real_t beta[6]);
 
   void fstreams_open(const std::vector<std::string> &);
+  void fstreams_close();  
 
   void write_moduli();
   void write_energies();

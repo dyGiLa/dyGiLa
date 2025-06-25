@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "glsol.hpp"
 
@@ -79,3 +80,9 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
     
 } // allocate() function ends here
 
+void glsol::fstreams_close() {
+  config.stream.close();
+  config.streampc.close();
+  system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
+}
+  
