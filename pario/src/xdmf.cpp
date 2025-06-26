@@ -19,14 +19,14 @@
 #include "conduit_blueprint.hpp"
 
 void parIO::xdmf(glsol &sol){
-  /* -------------------------------------------- */
-  /* >>>>>>>>> hdf5 A-matrix xdf2 block <<<<<<<<< */
   unsigned int rank_no = 0/*hila::myrank()*/;
   std::fstream xml_file;
-
+  
+  /* -------------------------------------------- */
+  /* >>>>>>>>> hdf5 A-matrix xdf2 block <<<<<<<<< */
   if (sol.config.hdf5_A_matrix_output == 1)
     {
-     xdmf_out.open(sol.config.xmf2_Amatrix_fname, std::ios::out);
+     xdmf_out.open("xdmf/" + sol.config.xmf2_Amatrix_fname, std::ios::out);
 
      xdmf_out << "<?xml version=\"1.0\" ?>\n"
               << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
@@ -61,7 +61,7 @@ void parIO::xdmf(glsol &sol){
   rank_no = 0/*hila::myrank()*/;
   if (sol.config.hdf5_pMarker_output == 1)
     {
-     xdmf_out.open(sol.config.xmf2_pMarker_fname, std::ios::out);
+     xdmf_out.open("xdmf/" + sol.config.xmf2_pMarker_fname, std::ios::out);
 
      xdmf_out << "<?xml version=\"1.0\" ?>\n"
               << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
@@ -96,7 +96,7 @@ void parIO::xdmf(glsol &sol){
   rank_no = 0/*hila::myrank()*/;
   if (sol.config.hdf5_mass_current_output == 1)
     {
-     xdmf_out.open(sol.config.xmf2_massCurrent_fname, std::ios::out);
+     xdmf_out.open("xdmf/" + sol.config.xmf2_massCurrent_fname, std::ios::out);
 
      xdmf_out << "<?xml version=\"1.0\" ?>\n"
               << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"
@@ -131,7 +131,7 @@ void parIO::xdmf(glsol &sol){
   rank_no = 0/*hila::myrank()*/;  
   if (sol.config.hdf5_spin_current_output == 1)
     {
-     xdmf_out.open(sol.config.xmf2_spinCurrent_fname, std::ios::out);
+     xdmf_out.open("xdmf/" + sol.config.xmf2_spinCurrent_fname, std::ios::out);
 
      xdmf_out << "<?xml version=\"1.0\" ?>\n"
               << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n"

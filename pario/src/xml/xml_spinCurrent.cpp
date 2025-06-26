@@ -28,8 +28,6 @@ void parIO::xml_spinCurrent(glsol &sol){
              dim_1 = lattice.mynode.size[1] + 2,
              dim_2 = lattice.mynode.size[2] + 2;
 
-  unsigned int n;
-
   xml_out << "<Grid Name=\"dyGiLa-sim-spinCurrent\" Type=\"Uniform\">\n"
           << "  <Topology name=\"topo\" TopologyType=\"3DRectMesh\" Dimensions=\""
           << dim_2 << " " << dim_1 << " " << dim_0 << "\"" << ">" << "\n"
