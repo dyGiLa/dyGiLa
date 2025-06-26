@@ -81,7 +81,6 @@ int main(int argc, char **argv) {
       if (gl.config.hdf5_pMarker_output == 1) paraio.xml_pMarker(gl);
       if (gl.config.hdf5_mass_current_output == 1) paraio.xml_massCurrent(gl);
       if (gl.config.hdf5_spin_current_output == 1) paraio.xml_spinCurrent(gl);      
-     //paraio.xml(gl);
      //hila::synchronize();
     }
     
@@ -182,8 +181,7 @@ int main(int argc, char **argv) {
         } //gl.t > gl.config.Stats block
 
         gl.phaseMarking();        
-        hila::out0 << "phaseMarking() call is done. "
-    		   << std::endl;
+        hila::out0 << "phaseMarking() call is done. " << std::endl;
 	
 
 	/*******************************************************************/
