@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -214,11 +213,12 @@ void glsol::initialize() {
 
     pi = 0;
     A  = 0; // set all sites to be normal phase
-    
+
+    real_t Tcp_mK = MP.Tcp_mK(config.Inip);
     onsites(ALL) {
 
       matep::Matep MPonsites; 
-      if (T[X] < MPonsites.Tcp_mK(config.Inip))
+      if (T[X] < Tcp_mK)
 	{
          foralldir(al) foralldir(i)
 	   {	
@@ -228,7 +228,8 @@ void glsol::initialize() {
 	      { A[X].e(al,i).im = 1.; } // put bulk A-phase elements into OP
            } // doralldir end here
 
-         A[X]=A[X] * (MPonsites.gap_A_td(config.Inip, T[X])/sqrt(2.));		 
+         A[X]=A[X] * (MPonsites.gap_A_td(config.Inip, T[X])/sqrt(2.));
+	 // hila::out0 << "A[x] is " << A[X].e(0,0).re << std::endl;
 	  
 	} // Temeprature judgement block
 

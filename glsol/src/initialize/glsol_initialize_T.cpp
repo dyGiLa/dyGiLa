@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -54,6 +53,10 @@ void glsol::initializeT() {
     /* initialize spherical symmetric hot bloob
      * at the momentum when radius of Tc fronter achieves maximum  
      */
+    real_t tm = MP.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
+    real_t rm = MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);    
+    real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+    
     onsites(ALL){
       /* hila's coordinate index is counted from zero at corner,
        * so for a blob at the center of box, you need coordinate transformation
@@ -63,18 +66,17 @@ void glsol::initializeT() {
       auto z = X.coordinate(e_z) - config.lz/2.0;
 
       matep::Matep MPonsites;
-      
-      real_t tm  = MPonsites.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
-      real_t Tcp_mK = MPonsites.Tcp_mK(config.Inip);
-      
-      auto r2 = x*x + y*y + z*z;
-      
-      T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
-	      * std::pow(config.t1/tm, 3./2.)
-	      * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
-	     + config.Ttdb0 * Tcp_mK;
+            
+      auto r2 = (x*x + y*y + z*z)/4.f;
 
-    }
+      T[X] = (r2 <= (rm * rm))
+	     ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
+	        * std::pow(config.t1/tm, 3./2.)
+	        * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
+	       + config.Ttdb0 * Tcp_mK
+	     : config.Ttdb0 * Tcp_mK;
+
+    } // onsites block ends here
 
     hila::out0 << "tm is " << MP.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * MP.tGL(config.Inip) << "s"
                << "\n"
@@ -82,14 +84,14 @@ void glsol::initializeT() {
                << "\n"
                << "t1 is "  << config.t1 * MP.tGL(config.Inip) << "s"
                << "\n"
-               << "Dd is "  << MP.Dd(config.Inip) * (MP.xi0GLp(config.Inip) * MP.xi0GLp(config.Inip))/MP.tGL(config.Inip) * (1e6) << "mu-m^2.mu-s^-1"
+               << "Dd is "  << MP.Dd(config.Inip) * (MP.xi0GLp(config.Inip) * MP.xi0GLp(config.Inip))/MP.tGL(config.Inip) * (1e6) << " mu-m^2.mu-s^-1"
 	       << "\n"
-               << "xi0GLp is " << MP.xi0GLp(config.Inip)
+               << "xi0GLp is " << MP.xi0GLp(config.Inip) << "m"
                << "\n"
                << "Hot Bloob with radius "
-               << MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * (MP.xi0GLp(config.Inip)) * (1e6) << "mu-m"
+               << MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * (MP.xi0GLp(config.Inip)) * (1e6) << " mu-m"
                << " in initialized. Tc frontier vasnished at "
-               << MP.t_TcVanish_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1)      
+               << MP.t_TcVanish_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * MP.tGL(config.Inip) << "s"     
                << std::endl;
     
     break;
