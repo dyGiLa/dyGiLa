@@ -55,6 +55,7 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
   config.streampc.open(name_files[1], std::ios::out);
 
   config.streampc << "\"t\"" << "," << "\"T_000Q\"" << ","
+                  << "\"Vratio_p0_acc\"" << ","    
                   << "\"Vratio_p1_acc\"" << ","
                   << "\"Vratio_p2_acc\"" << ","
                   << "\"Vratio_p3_acc\"" << ","
@@ -65,6 +66,7 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
                   << "\"Vratio_p8_acc\"" << ","
                   << "\"Vratio_p9_acc\"" << ","
                   << "\"Vratio_ps_acc\"" << ","
+                  << "\"V_p0_acc\"" << ","    
                   << "\"V_p1_acc\"" << ","
                   << "\"V_p2_acc\"" << ","
                   << "\"V_p3_acc\"" << ","
