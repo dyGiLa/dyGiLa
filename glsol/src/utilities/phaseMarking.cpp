@@ -81,7 +81,15 @@ void glsol::phaseMarking() {
 	         && (abs(R4-1.0) <= config.ptol)
 	         && (abs(R5-0.0) <= config.ptol)
                 )
-	  phaseMarker[X] = 4.0f;	
+	  phaseMarker[X] = 4.0f;
+	// normal vacuum
+	else if (
+                 (abs(R2-0.0) <= config.ptol)
+	         && (abs(R3-0.0) <= config.ptol)
+	         && (abs(R4-0.0) <= config.ptol)
+	         && (abs(R5-0.0) <= config.ptol)		 
+                )
+	  phaseMarker[X] = 0.0f;
 	else
 	  phaseMarker[X] = 1.0f;	  
       }

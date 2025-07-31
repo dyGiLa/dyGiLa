@@ -22,7 +22,8 @@ void glsol::phaseCounting() {
   // hila::set_allpxacce(false);
   onsites(ALL) {
       
-      /* accumulate values */      
+      /* accumulate values */
+      px_acc[/*pxacc::*/p0_acc] += (phaseMarker[X]==0) ? 1 : 0;    
       px_acc[/*pxacc::*/p1_acc] += (phaseMarker[X]==1) ? 1 : 0;
       px_acc[/*pxacc::*/p2_acc] += (phaseMarker[X]==2) ? 1 : 0;
       px_acc[/*pxacc::*/p3_acc] += (phaseMarker[X]==3) ? 1 : 0;
@@ -41,16 +42,18 @@ void glsol::phaseCounting() {
 
 
   double vol = lattice.volume();
-  float acc_vol = px_acc[/*pxacc::*/p1_acc] + px_acc[/*pxacc::*/p2_acc]
-                  + px_acc[/*pxacc::*/p3_acc] + px_acc[/*pxacc::*/p4_acc]
-                  + px_acc[/*pxacc::*/p5_acc] + px_acc[/*pxacc::*/p6_acc]
-                  + px_acc[/*pxacc::*/p7_acc] + px_acc[/*pxacc::*/p8_acc]
-                  + px_acc[/*pxacc::*/p9_acc];
+  float acc_vol = px_acc[/*pxacc::*/p0_acc] + px_acc[/*pxacc::*/p1_acc]
+                  + px_acc[/*pxacc::*/p2_acc] + px_acc[/*pxacc::*/p3_acc]
+                  + px_acc[/*pxacc::*/p4_acc] + px_acc[/*pxacc::*/p5_acc]
+                  + px_acc[/*pxacc::*/p6_acc] + px_acc[/*pxacc::*/p7_acc]
+                  + px_acc[/*pxacc::*/p8_acc] + px_acc[/*pxacc::*/p9_acc];
 
   // Volume element in unit of \xi_GL^0
   const double Velem = config.dx*config.dx*config.dx;
   config.streampc
 	 << t << "," << T000 << ","
+	 /***************************/	 	 	 
+	 << px_acc[/*pxacc::*/p0_acc]/vol << ","    
 	 /***************************/	 	 	 
 	 << px_acc[/*pxacc::*/p1_acc]/vol << ","
 	 /***************************/	 	 
@@ -71,6 +74,8 @@ void glsol::phaseCounting() {
 	 << px_acc[/*pxacc::*/p9_acc]/vol << ","
 	 /***************************/
 	 << acc_vol/vol << ","
+	 /***************************/
+	 << px_acc[/*pxacc::*/p0_acc]*Velem << ","    
 	 /***************************/
 	 << px_acc[/*pxacc::*/p1_acc]*Velem << ","
 	 /***************************/	 	 
