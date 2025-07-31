@@ -17,7 +17,7 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::defineActions_phaseMarker() {
+void parIO::defineActions_phaseMarker(glsol &sol) {
 
     // /* >>>>>>>>>>>>> extract hdf5 <<<<<<<<<<<<<< */
 
@@ -30,7 +30,7 @@ void parIO::defineActions_phaseMarker() {
      extracts["e4/params/protocol"] = "blueprint/mesh/hdf5";
 
      extracts["e4/params/fields"].append().set("gapA");
-     extracts["e4/params/fields"].append().set("feDensity");
+     if (sol.config.pario_compute_feDensity == 1) { extracts["e4/params/fields"].append().set("feDensity"); }
      
      extracts["e4/params/fields"].append().set("phaseMarker");
     

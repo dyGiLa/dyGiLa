@@ -17,7 +17,7 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::defineActions_AMatrix() {
+void parIO::defineActions_AMatrix(glsol &sol) {
 
     // /* >>>>>>>>>>>>> extract hdf5 <<<<<<<<<<<<<< */
 
@@ -31,7 +31,7 @@ void parIO::defineActions_AMatrix() {
      // extracts["e1/params/protocol"] = "hdf5";     
 
      extracts["e1/params/fields"].append().set("gapA");
-     extracts["e1/params/fields"].append().set("feDensity");
+     if (sol.config.pario_compute_feDensity == 1) { extracts["e1/params/fields"].append().set("feDensity"); }
     
      extracts["e1/params/fields"].append().set("u11Container");
      extracts["e1/params/fields"].append().set("u12Container");

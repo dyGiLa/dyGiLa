@@ -57,7 +57,7 @@ private:
   void describeMesh(glsol &);
   void describeMesh_addGhost_verify();
   
-  void describeMesh_gapA_FEDensity();
+  void describeMesh_gapA_FEDensity(glsol &);
   void describeMesh_Temperature();
   void describeMesh_phaseMarker();
   void describeMesh_massCurrent();
@@ -67,10 +67,10 @@ private:
   /* actions definations */
   void defineActions_insitu(glsol &);
 
-  void defineActions_massCurrent();
-  void defineActions_spinCurrent();
-  void defineActions_AMatrix();
-  void defineActions_phaseMarker();
+  void defineActions_massCurrent(glsol &);
+  void defineActions_spinCurrent(glsol &);
+  void defineActions_AMatrix(glsol &);
+  void defineActions_phaseMarker(glsol &);
   
   void defineActions_printTree();  
 

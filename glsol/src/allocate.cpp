@@ -247,6 +247,8 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
+    config.pario_compute_feDensity     = parameters.get_item("pario_compute_feDensity",{"no","yes"});    
+    
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
     // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
     // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});

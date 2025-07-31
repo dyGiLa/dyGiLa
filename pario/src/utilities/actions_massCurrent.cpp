@@ -17,7 +17,7 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::defineActions_massCurrent() {
+void parIO::defineActions_massCurrent(glsol &sol) {
 
       conduit::Node &add_act6 = actions.append();
       add_act6["action"] = "add_extracts";
@@ -30,7 +30,7 @@ void parIO::defineActions_massCurrent() {
       // extracts["e2/params/fields"].append().set("gapAContainer");
       // extracts["e2/params/fields"].append().set("feDensityContainer");
       extracts["e2/params/fields"].append().set("gapA");
-      extracts["e2/params/fields"].append().set("feDensity");
+      if (sol.config.pario_compute_feDensity == 1) { extracts["e2/params/fields"].append().set("feDensity"); }
       
       extracts["e2/params/fields"].append().set("jm1Container");
       extracts["e2/params/fields"].append().set("jm2Container");

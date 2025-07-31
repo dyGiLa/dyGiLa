@@ -25,7 +25,9 @@ void parIO::init(glsol &sol) {
         (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
 
     gapAContainer.reserve(latticeVolumeWithGhost);
-    feDensityContainer.reserve(latticeVolumeWithGhost);
+    
+    if (sol.config.pario_compute_feDensity == 1) { feDensityContainer.reserve(latticeVolumeWithGhost); }
+    
     Temperature.reserve(latticeVolumeWithGhost);
     phaseMarker.reserve(latticeVolumeWithGhost);
 
@@ -94,7 +96,7 @@ void parIO::init(glsol &sol) {
     /*    all describeMesh calls     */
     /*********************************/    
     describeMesh(sol);
-    describeMesh_gapA_FEDensity();
+    describeMesh_gapA_FEDensity(sol);
     describeMesh_Temperature();
     describeMesh_phaseMarker();
 
@@ -132,10 +134,10 @@ void parIO::init(glsol &sol) {
 
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
-       if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent();}
-       if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent();}
-       if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix();}
-       if (sol.config.hdf5_pMarker_output == 1) {defineActions_phaseMarker();}
+       if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent(sol);}
+       if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent(sol);}
+       if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix(sol);}
+       if (sol.config.hdf5_pMarker_output == 1) {defineActions_phaseMarker(sol);}
       }
     
 

@@ -24,38 +24,33 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     gapA.copy_local_data_with_halo(gapAContainer);
 
     /*--------------------     feDensity      --------------------*/
-    real_t ebfe=fmin(matep.f_A_td(sol.config.Inip, sol.config.IniT), matep.f_B_td(sol.config.Inip, sol.config.IniT));
-    feDensity[ALL] = 0;
-    onsites(ALL) {
-      Complex<double> a(0),b2(0),b3(0),b4(0),b5(0);
-      //Complex<double> kin(0);
-      Complex<double> k1(0), k2(0), k3(0);
-      Complex<double> bfe(0);
-      double b1 = 0;
+    if (sol.config.pario_compute_feDensity == 1) {
+      feDensity[ALL] = 0;
+      onsites(ALL) {
+        Complex<double> a(0),b1(0),b2(0),b3(0),b4(0),b5(0);
+        Complex<double> k1(0), k2(0), k3(0);
       
-      a = sol.config.alpha * (sol.A[X]*sol.A[X].dagger()).trace();
-      b1 = sol.config.beta1 * ((sol.A[X]*sol.A[X].transpose()).trace()).squarenorm();
-      b2 = sol.config.beta2 * ((sol.A[X]*sol.A[X].dagger()).trace()*(sol.A[X]*sol.A[X].dagger()).trace());
-      b3 = sol.config.beta3 * ((sol.A[X]*sol.A[X].transpose()*sol.A[X].conj()*sol.A[X].dagger()).trace());
-      b4 = sol.config.beta4 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X]*sol.A[X].dagger()).trace());
-      b5 = sol.config.beta5 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X].conj()*sol.A[X].transpose()).trace());
-
-      bfe = a + b1 + b2 + b3 + b4 + b5 - ebfe;
-      //kin = (pi[X]*pi[X].dagger()).trace();
+        a = sol.config.alpha * (sol.A[X]*sol.A[X].dagger()).trace();
+        b1 = sol.config.beta1 * ((sol.A[X]*sol.A[X].transpose()).trace()).squarenorm();
+        b2 = sol.config.beta2 * ((sol.A[X]*sol.A[X].dagger()).trace()*(sol.A[X]*sol.A[X].dagger()).trace());
+        b3 = sol.config.beta3 * ((sol.A[X]*sol.A[X].transpose()*sol.A[X].conj()*sol.A[X].dagger()).trace());
+        b4 = sol.config.beta4 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X]*sol.A[X].dagger()).trace());
+        b5 = sol.config.beta5 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X].conj()*sol.A[X].transpose()).trace());
       
-      foralldir(j) foralldir (k) foralldir(al){
-	k1 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
-	      * (sol.A[X + k].conj().column(j) - sol.A[X - k].conj().column(j)).e(al)/(4.0*sol.config.dx*sol.config.dx);
-	k2 += (sol.A[X + j].column(j) - sol.A[X - j].column(j)).e(al)
-	      * (sol.A[X + k].conj().column(k) - sol.A[X - k].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
-	k3 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
-	      * (sol.A[X + j].conj().column(k) - sol.A[X - j].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
-      }
-      // question here : how about imagnary part of k1 + k2 + k3 +bfe
-      feDensity[X] = real(k1 + k2 + k3 + bfe);
-    } //onsite(All) end here
+        foralldir(j) foralldir (k) foralldir(al){
+	  k1 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
+	        * (sol.A[X + k].conj().column(j) - sol.A[X - k].conj().column(j)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+	  k2 += (sol.A[X + j].column(j) - sol.A[X - j].column(j)).e(al)
+	        * (sol.A[X + k].conj().column(k) - sol.A[X - k].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+	  k3 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
+	        * (sol.A[X + j].conj().column(k) - sol.A[X - j].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+        }
+       feDensity[X] = real(k1 + k2 + k3 + a + b1 + b2 + b3 + b4 + b5);
+      } //onsite(All) end here
 
-    feDensity.copy_local_data_with_halo(feDensityContainer);
+      feDensity.copy_local_data_with_halo(feDensityContainer);
+
+    } // sol.config.pario_compute_feDensity == 1 block
 
     /*-------------------- Temperature field --------------------*/
     sol.T.copy_local_data_with_halo(Temperature);

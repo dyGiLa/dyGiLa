@@ -17,7 +17,7 @@
 #include "conduit_blueprint.hpp"
 
 
-void parIO::defineActions_spinCurrent() {
+void parIO::defineActions_spinCurrent(glsol &sol) {
 
       conduit::Node &add_act7 = actions.append();
       add_act7["action"] = "add_extracts";
@@ -30,7 +30,7 @@ void parIO::defineActions_spinCurrent() {
       // extracts["e3/params/fields"].append().set("gapAContainer");
       // extracts["e3/params/fields"].append().set("feDensityContainer");
       extracts["e3/params/fields"].append().set("gapA");
-      extracts["e3/params/fields"].append().set("feDensityr");
+      if (sol.config.pario_compute_feDensity == 1) { extracts["e3/params/fields"].append().set("feDensityr"); }
       
       extracts["e3/params/fields"].append().set("js11Container");
       extracts["e3/params/fields"].append().set("js21Container");

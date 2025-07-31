@@ -141,6 +141,8 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
+      unsigned int pario_compute_feDensity;
+  
       unsigned int do_gapA_clip;
       real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,
              gapA_clip1_norm_x, gapA_clip1_norm_y, gapA_clip1_norm_z;
