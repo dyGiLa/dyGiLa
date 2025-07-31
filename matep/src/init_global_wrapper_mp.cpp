@@ -44,7 +44,7 @@ namespace matep {
 
     mp_consts.u = 1.66053906660f*(10.0e-27)*mp_consts.kg;
     mp_consts.m3 = 3.016293f*mp_consts.u;
-    mp_consts.nm = (10.0e-9)*mp_consts.m;
+    mp_consts.nm = (1.0e-9)*mp_consts.m;
     mp_consts.hbar = 1.054571817f*(10.0e-34)*mp_consts.J*mp_consts.s;
     mp_consts.kb = 1.380649*(10.0e-23)*mp_consts.J*1.0f;
     mp_consts.zeta3 = 1.2020569031595942;

@@ -105,10 +105,23 @@ Matep::Dd(real_t p){
   real_t vF = vFp(p);
   real_t xi0GL = xi0GLp(p);
 
-  // convert ratio is made from SI unit value number
-  real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
-  // return diffussion constant in unit of xiGL^2.tGL^-1
-  return vF * vF * wrapper_mp().tau0N * tGLxiGL2_ratio;
+  if ((p == 5.5f) || (p == 9.f) || (p == 12.f) || (p == 22.f))
+    {
+      float Dctxi;
+      // normal phase thermal diffucivity at Tc
+      if (p == 5.5f) Dctxi = 217.154f; // in unit of xi0GL^2. tGL^-1
+      if (p == 9.f) Dctxi = 167.407f; // in unit of xi0GL^2. tGL^-1
+      if (p == 12.f) Dctxi = 140.644f; // in unit of xi0GL^2. tGL^-1
+      if (p == 22.f) Dctxi = 90.2357f; // in unit of xi0GL^2. tGL^-1
+      return Dctxi;
+    }
+  else
+    {
+     // convert ratio is made from SI unit value number
+     real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
+     // return diffussion constant in unit of xiGL^2.tGL^-1
+     return vF * vF * wrapper_mp().tau0N * tGLxiGL2_ratio;
+    }
 }
 
 // ************************************************************************* //
@@ -123,9 +136,10 @@ Matep::t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
   real_t TcpmK  = Tcp_mK(p);
   real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
   real_t T0     = Ttdb0 * TcpmK;
+
+  real_t tm = (t1/wrapper_mp().E) * pow((Tx/(-T0 + TcpmK)), 0.6666666666666666);
   
-  return (std::pow(-1, 0.6666666666666666) * t1 * std::pow(Tx, 0.6666666666666666))
-         /(wrapper_mp().E * std::pow((T0 - TcpmK), 0.6666666666666666));
+  return tm;
 }
 
 real_t
@@ -135,17 +149,31 @@ Matep::r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
   real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
   real_t T0     = Ttdb0 * TcpmK;
   
-  return sqrt(6./wrapper_mp().E) * sqrt(Dd(p) * t1)* std::pow((Tx/(-T0 + TcpmK)),0.3333333333333333);
+  return sqrt(6./wrapper_mp().E) * sqrt(Dd(p) * t1)* powf((Tx/(-T0 + TcpmK)),0.3333333333333333);
 }
 
+real_t
+Matep::r2_Tc_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t) {
+
+  real_t TcpmK  = Tcp_mK(p);  
+  real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
+  real_t T0     = Ttdb0 * TcpmK;
+
+  // 4*Dd*t*Log(-((tx*Sqrt(tx/t)*Tx)/(t*(T0 - Tc))))
+
+  return 4.f * Dd(p) * t * logf((t1 * sqrt(t1/t) * Tx)/(t * (-T0 + TcpmK)));
+}
+
+  
 real_t
 Matep::t_TcVanish_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
   real_t TcpmK = Tcp_mK(p);  
   real_t Tx    = (Ttdb1 - Ttdb0) * TcpmK;
   real_t T0    = Ttdb0 * TcpmK;
+
+  real_t t0 = t1 * pow((Tx/(-T0 + TcpmK)), 0.6666666666666666);
   
-  return (std::pow(-1., 0.6666666666666666) * t1 * std::pow(Tx, 0.6666666666666666))
-         /std::pow((T0 - TcpmK), 0.6666666666666666);
+  return t0;
 }
 
 
@@ -218,16 +246,18 @@ Matep::gamma_td(real_t p, real_t T, real_t pM){
      gtd = 1.;
   else
     {
-      if ( pM == 4.0 )
+      if ( pM == 9.0 )
 	gtd = std::pow(t, 4.); // A-Phase
-      else if ( pM == 2.0f )
+      else if ( pM == 5.0f )
 	gtd = exp(3.349621654292973*(1 - 1./t)); // B-phase
-      else if ( pM == 1.0f )
+      else if ( pM == 3.0f )
 	gtd = std::pow(t, 4.); // planar-phase
       else if ( pM == 3.0f )
-	gtd = std::pow(t, 4.); // polar-phase
-      else if ( pM == 0.0f )
-	gtd = std::pow(t, 4.);		
+	gtd = std::pow(t, 7.); // polar-phase
+      else if ( pM == 1.0f )   
+	gtd = std::pow(t, 4.); // no-phase
+      else
+	gtd = std::pow(t, 4.); // bipolar, alphaa, gamma, beta states	
     }
 
   return gtd * gamma_C;

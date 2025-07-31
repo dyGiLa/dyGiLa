@@ -73,6 +73,9 @@ namespace matep {
 #pragma hila loop_function         
         real_t r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
 
+#pragma hila loop_function            
+        real_t r2_Tc_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t);
+
         // time when fountier of Tc shriks to vanish after this T < Tc over box   
 #pragma hila loop_function         
         real_t t_TcVanish_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
