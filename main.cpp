@@ -21,9 +21,12 @@
 int main(int argc, char **argv) {
 
     glsol gl;
-    
+       
     const std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
 
+    // initialize blobal matep wrapper
+    matep::init_wrapper_mp();    
+       
     // initialize Temperature field
     gl.initializeT();
 
@@ -34,18 +37,16 @@ int main(int argc, char **argv) {
     gl.initializeH();
 
     // initialize OP field
-    gl.initialize();
-
-    // initialize blobal matep wrapper
-    matep::init_wrapper_mp();    
+    gl.initialize();   
            
     int stepspos;
 
     std::initializer_list<int> coordsList {0,0,0};
     const CoordinateVector originpoints(coordsList); 
-    
+
+    // number of steps between printing stats
     const unsigned int steps = (gl.config.tEnd - gl.config.tStats) 
-                               /(gl.config.dt * gl.config.nOutputs); // number of steps between printing stats
+                               /(gl.config.dt * gl.config.nOutputs); 
     
 
     if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } // initial gamma parameter if gamma is fixed
@@ -112,7 +113,7 @@ int main(int argc, char **argv) {
 	      gl.write_energies();
 	      gl.phaseCounting();
 	      //gl.write_phases();
-	      hila::out0 << "write_energies() call is done "
+	      hila::out0 << "write_energies(), phaseCounting() call is done "
 			 << std::endl;
 
 #if defined USE_PARIO
