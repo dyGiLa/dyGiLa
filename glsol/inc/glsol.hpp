@@ -29,8 +29,8 @@ enum class matreduc { i_sumA, N_MatREDUCTION };
 /* enumeration counter type for phase marker reduction */
 //enum class pxacc {
 enum {
-  p1_acc, p2_acc, p3_acc, p4_acc, p5_acc,
-  p6_acc, p7_acc, p8_acc, p9_acc,
+  p0_acc, p1_acc, p2_acc, p3_acc, p4_acc, 
+  p5_acc, p6_acc, p7_acc, p8_acc, p9_acc,
   N_PMREDUCTION
 };  
 
@@ -102,8 +102,8 @@ public:
 
   Field<real_t> phaseMarker;
   
-  real_t t;
-  real_t tc = 0;
+  real_t t = 0.;
+  real_t tc = 0.;
 
   matep::Matep MP;
 
