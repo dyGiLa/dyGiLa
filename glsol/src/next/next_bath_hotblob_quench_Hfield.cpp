@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-//#include <math.h>
 #include <assert.h>
 
 #include "plumbing/hila.h"
@@ -23,8 +22,6 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
-
-  //double modP=0.0;
   
   int bc=config.boundaryConditions;
   // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
@@ -36,7 +33,11 @@ void glsol::next_bath_hotblob_quench_Hfield() {
 
   // update the Temperature field
   // compute new blob profile on next time step
-  if (t > config.tStats /* tStats should be 0 */)
+
+  real_t tm = MP.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
+  real_t t0 = MP.t_TcVanish_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
+  
+  if (t > config.tStats /* tStats should be > 0 */)
     {
       onsites(ALL)
 	{
@@ -49,24 +50,31 @@ void glsol::next_bath_hotblob_quench_Hfield() {
 
 	  matep::Matep MPonsites;
 
-          real_t tm  = MPonsites.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
-	  //real_t Tcp_mK = MPonsites.Tcp_mK(config.Inip);
+	  auto r2 = (x*x + y*y + z*z)/4.f;
+  
+          if ( (t + tm) < t0 )
+	    {
+	     // compute Tc frontier after time tm, you want this stays inside if block
+             real_t r2Tc = MPonsites.r2_Tc_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1, t + tm);  
 
-	  auto r2 = x*x + y*y + z*z;
-
-	  T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
-		  * std::pow((config.t1/(tm + t)), 3./2.)
-		  * exp(-r2/(4. * MPonsites.Dd(config.Inip) * (tm + t))))
-	         + config.Ttdb0 * Tcp_mK;
+	     // t1 is in unit of tGL
+	     T[X] = (r2 <= r2Tc)
+	            ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
+		       * std::pow((config.t1/(tm + t)), 3./2.)
+		       * exp(-r2/(4. * MPonsites.Dd(config.Inip) * (tm + t))))
+	              + config.Ttdb0 * Tcp_mK
+	            : config.Ttdb0 * Tcp_mK;
+	    }
+	  else
+	    T[X] = config.Ttdb0 * Tcp_mK;
+	    
+	  
 	} // onsites(ALL) block ends here
     }
-  
-  // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
 
-  // update the random weight in Langevin eqn with updated uniform gamma 
-  // Complex<real_t> ep2 = 1.0-exp(-2.0*config.gamma*config.dt);
-  
-
+  /******************************************************/  
+  /* A matrix update block and maximum pair breaking BC */
+  /******************************************************/
   
   onsites(ALL) {
     matep::Matep MPonsites;
@@ -93,6 +101,11 @@ void glsol::next_bath_hotblob_quench_Hfield() {
           }
       }
   } // onsite() block ends here
+
+  /******************************************************/  
+  /*     A matrix update block and BC  end at here      */
+  /******************************************************/
+  
 
   onsites (ALL) {
 
@@ -135,19 +148,11 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   }
 
   onsites (ALL) {
-
-    //Matep MP;
-    //real_t tb = config.IniT/ MP.Tcp_mK(config.Inip);
-    //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
-    //phi_t rad_mat;
     
     deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                      + A[X + e_y] + A[X - e_y]
                                                      + A[X + e_z] + A[X - e_z]
                                                      - 6.0*A[X]);
-    //rad_mat.gaussian_random();
-    //deltaPi[X] += rad_mat*sig;
-
   }
 
     //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
