@@ -107,9 +107,9 @@ void glsol::initialize() {
 
   case 4: {
     pi = 0.;
-    hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+    hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << " at p = " << config.Inip << ", T = " << config.IniT
                << "\n"
-               << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+               << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << " at p = " << config.Inip << ", T = " << config.IniT
                << std::endl;
     onsites(ALL) {
       //hila::out0 << "this is case 4" << std::endl;
@@ -239,8 +239,58 @@ void glsol::initialize() {
     break;
   } // case 8 block end here
 
-  case 9:
-    {/*empty block*/}
+  case 9: {
+    pi = 0;
+    real_t gap_A = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gap_B = MP.gap_B_td(config.Inip, config.IniT);    
+    // hila::out0<<"Gap A: "<<gap<<"\n";
+    // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
+    
+    onsites (ALL) {
+    if (
+	(X.coordinate(e_x) <= (config.lx/2.0))
+       )
+      {	
+	    foralldir(d1)foralldir(d2){
+	      if (d1==d2){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;}
+              }
+	    A[X] = gap_B * A[X]/sqrt(3.0);
+       }
+    else if (
+	     (X.coordinate(e_x) > (config.lx/2.0))	     
+	    )    
+	  {
+	    foralldir(d1)foralldir(d2){
+	      if (d1==0 && d2==0){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else if (d1==0 && d2==1){
+		A[X].e(d1,d2).re = 0.0;  
+		A[X].e(d1,d2).im = 1.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	    }
+	    A[X] = gap_A * A[X]/sqrt(2.0);
+	  }
+    } // onsites block ends here
+
+    hila::out0 << "B and A configuration is initialted "
+               << ", gapA^2 is " << gap_A * gap_A
+               << ", gapB^2 is " << gap_B * gap_B
+               << std::endl;
+
+    break;
+  } // case 9 block end here (BnA)
     
   default:
     {

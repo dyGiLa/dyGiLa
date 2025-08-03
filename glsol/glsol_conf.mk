@@ -36,6 +36,7 @@ GLSOL_OBJECTS = build/allocate.o              \
                 build/next_bath_UniT_quench.o \
                 build/next_bath_UniT_quench_Hfield.o \
                 build/next_bath_hotblob_quench_Hfield.o \
+                build/next_UniT_Hfield_constrained.o \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
                 build/glsol_initialize_H.o    \

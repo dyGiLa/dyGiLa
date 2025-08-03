@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
     glsol gl;
     
     const std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
-
+    // initialize blobal matep wrapper
+    matep::init_wrapper_mp();    
     // initialize Temperature field
     gl.initializeT();
 
@@ -35,9 +36,6 @@ int main(int argc, char **argv) {
 
     // initialize OP field
     gl.initialize();
-
-    // initialize blobal matep wrapper
-    matep::init_wrapper_mp();    
            
     int stepspos;
 
@@ -258,6 +256,19 @@ int main(int argc, char **argv) {
 		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
 		       << std::endl;	    
 
+	  }
+	else if (
+                 (gl.config.constrained == 1)
+		 && (gl.config.useTbath == 0)
+		 && (gl.config.evolveT == 0)
+                )
+	  {
+	    gl.next_UniT_Hfield_constrained();
+	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		       << ", next_UniT_Hfield_constrained() call, T in site is " << gl.T.get_element(originpoints)
+	               << ", |H| is " << norm(gl.H.get_element(originpoints))
+		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		       << std::endl;	    	    
 	  }
 	else
 	  {

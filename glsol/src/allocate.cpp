@@ -117,7 +117,8 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 								      ,"Bphase"               //5
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
-	                                                              ,"hotblob"});           //8
+									  ,"hotblob"			  //8
+	                                                              ,"BnA"});           //9
                                                                        
 
     hila::out0 << "config.initialCondition is "
@@ -231,6 +232,16 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 
     config.ptol = parameters.get("ptol");
 
+    // constrained parameters
+    config.constrained = parameters.get_item("constrained",{"no","yes"});
+    if (config.constrained == 1)
+      {
+       config.lambda0       = parameters.get("lambda0");
+       config.lambda1       = parameters.get("lambda1");
+       config.confSmoothTime = parameters.get("confSmoothTime");
+       config.kappa = parameters.get("kappa");       
+      }	
+
     /*----------------------------------------*/    
     /* Approx. Gaussian LP filter parameters  */
     /*----------------------------------------*/
@@ -243,7 +254,7 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
        /* 3d finite difference coefficients relation */
        config.GLPfc1 = 1. - 6.*config.GLPfc2; 
       }
-    
+	
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/

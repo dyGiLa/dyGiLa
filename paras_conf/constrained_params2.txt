@@ -1,4 +1,4 @@
-Nx                  256              # Number of points in the 0st direction 512
+Nx                  512              # Number of points in the 0st direction 512
 Ny                  256              # Number of points in the 2nd direction 256
 Nz                  256              # Number of points in the 3rd direction 127
 dx                  0.5              # Distance between two points
@@ -28,7 +28,7 @@ gamma2              7.05, 0.0         # complex value of damping coeff gamma i.e
 gammaoffc           10000000          # 12 * steps(40) = 480 dt = 48 tGL, 1779.71, 10000000 will kill gamma change practically
 
 initialCondition    normal_phase_complex      # type of initial condition gaussrand, kgaussrand, normal_phase_1(2,complex), Bphase, Aphase_(partial1, full), hotblob
-sigma               0.0               # variance sigma for hila::gaussrand(), e.g., 0.18      
+sigma               0.18               # variance sigma for hila::gaussrand(), e.g., 0.18      
 
 seed                462                 # Random seed, e.g., 1001
 IniMod              1.0               # Intial modulus in the kgaussrand case
@@ -38,7 +38,7 @@ initialConditionT   constant            # type of Temperature field profile, opt
 #Ttdb1               1.1                # Tx = T1 - T0, the prefoeeficient of blob configurations, T1 = Ttdb1 * Tcp
 #Ttdb0               0.6                # Tx = T1 - T0, the prefoeeficient of blob configurations, T0 = Ttdb0 * Tcp
 #t1                  15.7155               # t1 of blob profile, t1 in unit of tGL
-IniT                 2.8536          # initial value of Temperature field, starting Temp of quench, could larger than Tc
+IniT                 1.0          # initial value of Temperature field, starting Temp of quench, could larger than Tc
 #ampT                0.0             # amplitude of Temperature field of sine type
 #sigTx               0.0             # T-field variance along x-axis
 #sigTy               0.0             # T-field variance along y-axis
@@ -49,7 +49,7 @@ Inip                26.0              # initial value of pressure field
 
 withHfield          yes              # yes means H-field non-zero
 initialConditionH   constant         # type of pressure field, options are constant
-InitH               0.0, 0.0, 30.0     # H-field vector components hx,hy,hz
+InitH               0.0, 0.0, 0.0     # H-field vector components hx,hy,hz
 
 tStats              0.0             # Starting time for the output_file
 nOutputs            500             # Number of outputs for the output_file, 2400, 1200, 600, 300, 28, 500, 1500(dt = 2tGL)
@@ -72,20 +72,24 @@ BCs2                    periodic         # boundaryConditions BCs2
 #BoundaryPhaseWindingNO  5               #phase winding number on x-y boundary 
 BCchangec               1                #change boundaryConditions to BCs2 at BCchangec * steps, 32, 20
 
-evolveT               yes                 # switch for turing on/off Temperature field evolve
-Tevolvetype           homogeneousQuench   # ways for updating T-field, options are "heat","wave","homogeneousQuench"
+evolveT               no                 # switch for turing on/off Temperature field evolve
+#Tevolvetype           homogeneousQuench   # ways for updating T-field, options are "heat","wave","homogeneousQuench"
 #startdiffT           10.0                # sartting diffuse temperature startdiffT
 #diffT
 
 #bloob_after          no                 # options are no, yes
 #theat
 
-useTbath              yes                # options are no, yes
+useTbath              no                # options are no, yes
 Tbath_start           0.0                 # starting time of turning on Langevin term for next(), this only works for bon-blob quench
 
 ptol                  0.083                # tolrance of phaseMarker; 0.083; 0.05
 
-constrained		      no
+constrained           yes               # switch of constrained optimazaton, This is needed for critical bubble solution, no or yes
+lambda0               0.0              # Lagrangin multipler, value may be not that matter
+lambda1               5.5            # Lagrangin multipler, value may be not that matter
+confSmoothTime         10                # initial configuration smoth time, in unit of tGL 
+kappa                 0.5               # fraction of trAdA of B-phase in Delta^2_kappa
 
 useGaussianLP_filter yes
 numIterGLPfilter     3
