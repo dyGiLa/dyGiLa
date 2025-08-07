@@ -78,6 +78,7 @@ struct dyGiLaConf {
       /*-----------------------------------------*/
       /* hot blob Temeprature profile parameters */
       /* Ttdbx mean T in unit of Tc              */
+      bool Blob_Tc_cutoff;
       real_t Ttdb1;
       real_t Ttdb0;
       real_t t1;

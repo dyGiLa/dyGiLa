@@ -10,7 +10,6 @@
 #include "plumbing/fft.h"
 
 #include "glsol.hpp"
-//#include "matep.hpp"
 
 
 const std::vector<std::string> glsol::allocate(const std::string &fname, int argc, char **argv) {
@@ -145,7 +144,8 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
       {
        /*********************************************/
        /* >>>> spherical hot blob parameters <<<<<  */    
-       /*********************************************/    	
+       /*********************************************/
+	config.Blob_Tc_cutoff = parameters.get_item("Blob_Tc_cutoff",{"no", "yes"});
         config.Ttdb1         = parameters.get("Ttdb1");
         config.Ttdb0         = parameters.get("Ttdb0");
         config.t1            = parameters.get("t1");

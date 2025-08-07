@@ -69,12 +69,19 @@ void glsol::initializeT() {
             
       auto r2 = (x*x + y*y + z*z)/4.f;
 
-      T[X] = (r2 <= (rm * rm))
-	     ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
-	        * std::pow(config.t1/tm, 3./2.)
-	        * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
-	       + config.Ttdb0 * Tcp_mK
-	     : config.Ttdb0 * Tcp_mK;
+      if (config.Blob_Tc_cutoff == true)	
+        T[X] = (r2 <= (rm * rm))
+	       ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
+	          * std::pow(config.t1/tm, 3./2.)
+	          * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
+	         + config.Ttdb0 * Tcp_mK
+	       : config.Ttdb0 * Tcp_mK;
+      else
+        T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
+	          * std::pow(config.t1/tm, 3./2.)
+	          * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
+	       + config.Ttdb0 * Tcp_mK;
+	
 
     } // onsites block ends here
 
