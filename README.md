@@ -2,7 +2,7 @@
 ![dyGiLa Logo](https://github.com/dyGiLa/Images/blob/main/reposity-readme-logo-pic.png)
 
 [![Home Page](https://img.shields.io/badge/Home-Website-blue?style=plastic&logo=Google-Chrome&logoColor=white)](https://dygila.github.io)
-[![YouTube Channel](https://img.shields.io/badge/YouTube-Channel-red?style=plastic&logo=YouTube&logoColor=white)](https://www.youtube.com/@Superfluid-Field-Sim))
+[![YouTube Channel](https://img.shields.io/badge/YouTube-Channel-red?style=plastic&logo=YouTube&logoColor=white)](https://www.youtube.com/@Superfluid-Field-Sim)
 [![Releases](https://img.shields.io/github/v/release/your-username/your-repo?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/releases)
 [![Contributors](https://img.shields.io/github/contributors/your-username/your-repo?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/graphs/contributors)
 
