@@ -1,91 +1,27 @@
-### dyGiLa -- dynamical simulation of p-wave GL Effective Theory
-HPC software for simulating the order parameter dynamics of p-wave Time-Dependent Ginzburg-Landau (TDGL) effective theory for superfluid Helium-3.
-This software is being developed as part of the STFC-funded project Quantum-Enhanced Superfluid Technologies for Dark Matter and Cosmology (QUEST-DMC).
+# dyGiLa
+![dyGiLa Logo](https://github.com/dyGiLa/Images/blob/main/reposity-readme-logo-pic.png)
 
-dyGiLa started as a descendant of `onsim` developed by Dr. Asier Lopez-Eiguren. 
-Same as `onsim`, dyGiLa uses [HILA](https://cft-hy.github.io/HILA.home) as its CFT simulation framework (Prof.Kari Rummukainen et al)
+[![Home Page](https://dygila.github.io)
+[![Youtube Channel](https://www.youtube.com/@Superfluid-Field-Sim)
+[![Releases](https://github.com/dyGiLa/dyGiLa/releases)
+[![GitHub contributors](https://github.com/dyGiLa/dyGiLa/graphs/contributors)
 
-After couple of years' develpment, Dr. Kuang Zhang has added parallel simulaton data stream feature (`pario`) and strong coupling corrections functions `matep` into dyGiLa.
-Moreover, implemented by Dr. Asier Lopez-Eiguren, and generalized by Dr. Kuang Zhang, GL EOM with Langevin noise i.e., GL-Langevin equation has been introduced into dyGiLa
-with many different temperature profiles.
+The dyGiLa project is an effort to apply algorithms of lattice field theory
+and enabling GPU-CPU hybrid technologies with C++ fashion for HPC simulation of
+efficient large-scale, 3-dimensional tensor-valued p-wave Ginzburg-Landau effective theory.
 
-The significant development milestone is Dr. Kuang Zhang itegrated `HILA` lattice envirament and `pario` stream engine with both Nvidia
-`CUDA` and AMD `ROCm` support. These accelration features have been tested both both on `N100` and `MI250` clusters.
 
-#### Home page and documentation of [dyGiLa](https://dygila.github.io) project: https://dygila.github.io
+### Documentation
 
-### dyGiLa source tree
-~~~ shellscript
- |-glsol
- | |-src
- | | |-allocate.cpp
- | | |-utilities
- | | | |-write_energies.cpp
- | | | |-write_positions.cpp
- | | | |-phaseMarking.cpp
- | | | |-write_phases.cpp
- | | | |-point_params.cpp
- | | | |-write_moduli.cpp
- | | |-next
- | | | |-next.cpp
- | | | |-next_bath_UniT_quench.cpp
- | | | |-next_bath.cpp
- | | | |-next_T.cpp
- | | | |-next_bath_hotblob_quench_Hfield.cpp
- | | | |-next_bath_UniT_quench_Hfield.cpp
- | | |-initialize
- | | | |-glsol_initialize_T.cpp
- | | | |-glsol_initialize_p.cpp
- | | | |-glsol_initialize_H.cpp
- | | | |-glsol_initialize.cpp
- | |-inc
- | | |-dyGiLa_config.hpp
- | | |-glsol.hpp
- | |-glsol_conf.mk
- |-paras_conf
- | |-parameters_computed.txt
- | |-parameters_fixed.txt
- | |-parameters_interpolated.txt
- | |-sim_params.txt
- | |-sim_config_dyGiLa-Langevin-quench.txt
- | |-sim_config_pario_Temperature_field.txt
- | |-sim_T0.txt
- | |-sim_config_dyGiLa-Langevin.txt
- |-pario
- | |-src
- | | |-pstream.cpp
- | | |-utilities
- | | | |-actions_spinCurrent.cpp
- | | | |-mesh_gapA_FEDensity.cpp
- | | | |-mesh_spinCurrent.cpp
- | | | |-actions_massCurrent.cpp
- | | | |-mesh_massCurrent.cpp
- | | | |-mesh_insitu_phaseMarker.cpp
- | | | |-mesh_AMatrix.cpp
- | | | |-actions_insitu.cpp
- | | | |-mesh.cpp
- | | | |-mesh_insitu_Temperature.cpp
- | | | |-actions_printTree.cpp
- | | | |-actions_AMatrix.cpp
- | | | |-mesh_insitu_phaseExpAngle.cpp
- | | | |-mesh_insitu_phaseExpAngle.cpp~
- | | | |-mesh_addGhost_verify.cpp
- | | |-xdmf.cpp
- | | |-shutdown.cpp
- | | |-xml.cpp
- | | |-init.cpp
- | |-inc
- | | |-pario.hpp
- | |-pario_conf.mk
- |-.gitignore
- |-main.cpp
- |-README.md
- |-matep
- | |-src
- | | |-matep.cpp
- | | |-matep_utils.cpp
- | |-inc
- | | |-matep.hpp
- | |-matep_conf.mk
- |-Makefile
-~~~
+- [Dependencies and Compilation](https://dygila.github.io/install)
+
+- [Benchmarks](https://dygila.github.io/benchmark)
+
+
+### License
+
+dyGiLa is licensed on under GPL-v2 license. 
+
+### Contributing
+
+We appreciate your willingness to contribute to the dyGiLa project. 
