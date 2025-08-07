@@ -212,12 +212,15 @@ void glsol::initialize() {
   case 8: {
 
     pi = 0;
-    A  = 0; // set all sites to be normal phase
+    // A  = 0;
+    // set all sites to be normal phase with thermal noise
+    A[ALL] = sqrt(config.variance_sigma) * A[X].gaussian_random();
 
     real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+    
     onsites(ALL) {
 
-      matep::Matep MPonsites; 
+      matep::Matep MPonsites;
       if (T[X] < Tcp_mK)
 	{
          foralldir(al) foralldir(i)
@@ -231,8 +234,8 @@ void glsol::initialize() {
          A[X]=A[X] * (MPonsites.gap_A_td(config.Inip, T[X])/sqrt(2.));
 	 // hila::out0 << "A[x] is " << A[X].e(0,0).re << std::endl;
 	  
-	} // Temeprature judgement block
-
+       } // Temeprature judgement block
+      
     } // onsites(ALL) end here
 
     hila::out0 << "OP field initialized according to the hotblob profile! " << std::endl;
@@ -255,6 +258,9 @@ void glsol::initialize() {
     } // default block
   } // switch block ends here
 
+  /****************************/
+  /** phaseMarker defination **/
+  /****************************/  
   phaseMarker = 0.0f;
 
 } // initialize() call end here
