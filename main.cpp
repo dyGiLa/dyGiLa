@@ -20,7 +20,7 @@
 
 int main(int argc, char **argv) {
 
-    glsol gl;
+    glsol gl;      
        
     const std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
 
@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
         } //gl.t > gl.config.Stats block
 
         gl.phaseMarking();        
-        hila::out0 << "phaseMarking() call is done. " << std::endl;
+        hila::out0 << "gl.t is " << gl.t << ", phaseMarking() call is done. " << std::endl;
 	
 
 	/*******************************************************************/
@@ -198,11 +198,14 @@ int main(int argc, char **argv) {
 	  {
 	    //hila::out0 << "just before call next-blob() " << std::endl;
 	    gl.next_bath_hotblob_quench_Hfield();
-	    hila::out0 << "gl.t is " << gl.t 
-		       << ", next_bath_hotblob_quench_Hfield() call " 
-		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << ", Ttdb0 is " << gl.config.Ttdb0	      
-	               << std::endl;
+	    if (stat_counter % steps == 0)
+	      {// squeze IO a littble bit
+	       hila::out0 << "gl.t is " << gl.t 
+		          << ", next_bath_hotblob_quench_Hfield() call " 
+		          << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		          << ", Ttdb0 is " << gl.config.Ttdb0	      
+	                  << std::endl;
+	      }
 	  } // heterogenous quench, hot blob T-profile 
 	else
 	  { // homogenous quench block starts from here
