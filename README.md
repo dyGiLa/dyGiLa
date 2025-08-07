@@ -8,8 +8,8 @@
 
 
 The dyGiLa project is an effort to apply algorithms of lattice field theory
-and enabling GPU-CPU hybrid technologies with C++ fashion for HPC simulation of
-efficient large-scale, 3-dimensional tensor-valued p-wave Ginzburg-Landau effective theory.
+and enabling GPU-CPU hybrid technologies with C++ fashion for efficient HPC simulation of
+large-scale, 3-dimensional tensor-valued p-wave Ginzburg-Landau effective theory.
 
 ### Documentation
 
