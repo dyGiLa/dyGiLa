@@ -3,8 +3,8 @@
 
 [![Home Page](https://img.shields.io/badge/Home-Website-blue?style=plastic&logo=Google-Chrome&logoColor=white)](https://dygila.github.io)
 [![YouTube Channel](https://img.shields.io/badge/YouTube-Channel-red?style=plastic&logo=YouTube&logoColor=white)](https://www.youtube.com/@Superfluid-Field-Sim)
-[![Releases](https://img.shields.io/github/v/release/timohyva/dyGiLa?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/releases)
-[![Contributors](https://img.shields.io/github/contributors/timohyva/dyGiLa?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/graphs/contributors)
+[![Releases](https://img.shields.io/github/v/release/dyGiLa/dyGiLa?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/releases)
+[![Contributors](https://img.shields.io/github/contributors/dyGiLa/dyGiLa?style=plastic&logo=GitHub)](https://github.com/dyGiLa/dyGiLa/graphs/contributors)
 
 
 The dyGiLa project is an effort to apply algorithms of lattice field theory
