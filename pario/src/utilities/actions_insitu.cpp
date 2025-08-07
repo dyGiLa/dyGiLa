@@ -68,7 +68,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s2/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s2/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s2/renders/r1/image_prefix"] = "insitu/gapA-clip1_t-%09d";
+       scenes["s2/renders/r1/image_prefix"] = "insitu/gapA-clip1/gapA-clip1_t-%09d";
        scenes["s2/renders/r1/camera/azimuth"] = sol.config.camera1_azi;
        scenes["s2/renders/r1/camera/elevation"] = sol.config.camera1_ele;
       }
@@ -100,7 +100,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s3/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s3/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s3/renders/r1/image_prefix"] = "insitu/gapA-clip2-t-%09d";
+       scenes["s3/renders/r1/image_prefix"] = "insitu/gapA-clip2/gapA-clip2_t-%09d";
        scenes["s3/renders/r1/camera/azimuth"] = sol.config.camera2_azi/*35.0*/;
        scenes["s3/renders/r1/camera/elevation"] = sol.config.camera2_ele/*30.0*/;
       }
@@ -131,7 +131,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s4/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s4/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s4/renders/r1/image_prefix"] = "insitu/gapA-slice1_t-%09d";
+       scenes["s4/renders/r1/image_prefix"] = "insitu/gapA-slice1/gapA-slice1_t-%09d";
        // scenes["s4/renders/r1/camera/azimuth"] = -45./*sol.config.camera1_azi*/;
        // scenes["s4/renders/r1/camera/elevation"] = 0./*sol.config.camera1_ele*/;
       }
@@ -188,7 +188,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s6/plots/p1/type"] = "pseudocolor";
        scenes["s6/plots/p1/pipeline"] = "pl5";
        scenes["s6/plots/p1/field"] = "gapA";
-       scenes["s6/renders/r1/image_prefix"] = "insitu/gapA-iso_t-%09d";
+       scenes["s6/renders/r1/image_prefix"] = "insitu/gapA-iso/gapA-iso_t-%09d";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes["s6/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -225,7 +225,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s7/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s7/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s7/renders/r1/image_prefix"] = "insitu/feDensity-clip_Camp-t-%09d";
+       scenes["s7/renders/r1/image_prefix"] = "insitu/feDensity-clip_Camp/feDensity-clip_Camp-t-%09d";
        scenes["s7/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s7/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
@@ -256,7 +256,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s8/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s8/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s8/renders/r1/image_prefix"] = "insitu/Temeperature-clip-t-%09d";
+       scenes["s8/renders/r1/image_prefix"] = "insitu/Temeperature-clip/Temeperature-clip-t-%09d";
        scenes["s8/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s8/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
@@ -287,7 +287,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes2["s5/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes2["s5/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes2["s5/renders/r1/image_prefix"] = "insitu/Temperature-slice_t-%09d";
+       scenes2["s5/renders/r1/image_prefix"] = "insitu/Temperature-slice/Temperature-slice_t-%09d";
       }
 
     
@@ -309,7 +309,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s9/plots/p1/type"] = "pseudocolor";
        scenes["s9/plots/p1/pipeline"] = "pl8";
        scenes["s9/plots/p1/field"] = "Temperature";
-       scenes["s9/renders/r1/image_prefix"] = "insitu/Temperature-iso_t-%09d";
+       scenes["s9/renders/r1/image_prefix"] = "insitu/Temperature-iso/Temperature-iso_t-%09d";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
        scenes["s9/renders/r1/dataset_bounds"].set(box_bounds,6);
@@ -351,7 +351,7 @@ void parIO::defineActions_insitu(glsol &sol) {
 
        scenes["s10/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s10/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
-       scenes["s10/renders/r1/image_prefix"] = "insitu/pMarker-slice_t-%09d";
+       scenes["s10/renders/r1/image_prefix"] = "insitu/pMarker-Slice/pMarker-slice_t-%09d";
       }
 
     /* >>>>>>>>>>> phaseMarker isosurfece <<<<<<<<<<<<< */
@@ -373,7 +373,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s11/plots/p1/pipeline"] = "pl10";
        scenes2["s11/plots/p1/field"] = "phaseMarker";
        scenes2["s11/plots/p1/color_table/name"] = "Jet";       
-       scenes2["s11/renders/r1/image_prefix"] = "insitu/pMarker-iso_t-%09d";
+       scenes2["s11/renders/r1/image_prefix"] = "insitu/pMarker-iso/pMarker-iso_t-%09d";
        scenes2["s11/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
@@ -402,7 +402,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s12/plots/p1/field"] = "phaseMarker";
        scenes2["s12/plots/p1/color_table/name"] = "Default";
        //scenes2["s12/plots/p1/color_table/discrete"] = "true";
-       scenes2["s12/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip_t-%09d";
+       scenes2["s12/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip/pMarker-fieldclip_t-%09d";
        scenes2["s12/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
@@ -431,7 +431,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s13/plots/p1/field"] = "phaseMarker";
        scenes2["s13/plots/p1/color_table/name"] = "Green";
        //scenes2["s13/plots/p1/color_table/discrete"] = "true";
-       scenes2["s13/renders/r1/image_prefix"] = "insitu/pMarker-isoVolume-Bphase_t-%09d";
+       scenes2["s13/renders/r1/image_prefix"] = "insitu/pMarker-isoVolume-Bphase/pMarker-isoVolume-Bphase_t-%09d";
        scenes2["s13/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";       
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
@@ -460,7 +460,7 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s14/plots/p1/field"] = "phaseMarker";
        scenes2["s14/plots/p1/color_table/name"] = "Cold and Hot";
        //scenes2["s14/plots/p1/color_table/discrete"] = "true";
-       scenes2["s14/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip-Aphase_t-%09d";
+       scenes2["s14/renders/r1/image_prefix"] = "insitu/pMarker-fieldclip-Aphase/pMarker-fieldclip-Aphase_t-%09d";
        scenes2["s14/renders/r1/screen_annotations"] = (sol.config.remove_screen_annotations == 1) ? "false" : "true";
 
        double box_bounds[6] = {0.0, sol.config.lx * sol.config.dx, 0.0, sol.config.ly * sol.config.dx, 0.0, sol.config.lz * sol.config.dx};
