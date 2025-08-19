@@ -87,7 +87,8 @@ public:
   void next_bath();
   void next_bath_UniT_quench();
   void next_bath_UniT_quench_Hfield();
-  void next_bath_hotblob_quench_Hfield();      
+  void next_bath_hotblob_quench_Hfield();
+  void next_bath_hotblob_quench_Hfield_confCatch();        
   //void nextT();
   
   Field<phi_t> A;
