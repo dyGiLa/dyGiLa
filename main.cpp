@@ -49,9 +49,11 @@ int main(int argc, char **argv) {
                                /(gl.config.dt * gl.config.nOutputs); 
     
 
-    if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } // initial gamma parameter if gamma is fixed
-    
-    gl.config.boundaryConditions = gl.config.BCs1;                   // initial bounaryConstions
+    // initial gamma parameter if gamma is fixed
+    if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } 
+
+    // initial bounaryConstions
+    gl.config.boundaryConditions = gl.config.BCs1;               
     
     if (gl.config.positions == 1) {
       stepspos = (gl.config.tEnd - gl.config.tStats) 
@@ -156,22 +158,30 @@ int main(int argc, char **argv) {
             /* config.gamma update block */
 	    if (
 		(gl.config.TDependnetgamma == 1)
-		 && (stat_counter < (gl.config.gammaoffc)*steps)
+		&& (gl.config.initialConditionT != 2)
+		&& (stat_counter < (gl.config.gammaoffc)*steps)
 	       )
 	      // update gl.config.gamma if T-dependency of gamma is turned on
 	      {
-		if (gl.config.initialConditionT != 2)
-		  {
 		   gl.config.gamma = (gl.T.get_element(originpoints) < gl.MP.Tcp_mK(gl.config.Inip))
 		     ? gl.MP.gamma_td(gl.config.Inip, gl.T.get_element(originpoints), gl.phaseMarker.get_element(originpoints))
 		     : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip), gl.phaseMarker.get_element(originpoints));
-
-		  }
 		
 	      }
-	    else if (stat_counter >= (gl.config.gammaoffc)*steps)
-      	      // Set gamma to 2nd value after certain momentum no matter what
+	    else if (
+		     (gl.config.initialConditionT != 2)
+		     && (stat_counter >= (gl.config.gammaoffc)*steps)
+		    )
+      	      // Set gamma to 2nd value after certain momentum for non-blob profile
 	      {gl.config.gamma = gl.config.gamma2;}
+            else if (
+                     (gl.config.initialConditionT == 2)
+		     && (stat_counter >= (gl.config.gammaoffc)*steps)
+                    )
+      	      // Set gamma to 2nd value after certain momentum for blob profile
+	      {gl.config.gamma = gl.config.gamma2;}
+	      
+	    
 	    /* config.gamma update block end here */
 	    
 	    //if (stat_counter == (gl.config.gammaoffc + 3)*steps) {gl.config.gamma = gl.config.gamma1;}
@@ -196,16 +206,34 @@ int main(int argc, char **argv) {
 	    && (gl.config.evolveT == 1)
 	   )
 	  {
-	    //hila::out0 << "just before call next-blob() " << std::endl;
-	    gl.next_bath_hotblob_quench_Hfield();
-	    if (stat_counter % steps == 0)
-	      {// squeze IO a littble bit
-	       hila::out0 << "gl.t is " << gl.t 
-		          << ", next_bath_hotblob_quench_Hfield() call " 
-		          << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		          << ", Ttdb0 is " << gl.config.Ttdb0	      
-	                  << std::endl;
-	      }
+	    if (stat_counter < (gl.config.gammaoffc)*steps)
+	      {
+	       //hila::out0 << "just before call next-blob() " << std::endl;
+	       gl.next_bath_hotblob_quench_Hfield();
+	       if (stat_counter % steps == 0)
+	         {// squeze IO a littble bit
+	          hila::out0 << "gl.t is " << gl.t 
+		             << ", next_bath_hotblob_quench_Hfield() call " 
+		             << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		             << ", Ttdb0 is " << gl.config.Ttdb0	      
+	                     << std::endl;
+	         }
+
+	      } // blob evolution block
+	    else if (stat_counter >= (gl.config.gammaoffc)*steps)
+	      {
+	       gl.next_bath_hotblob_quench_Hfield_confCatch();
+	       if (stat_counter % steps == 0)
+	         {// squeze IO a littble bit
+	          hila::out0 << "gl.t is " << gl.t 
+		             << ", next_bath_hotblob_quench_Hfield_confCatch() call " 
+		             << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		             << ", Ttdb0 is " << gl.config.Ttdb0	      
+	                     << std::endl;
+	         }
+
+	      } // conf catch block 
+	      
 	  } // heterogenous quench, hot blob T-profile 
 	else
 	  { // homogenous quench block starts from here
