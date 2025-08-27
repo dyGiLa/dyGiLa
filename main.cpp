@@ -103,18 +103,14 @@ int main(int argc, char **argv) {
     run_timer.start();
     
     while (gl.t < gl.config.tEnd) {
-      //gl.config.gamma = (stat_counter < gl.config.gammaoffc) ? gl.config.gamma1 : gl.config.gamma2;
-      //hila::out0 << "gl.config.gamma is " << gl.config.gamma << "\n" << std::endl;
       
         if (gl.t > gl.config.tStats) {
 	  
 	   if (stat_counter % steps == 0) {
 
 	      meas_timer.start();
-	      //gl.write_moduli();
 	      gl.write_energies();
 	      gl.phaseCounting();
-	      //gl.write_phases();
 	      hila::out0 << "write_energies(), phaseCounting() call is done "
 			 << std::endl;
 
@@ -179,12 +175,9 @@ int main(int argc, char **argv) {
 		     && (stat_counter >= (gl.config.gammaoffc)*steps)
                     )
       	      // Set gamma to 2nd value after certain momentum for blob profile
-	      {gl.config.gamma = gl.config.gamma2;}
-	      
-	    
+	      {gl.config.gamma = gl.config.gamma2;}	      	    
 	    /* config.gamma update block end here */
 	    
-	    //if (stat_counter == (gl.config.gammaoffc + 3)*steps) {gl.config.gamma = gl.config.gamma1;}
 	    if (stat_counter == (gl.config.BCchangec)*steps) {gl.config.boundaryConditions = gl.config.BCs2;}
 
 	    ++stat_counter;

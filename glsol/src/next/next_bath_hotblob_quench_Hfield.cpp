@@ -164,7 +164,6 @@ void glsol::next_bath_hotblob_quench_Hfield() {
                                                      - 6.0*A[X]);
   }
 
-    //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
