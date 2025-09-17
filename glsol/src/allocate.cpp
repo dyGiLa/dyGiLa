@@ -102,6 +102,12 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 
     // conunter for triggering gamma value change 
     config.gammaoffc = parameters.get("gammaoffc");
+    /*
+     * gamma2 appling time, started from first moment when blob confCatch() block is entred.
+     * This for blob confCatch function noise removment. After this time, T-dependent gamma 
+     * is recovery without thermal noise. (in unit of tGL) 
+     */ 
+    config.extinguish_off_t_count = parameters.get("extinguish_off_t_count");
     
     /******************************************/
     /*        gamma as complex number         */

@@ -50,6 +50,12 @@ struct dyGiLaConf {
       Complex<real_t> gamma1;
       Complex<real_t> gamma2;
       int gammaoffc;
+
+      /* gamma2 appling time, started from 
+       * first moment when blob confCatch() block is entred.
+       * in unit of tGL. 
+       */
+      unsigned int extinguish_off_t_count;
       
       int initialCondition;
       real_t variance_sigma;
