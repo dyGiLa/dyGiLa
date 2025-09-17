@@ -106,6 +106,8 @@ public:
   real_t t = 0.;
   real_t tc = 0.;
 
+  real_t extinguish_t = 0.;
+  
   matep::Matep MP;
 
   dyGiLaConf config;

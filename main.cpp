@@ -215,6 +215,7 @@ int main(int argc, char **argv) {
 	      } // blob evolution block
 	    else if (stat_counter >= (gl.config.gammaoffc)*steps)
 	      {
+	       ++gl.extinguish_t; //estinguish time count, in step of dt
 	       gl.next_bath_hotblob_quench_Hfield_confCatch();
 	       if (stat_counter % steps == 0)
 	         {// squeze IO a littble bit
