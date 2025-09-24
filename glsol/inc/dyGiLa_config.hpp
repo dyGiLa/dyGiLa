@@ -143,6 +143,7 @@ struct dyGiLaConf {
       real_t lambda0; //Lagrangin multipler 0th
       real_t lambda1; //Lagrangin multipler 1st
       real_t confSmoothTime; //initial conf smooth time
+      real_t lambdaIncrement; //amount to increment lambda above 5.5
       real_t kappa;  // fraction index
 
       /*----------------------------------------*/

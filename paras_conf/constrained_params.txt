@@ -1,4 +1,4 @@
-Nx                  512              # Number of points in the 0st direction 512
+Nx                  256              # Number of points in the 0st direction 512
 Ny                  256              # Number of points in the 2nd direction 256
 Nz                  256              # Number of points in the 3rd direction 127
 dx                  0.5              # Distance between two points
@@ -27,7 +27,7 @@ gamma1              0.15, 0.0         # complex value of damping coeff gamma i.e
 gamma2              0.15, 0.0         # complex value of damping coeff gamma i.e., gamma = re +I im
 gammaoffc           10000000          # 12 * steps(40) = 480 dt = 48 tGL, 1779.71, 10000000 will kill gamma change practically
 
-initialCondition    BnA      # type of initial condition gaussrand, kgaussrand, normal_phase_1(2,complex), Bphase, Aphase_(partial1, full), hotblob, BnA
+initialCondition    B_bubble      # type of initial condition gaussrand, kgaussrand, normal_phase_1(2,complex), Bphase, Aphase_(partial1, full), hotblob, BnA, B_bubble
 sigma               0.18               # variance sigma for hila::gaussrand(), e.g., 0.18      
 
 seed                462                 # Random seed, e.g., 1001
@@ -52,7 +52,7 @@ initialConditionH   constant         # type of pressure field, options are const
 InitH               0.0, 0.0, 0.0     # H-field vector components hx,hy,hz
 
 tStats              0.0             # Starting time for the output_file
-nOutputs            500             # Number of outputs for the output_file, 2400, 1200, 600, 300, 28, 500, 1500(dt = 2tGL)
+nOutputs            100             # Number of outputs for the output_file, 2400, 1200, 600, 300, 28, 500, 1500(dt = 2tGL)
 output_file         stats/measure-stream.csv     # Path for output_file
 pVcounter_file      stats/phaseVolume-stream.csv # Path for pVcounter_file
 
@@ -67,8 +67,8 @@ xmf2_spinCurrent_fname       hdf5rspinC.xmf2   #hdf5 files reader for ParaView
 #write_phases        no
 #write_eigen         yes
 
-BCs1                    periodic         # boundaryConditions BCs1
-BCs2                    periodic         # boundaryConditions BCs2
+BCs1                    AB         # boundaryConditions BCs1
+BCs2                    AB         # boundaryConditions BCs2
 #BoundaryPhaseWindingNO  5               #phase winding number on x-y boundary 
 BCchangec               1                #change boundaryConditions to BCs2 at BCchangec * steps, 32, 20
 
@@ -89,7 +89,7 @@ constrained           yes               # switch of constrained optimazaton, Thi
 lambda0               0.0              # Lagrangin multipler, value may be not that matter
 lambda1               5.5            # Lagrangin multipler, value may be not that matter
 confSmoothTime         10                # initial configuration smoth time, in unit of tGL 
-kappa                 0.5               # fraction of trAdA of B-phase in Delta^2_kappa
+kappa                 0.1               # fraction of trAdA of B-phase in Delta^2_kappa
 
 useGaussianLP_filter yes
 numIterGLPfilter     3

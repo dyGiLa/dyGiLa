@@ -12,10 +12,11 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
+#include <iomanip>
 
 void glsol::phaseCounting() {
   
-  ReductionVector<float> px_acc(/*pxacc::*/N_PMREDUCTION);
+  ReductionVector<double> px_acc(/*pxacc::*/N_PMREDUCTION);
   px_acc = 0.f;
   px_acc.allreduce(true);
 
@@ -41,7 +42,7 @@ void glsol::phaseCounting() {
 
 
   double vol = lattice.volume();
-  float acc_vol = px_acc[/*pxacc::*/p1_acc] + px_acc[/*pxacc::*/p2_acc]
+  double acc_vol = px_acc[/*pxacc::*/p1_acc] + px_acc[/*pxacc::*/p2_acc]
                   + px_acc[/*pxacc::*/p3_acc] + px_acc[/*pxacc::*/p4_acc]
                   + px_acc[/*pxacc::*/p5_acc] + px_acc[/*pxacc::*/p6_acc]
                   + px_acc[/*pxacc::*/p7_acc] + px_acc[/*pxacc::*/p8_acc]
@@ -49,8 +50,8 @@ void glsol::phaseCounting() {
 
   // Volume element in unit of \xi_GL^0
   const double Velem = config.dx*config.dx*config.dx;
-  config.streampc
-	 << t << "," << T000 << ","
+  config.streampc << t << "," << T000 << ",";
+  config.streampc << std::fixed << std::setprecision(9)
 	 /***************************/	 	 	 
 	 << px_acc[/*pxacc::*/p1_acc]/vol << ","
 	 /***************************/	 	 

@@ -117,8 +117,9 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 								      ,"Bphase"               //5
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
-									  ,"hotblob"			  //8
-	                                                              ,"BnA"});           //9
+									  ,"hotblob"			          //8
+                    ,"BnA"                    //9
+	                                                              ,"B_bubble"});           //10
                                                                        
 
     hila::out0 << "config.initialCondition is "
@@ -239,6 +240,7 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
        config.lambda0       = parameters.get("lambda0");
        config.lambda1       = parameters.get("lambda1");
        config.confSmoothTime = parameters.get("confSmoothTime");
+       config.lambdaIncrement = parameters.get("lambdaIncrement");
        config.kappa = parameters.get("kappa");       
       }	
 

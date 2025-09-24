@@ -119,9 +119,22 @@ void glsol::next_UniT_Hfield_constrained() {
              << "\n"
 	     << std::endl;
 
-  const real_t lambda = (t > config.confSmoothTime)
-                        ? config.lambda1
-                        : config.lambda0;
+  real_t lambda;
+  if (t <= config.confSmoothTime) {
+    lambda = config.lambda0;
+  } else {
+    if (config.lambda1 <= 5.5) {
+      // for smaller lambda use lambda1 directly
+        lambda = config.lambda1;
+      } else {
+        // for larger lambda increment up every confSmoothTime time units
+        int num_increments = static_cast<int>((t - config.confSmoothTime) / config.confSmoothTime);
+        real_t current_lambda = 5.5 + num_increments * config.lambdaIncrement;
+        // cap at lambda at lambda1
+        lambda = std::min(current_lambda, config.lambda1);
+      }
+  }
+  hila::out0 << " lambda is " << lambda << std::endl;
   
   onsites (ALL) {
 	matep::Matep MP;
@@ -181,6 +194,7 @@ void glsol::next_UniT_Hfield_constrained() {
     }
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
+      pi[ALL] = 0;
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt);
 
       t += config.dt;
