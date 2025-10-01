@@ -59,6 +59,9 @@ int main(int argc, char **argv) {
 
     // measurement and stream counter
     unsigned int stat_counter = 0;
+	
+	// used for custom insitu timesteps
+	unsigned int insitu_idx = 0; // tracks position in custom timestep list
 
     if (hila::myrank() == 0) { gl.fstreams_open(name_files); }
 
@@ -127,24 +130,42 @@ int main(int argc, char **argv) {
                        (gl.config.hdf5_A_matrix_output != 1)
 		       && (gl.config.hdf5_pMarker_output != 1)
 		       && (gl.config.hdf5_mass_current_output != 1)
-		       && (gl.config.hdf5_spin_current_output != 1)		       
-		       && (
-                           (gl.config.do_gapA_clip == 1)
-			   || (gl.config.do_gapA_slice == 1)
-			   || (gl.config.do_fed_clip == 1)
-			   || (gl.config.do_Temperature_clip == 1)
-			   || (gl.config.do_Temperature_slice == 1)
-			   || (gl.config.do_Temperature_isosurface == 1)			   
-			   || (gl.config.do_gapA_isosurface == 1)
-			   || (gl.config.do_phaseMarker_slice == 1)
-			   || (gl.config.do_phaseMarker_isosurface == 1)
-			   || (gl.config.do_phaseMarker_fieldclip == 1)
-			   || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
-			   || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
-                          )
-                      )
-		paraio.pstream(gl, stat_counter);		
-	      hila::out0 << "paraio.pstream() call is done " << std::endl;
+		       && (gl.config.hdf5_spin_current_output != 1)
+			   )
+		  {
+			bool output_insitu = false;
+
+			if (gl.config.use_custom_insitu_timesteps == 1) {
+				// use custom timestep list
+				if (insitu_idx < gl.config.custom_insitu_timesteps.size()) {
+				if (gl.t >= gl.config.custom_insitu_timesteps[insitu_idx]) {
+					output_insitu = true;
+					++insitu_idx; // next timestep
+				}
+			  }
+			} else {
+				// default behavior: output every measurement step
+				output_insitu = true;
+			}
+			if (output_insitu && 
+				((gl.config.do_gapA_clip == 1)
+				|| (gl.config.do_gapA_slice == 1)
+				|| (gl.config.do_fed_clip == 1)
+				|| (gl.config.do_Temperature_clip == 1)
+				|| (gl.config.do_Temperature_slice == 1)
+				|| (gl.config.do_Temperature_isosurface == 1)
+				|| (gl.config.do_gapA_isosurface == 1)
+				|| (gl.config.do_phaseMarker_slice == 1)
+				|| (gl.config.do_phaseMarker_isosurface == 1)
+				|| (gl.config.do_phaseMarker_fieldclip == 1)
+				|| (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
+				|| (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
+				))
+			{
+				paraio.pstream(gl, stat_counter);
+			}
+		  }	
+		  hila::out0 << "paraio.pstream() call is done " << std::endl;
 #endif	            
 	      meas_timer.stop();
 	   } // streaming block

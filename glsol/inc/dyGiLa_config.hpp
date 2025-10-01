@@ -146,6 +146,10 @@ struct dyGiLaConf {
       real_t lambdaIncrement; //amount to increment lambda above 5.5
       real_t kappa;  // fraction index
 
+      // custom insitu timesteps
+      unsigned int use_custom_insitu_timesteps;
+      std::vector<double> custom_insitu_timesteps;
+
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/

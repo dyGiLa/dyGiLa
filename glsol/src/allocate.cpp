@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <assert.h>
+#include <algorithm>
 
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
@@ -256,7 +257,22 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
        /* 3d finite difference coefficients relation */
        config.GLPfc1 = 1. - 6.*config.GLPfc2; 
       }
-	
+
+    config.use_custom_insitu_timesteps = parameters.get_item("use_custom_insitu_timesteps",{"no","yes"});
+    if (config.use_custom_insitu_timesteps == 1)
+      {
+        config.custom_insitu_timesteps = parameters.get("custom_insitu_timesteps");
+        std::sort(config.custom_insitu_timesteps.begin(), config.custom_insitu_timesteps.end());
+
+        if (hila::myrank() == 0) {
+          hila::out0 << "Custom timestep output enabled with " << config.custom_insitu_timesteps.size() << " timesteps:";
+          for (const auto& ts : config.custom_insitu_timesteps) {
+            hila::out0 << " " << ts;
+          }
+          hila::out0 << std::endl;
+        }
+      }
+
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
