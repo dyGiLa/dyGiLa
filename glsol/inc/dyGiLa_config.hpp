@@ -35,6 +35,7 @@ struct dyGiLaConf {
       unsigned int has1stQStop;
       real_t Ttd_Q1st;
       real_t tQ1Waiting;
+      unsigned int use_antiQuench;
       real_t Ttd_Qend;
   
       real_t tStart;
@@ -115,8 +116,10 @@ struct dyGiLaConf {
       int boundaryConditions;
       int BCs1;
       int BCs2;
-      // int Wn;
       int BCchangec;
+      // int Wn;
+      unsigned int use_AdGRz_surfaces;
+      real_t bt;
       
       int useTbath;
       real_t Tbath_start;

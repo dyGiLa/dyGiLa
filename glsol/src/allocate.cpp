@@ -34,7 +34,8 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
       {
 	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
 	config.tQ1Waiting = parameters.get("tQ1Waiting");
-      }    
+      }
+    config.use_antiQuench         = parameters.get_item("use_antiQuench",{"no", "yes"});
     config.Ttd_Qend = parameters.get("Ttd_Qend");
 
     /*********************************************/
@@ -199,6 +200,7 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
                                                "PB_y",
                                                "PairB_yz",
                                                "BB",
+					       "AdGRz",    
                                                "phaseVortices"});
     
     config.BCs2 = parameters.get_item("BCs2",{"periodic",
@@ -207,12 +209,14 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
                                               "PB_y",
                                               "PairB_yz",
                                               "BB",
+					      "AdGRz",
                                               "phaseVortices"});
     
-    // config.Wn = parameters.get("BoundaryPhaseWindingNO");
-    
     config.BCchangec = parameters.get("BCchangec");
-       
+    config.use_AdGRz_surfaces = parameters.get_item("use_AdGRz_surfaces",{"no","yes"});
+    if ( config.use_AdGRz_surfaces == 1 ) { config.bt = parameters.get("bt_AdGR"); }
+    // config.Wn = parameters.get("BoundaryPhaseWindingNO");
+           
     /*if(config.positions==1)
       {
 	config.npositionout = parameters.get("npositionout");
