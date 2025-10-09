@@ -19,7 +19,6 @@
 using real_t = float;                          // or double ?
 using phi_t = Matrix<3,3,Complex<real_t>>;     // saves the trouble of writing this every time
 
-
 // Define convenient enum for addressing the reductions - could use numbers too
 
 /* enumeration counter type  for matrix reduction */
@@ -85,11 +84,13 @@ public:
   
   void next();
   void next_bath();
+  void next_AdGRz_bath();  
   void next_bath_UniT_quench();
   void next_bath_UniT_quench_Hfield();
+  void next_bath_UniT_quench_AdGRz_Hfield();  
   void next_bath_hotblob_quench_Hfield();
+  //void next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();  
   void next_bath_hotblob_quench_Hfield_confCatch();        
-  //void nextT();
   
   Field<phi_t> A;
   Field<phi_t> pi;
