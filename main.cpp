@@ -202,7 +202,13 @@ int main(int argc, char **argv) {
 	    if (stat_counter < (gl.config.gammaoffc)*steps)
 	      {
 	       //hila::out0 << "just before call next-blob() " << std::endl;
-	       gl.next_bath_hotblob_quench_Hfield();
+	       if ( gl.config.use_AdGRz_surfaces == 1 )
+		 // Quasi 2D Cylinderial blob with AdGR boundary for high-T
+		 { /*gl.next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();*/ }
+	       else
+		 // 3D blob without boundary surface effect
+	         { gl.next_bath_hotblob_quench_Hfield(); }
+	       
 	       if (stat_counter % steps == 0)
 	         {// squeze IO a littble bit
 	          hila::out0 << "gl.t is " << gl.t 
@@ -241,14 +247,26 @@ int main(int argc, char **argv) {
 	     && (gl.t >= gl.config.Tbath_start)
 	     && (gl.config.evolveT == 1)
 	     && (gl.t <= gl.config.tThermalizationWaiting)
-	     && (gl.config.gamma.abs() < gl.config.gamma2.abs())) // eolved T-thermal bath run, but in fixed T thermalization	    
+	     && (gl.config.gamma.abs() < gl.config.gamma2.abs())) // eolved T-thermal bath run, but in fixed T thermalization w/o AdGR boundary
 	   )
 	  {
-	    gl.next_bath();
-	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-		       << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
-		       << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << std::endl;	    
+	    if (gl.config.use_AdGRz_surfaces != 1)
+	      {
+	       gl.next_bath();
+	       hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		          << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
+		          << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		          << std::endl;	    
+
+	      }
+	    else if (gl.config.use_AdGRz_surfaces == 1)
+	      {
+	       gl.next_AdGRz_bath();
+	       hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+		          << ", next_AdGRz_bath() call, T in site is " << gl.T.get_element(originpoints)
+		          << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		          << std::endl;	    
+	      }
 	  }
 	else if (
 	         (gl.config.useTbath == 1)
@@ -277,12 +295,25 @@ int main(int argc, char **argv) {
 		 && (gl.config.gamma.abs() < gl.config.gamma2.abs())
                 )
 	  {
-            gl.next_bath_UniT_quench_Hfield();
-	    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-		       << ", next_bath_UniT_quench_Hfield() call, T in site is " << gl.T.get_element(originpoints)
-	               << ", |H| is " << norm(gl.H.get_element(originpoints))
-		       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-		       << std::endl;	    
+	    if (gl.config.use_AdGRz_surfaces != 1)
+	      {
+                gl.next_bath_UniT_quench_Hfield();
+         	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+	      	           << ", next_bath_UniT_quench_Hfield() call, T in site is " << gl.T.get_element(originpoints)
+	                   << ", |H| is " << norm(gl.H.get_element(originpoints))
+		           << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		           << std::endl;	    
+	      }
+	    else if (gl.config.use_AdGRz_surfaces == 1)
+	      {
+                gl.next_bath_UniT_quench_AdGRz_Hfield();
+         	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+	      	           << ", next_bath_UniT_quench_AdGR_Hfield() call, T in site is " << gl.T.get_element(originpoints)
+	                   << ", |H| is " << norm(gl.H.get_element(originpoints))
+		           << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+		           << std::endl;	    
+
+	      }
 
 	  }
 	else
