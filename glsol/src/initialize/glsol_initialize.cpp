@@ -127,17 +127,15 @@ void glsol::initialize() {
     real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     hila::out0 <<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
-      foralldir(d1)foralldir(d2){
+      foralldir(al)foralldir(i){
+	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();	
 
-	if (d1==d2){
-	  A[X].e(d1,d2).re = 1.0; //hila::gaussrand() hila::random()
-	  A[X].e(d1,d2).im = 0.0;
-	}
-	else {
-	  A[X].e(d1,d2).re = 0.0;
-	  A[X].e(d1,d2).im = 0.0;}
+	if (al==i){
+	  A[X].e(al,i).re = 1.0 + A[X].e(al,i).re; 
+	  A[X].e(al,i).im = 0.0 + A[X].e(al,i).im;
+	}	
       }
-      A[X] = gap * A[X]/A[X].norm();
+      A[X] = (gap/sqrt(3.)) * A[X];
     }
 
     hila::out0 << "Pure B phase \n";
