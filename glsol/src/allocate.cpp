@@ -242,7 +242,8 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
        config.lambda1       = parameters.get("lambda1");
        config.confSmoothTime = parameters.get("confSmoothTime");
        config.lambdaIncrement = parameters.get("lambdaIncrement");
-       config.kappa = parameters.get("kappa");       
+       config.kappa = parameters.get("kappa");
+       config.resetPi = parameters.get_item("resetPi",{"no","yes"});
       }	
 
     /*----------------------------------------*/    

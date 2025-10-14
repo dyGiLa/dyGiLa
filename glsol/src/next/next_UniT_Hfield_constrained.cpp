@@ -194,7 +194,11 @@ void glsol::next_UniT_Hfield_constrained() {
     }
   else if (t < config.tdis && config.gamma.squarenorm() > 0 )
     {
-      // pi[ALL] = 0;
+      // reset Pi before update
+      if (config.resetPi)
+      {
+        pi[ALL] = 0;
+      }
       pi[ALL] = pi[X] + (deltaPi[X] - 2.0 * config.gamma * pi[X])*(config.dt);
 
       t += config.dt;
