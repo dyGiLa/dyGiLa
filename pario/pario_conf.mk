@@ -12,7 +12,13 @@ ifeq ($(USE_PARIO), ON)
   include $(ASCENT_DIR)/share/ascent/ascent_config.mk
   APP_OPTS += $(ASCENT_INCLUDE_FLAGS)
   LDFLAGS  += $(ASCENT_LINK_RPATH)
-  LDLIBS   += $(ASCENT_MPI_CUDA_LIB_FLAGS)
+  ifeq ($(ARCH), lumi)
+    LDLIBS += $(ASCENT_MPI_LIB_FLAGS)
+  else
+    ifeq ($(ARCH), lumi-hip-CC)
+      LDLIBS += $(ASCENT_MPI_CUDA_LIB_FLAGS)
+    endif
+  endif
 endif
 
 # add headers searching directories
