@@ -1,0 +1,78 @@
+#define USE_PARIO 
+#define USE_MPI 
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+#include <assert.h>
+
+#include "plumbing/hila.h"
+#include "plumbing/globals.h" 
+
+#include "glsol.hpp"
+//#include "matep_namespace_utils.hpp"
+#include "orch.hpp"
+
+#if defined USE_PARIO 
+#include "pario.hpp"
+#endif
+
+namespace orch {
+  
+void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter) {
+
+  // phase marking only for streaming
+  if (gl.config.TDependnetgamma == false)
+    {
+     // do phase-Marking only for pio when gamma is constant
+     gl.phaseMarking();
+     hila::out0 << "gl.t is " << gl.t
+		<< ", phaseMarking() call is done for const gamma. "
+		<< std::endl;
+    }
+  
+  // reducntions output
+  gl.write_energies();
+  gl.phaseCounting();
+  hila::out0 << "write_energies(), phaseCounting() call is done "
+	     << std::endl;
+
+  // parallel streaming
+#if defined USE_PARIO
+  if (
+      ((gl.config.hdf5_A_matrix_output == 1)
+      || (gl.config.hdf5_pMarker_output == 1)
+      || (gl.config.hdf5_mass_current_output == 1)
+      || (gl.config.hdf5_spin_current_output == 1))
+      && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
+     )
+    paraio.pstream(gl, stat_counter);
+  else if (
+           // insitu visualization block, no parallel hd5 stream
+           (gl.config.hdf5_A_matrix_output != 1)
+           && (gl.config.hdf5_pMarker_output != 1)
+           && (gl.config.hdf5_mass_current_output != 1)
+           && (gl.config.hdf5_spin_current_output != 1)		       
+           && (
+               (gl.config.do_gapA_clip == 1)
+   	       || (gl.config.do_gapA_slice == 1)
+	       || (gl.config.do_fed_clip == 1)
+	       || (gl.config.do_Temperature_clip == 1)
+	       || (gl.config.do_Temperature_slice == 1)
+	       || (gl.config.do_Temperature_isosurface == 1)			   
+	       || (gl.config.do_gapA_isosurface == 1)
+	       || (gl.config.do_phaseMarker_slice == 1)
+	       || (gl.config.do_phaseMarker_isosurface == 1)
+	       || (gl.config.do_phaseMarker_fieldclip == 1)
+	       || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
+	       || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
+              )
+           )
+	paraio.pstream(gl, stat_counter);		
+
+  hila::out0 << "paraio.pstream() call is done " << std::endl;
+#endif	            
+} // pstreaming func ends here
+
+} // orch namespace ends here
