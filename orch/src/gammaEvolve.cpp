@@ -1,17 +1,17 @@
 //#define USE_PARIO 
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <assert.h>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
+// #include <string>
+// #include <assert.h>
 
-#include "plumbing/hila.h"
-#include "plumbing/globals.h" 
+// #include "plumbing/hila.h"
+// #include "plumbing/globals.h" 
 
 #include "glsol.hpp"
-#include "matep_namespace_utils.hpp"
+// #include "matep_namespace_utils.hpp"
 #include "orch.hpp"
 
 // #if defined USE_PARIO 
@@ -44,7 +44,8 @@ void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &step
            (gl.config.initialConditionT == 2)
            && (stat_counter >= (gl.config.gammaoffc)*steps)
           )
-      	  // Set gamma to 2nd value after certain momentum for blob profile
+      	  // Set gamma to 2nd value after certain momentum for blob profile,
+          // this is for configuraton capture.
           { gl.config.gamma = gl.config.gamma2; }	      	    
   
 } /* config.gamma update block end here */

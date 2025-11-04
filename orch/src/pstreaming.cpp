@@ -1,11 +1,11 @@
 #define USE_PARIO 
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
 #include <string>
-#include <assert.h>
+// #include <assert.h>
 
 #include "plumbing/hila.h"
 #include "plumbing/globals.h" 
@@ -20,9 +20,9 @@
 
 namespace orch {
   
-void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter) {
+void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsigned int &steps) {
 
-  // phase marking only for streaming
+  // phase marking only for streaming when gamma isn't T-dependent
   if (gl.config.TDependnetgamma == false)
     {
      // do phase-Marking only for pio when gamma is constant
@@ -46,6 +46,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter) {
       || (gl.config.hdf5_mass_current_output == 1)
       || (gl.config.hdf5_spin_current_output == 1))
       && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
+      && ((stat_counter / steps) % gl.config.PSSRatio == 0)
      )
     paraio.pstream(gl, stat_counter);
   else if (
@@ -68,7 +69,8 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter) {
 	       || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
 	       || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
               )
-           )
+           && ((stat_counter / steps) % gl.config.PSSRatio == 0)	  
+          )
 	paraio.pstream(gl, stat_counter);		
 
   hila::out0 << "paraio.pstream() call is done " << std::endl;
