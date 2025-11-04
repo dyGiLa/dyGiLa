@@ -10,6 +10,7 @@ APP_OPTS += -I $(DYGILA_DIR)/orch/inc
 ORCH_OBJECTS = build/writeHDF5_xmls.o \
                build/nextBlocks.o \
                build/pstreaming.o \
-               build/gammaEvolve.o 
+               build/gammaEvolve.o \
+               build/dyGiLaInit.o
 .PHONY: orch
 orch: $(ORCH_OBJECTS)
