@@ -21,27 +21,15 @@
 
 int main(int argc, char **argv) {
 
-    glsol gl;      
-       
-    const std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
-    // initialize blobal matep wrapper
-    matep::init_wrapper_mp();           
-    // initialize Temperature field
-    gl.initializeT();
-    // initialize pressure field
-    // gl.initializep();
-    // initilize static H-field
-    gl.initializeH();
-    // initialize OP field
-    gl.initialize();   
-           
-    std::initializer_list<int> coordsList {0,0,0};
-    const CoordinateVector originpoints(coordsList); 
-
-    // number of steps between reduction streaming
-    const unsigned int steps = (gl.config.tEnd - gl.config.tStats) 
-                               /(gl.config.dt * gl.config.nOutputs); 
-    
+    /*----------------------------*/
+    /*--- dyGiLa initialization --*/
+    /*----------------------------*/  
+    auto dyGiLa = orch::dyGiLaInit(argc, argv);
+    glsol &gl = *std::get<0>(dyGiLa);
+    const std::vector<std::string> name_files = std::get<1>(dyGiLa);
+    const CoordinateVector originpoints = *std::get<2>(dyGiLa);
+    const unsigned int steps = std::get<3>(dyGiLa);        
+  
     // initial gamma parameter if gamma is fixed
     if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } 
 
@@ -76,7 +64,7 @@ int main(int argc, char **argv) {
 	  
 	   if (stat_counter % steps == 0) {
 	      meas_timer.start();
-	      orch::pStreaming(gl, paraio, stat_counter);
+	      orch::pStreaming(gl, paraio, stat_counter, steps);
 	      meas_timer.stop();
 	   } // streaming block
 
@@ -91,7 +79,7 @@ int main(int argc, char **argv) {
         } //gl.t > gl.config.Stats block
 
 	if (gl.config.TDependnetgamma == true) {
-	    // do every-dt phase-Marking when gamma is T-dependent
+	    // do every-dt phase-Marking when gamma is T-dependent heterogenously
             gl.phaseMarking();        
             hila::out0 << "gl.t is " << gl.t
 		       << ", phaseMarking() call is done. "
