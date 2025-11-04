@@ -104,6 +104,9 @@ struct dyGiLaConf {
       real_t tStats;
       real_t nOutputs;
 
+      // pStreaming Squezeing Ratio; PSSRatio, the pIO steps skip ratio
+      unsigned int PSSRatio;
+
       std::fstream stream;
       std::fstream streampc;
       

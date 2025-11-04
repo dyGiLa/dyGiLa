@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 
@@ -177,6 +177,12 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
     
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
+
+    // pStreaming Squezeing Ratio; PSSRatio, the pIO steps skip ratio
+    // This control the frequency which pario.pStream() is called;
+    // minimum is 1, which means not steps skip, must be unsigned int
+    // together with hdf5start/end, one has Precious control on pIO.
+    config.PSSRatio = parameters.get("PSSRatio");
 
     // output_file is the saving path of output file, which offered in congigration file
     // vector for return by names of stream files
