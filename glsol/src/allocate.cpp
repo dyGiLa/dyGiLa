@@ -14,7 +14,6 @@
 
 const std::vector<std::string> glsol::allocate(const std::string &fname, int argc, char **argv) {
   
-    hila::initialize(argc, argv);
     hila::input parameters(fname);
     
     config.lx = parameters.get("Nx");
