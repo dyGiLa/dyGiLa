@@ -8,8 +8,8 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-//#include "plumbing/fft.h"
-//#include "plumbing/globals.h" 
+// #include "plumbing/fft.h"
+#include "plumbing/globals.h" 
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
@@ -23,14 +23,14 @@ int main(int argc, char **argv) {
 
     /*----------------------------*/
     /*--- dyGiLa initialization --*/
-    /*----------------------------*/  
-    auto dyGiLa = orch::dyGiLaInit(argc, argv);
-    glsol &gl = *std::get<0>(dyGiLa);
-    const std::vector<std::string> name_files = std::get<1>(dyGiLa);
-    const CoordinateVector originpoints = *std::get<2>(dyGiLa);
-    const unsigned int steps = std::get<3>(dyGiLa);        
+    /*----------------------------*/
+    glsol gl;    
+    auto dyGiLa = orch::dyGiLaInit(gl, argc, argv);
+    const std::vector<std::string> name_files = std::get<0>(dyGiLa);
+    const CoordinateVector originpoints = *std::get<1>(dyGiLa);
+    const unsigned int steps = std::get<2>(dyGiLa);        
   
-    // initial gamma parameter if gamma is fixed
+    // initial gamma parameter if gamma is constant
     if (gl.config.TDependnetgamma == 0) { gl.config.gamma = gl.config.gamma1; } 
 
     // initial bounaryConstions
@@ -80,10 +80,14 @@ int main(int argc, char **argv) {
 
 	if (gl.config.TDependnetgamma == true) {
 	    // do every-dt phase-Marking when gamma is T-dependent heterogenously
-            gl.phaseMarking();        
-            hila::out0 << "gl.t is " << gl.t
-		       << ", phaseMarking() call is done. "
-		       << std::endl;
+            gl.phaseMarking();
+	    if (
+                (stat_counter % steps == 0)
+		&& ((stat_counter / steps) % gl.config.PSSRatio == 1) 
+               )
+	      { hila::out0 << "gl.t is " << gl.t
+		           << ", phaseMarking() call is done. "
+			   << std::endl; }
 	  }
 
         // t-evolve call

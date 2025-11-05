@@ -1,4 +1,3 @@
-#define USE_ASCENT 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -6,17 +5,15 @@
 #include <fstream>
 #include <string>
 
-#include <assert.h>
+//#include <assert.h>
 
-#include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/hila.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
-#include "matep.hpp"
+// #include "matep.hpp"
 #include "pario.hpp"
 
-#include "ascent.hpp"
-#include "conduit_blueprint.hpp"
 
 void parIO::xdmf(glsol &sol){
   unsigned int rank_no = 0/*hila::myrank()*/;

@@ -25,7 +25,7 @@ namespace orch {
   void pStreaming(glsol &, parIO &, unsigned int &, const unsigned int &);
   void gammaEvolve(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &);
   void nextBlocks(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &);
-  std::tuple<glsol *const, const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(int &, char **&);  
+  std::tuple<const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(glsol &, int &, char **&);    
 } // namespace orch ends here
 
 #endif

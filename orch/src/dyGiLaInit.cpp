@@ -1,11 +1,11 @@
 //#define USE_PARIO 
 #define USE_MPI 
-// #include <sstream>
-// #include <iostream>
-// #include <iomanip>
-// #include <fstream>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <string>
-// #include <assert.h>
+#include <assert.h>
 
 #include "plumbing/hila.h"
 #include "plumbing/globals.h" 
@@ -20,8 +20,9 @@
 
 namespace orch {
   
-std::tuple<glsol *const, const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(int &argc, char **&argv) {
-  glsol gl;
+std::tuple<const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(glsol &gl, int &argc, char **&argv) {
+  // lattice initialization
+  hila::initialize(argc, argv);
 
   std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
 
@@ -46,7 +47,7 @@ std::tuple<glsol *const, const std::vector<std::string>, const CoordinateVector 
                              /(gl.config.dt * gl.config.nOutputs);
 
   // return initialization list
-  return std::make_tuple(&gl, name_files, &originpoints, steps);
+  return std::make_tuple(name_files, &originpoints, steps);
   
 } /* dyGiLaInit() end here */
 
