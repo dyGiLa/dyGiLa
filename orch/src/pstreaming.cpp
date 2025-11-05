@@ -1,17 +1,17 @@
 #define USE_PARIO 
 #define USE_MPI 
-// #include <sstream>
-// #include <iostream>
-// #include <iomanip>
-// #include <fstream>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <string>
-// #include <assert.h>
+#include <assert.h>
 
 #include "plumbing/hila.h"
 #include "plumbing/globals.h" 
 
 #include "glsol.hpp"
-//#include "matep_namespace_utils.hpp"
+#include "matep_namespace_utils.hpp"
 #include "orch.hpp"
 
 #if defined USE_PARIO 
@@ -22,21 +22,30 @@ namespace orch {
   
 void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsigned int &steps) {
 
+  const unsigned int modPSSR = (stat_counter / steps) % gl.config.PSSRatio;
+  
   // phase marking only for streaming when gamma isn't T-dependent
   if (gl.config.TDependnetgamma == false)
     {
      // do phase-Marking only for pio when gamma is constant
      gl.phaseMarking();
-     hila::out0 << "gl.t is " << gl.t
-		<< ", phaseMarking() call is done for const gamma. "
-		<< std::endl;
+     if (modPSSR == 0)
+       {
+        hila::out0 << "gl.t is " << gl.t
+		   << ", phaseMarking() call is done for const gamma. "
+		   << std::endl;
+
+       }
     }
   
   // reducntions output
   gl.write_energies();
   gl.phaseCounting();
-  hila::out0 << "write_energies(), phaseCounting() call is done "
-	     << std::endl;
+  if (modPSSR == 0)
+    {
+     hila::out0 << "write_energies(), phaseCounting() call is done "
+	        << std::endl;
+    }
 
   // parallel streaming
 #if defined USE_PARIO
@@ -46,7 +55,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
       || (gl.config.hdf5_mass_current_output == 1)
       || (gl.config.hdf5_spin_current_output == 1))
       && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
-      && ((stat_counter / steps) % gl.config.PSSRatio == 0)
+      && (modPSSR == 0)
      )
     paraio.pstream(gl, stat_counter);
   else if (
@@ -69,11 +78,11 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
 	       || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
 	       || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
               )
-           && ((stat_counter / steps) % gl.config.PSSRatio == 0)	  
+           && (modPSSR == 0)	  
           )
 	paraio.pstream(gl, stat_counter);		
 
-  hila::out0 << "paraio.pstream() call is done " << std::endl;
+  if (modPSSR == 0) { hila::out0 << "paraio.pstream() call is done " << std::endl; }
 #endif	            
 } // pstreaming func ends here
 

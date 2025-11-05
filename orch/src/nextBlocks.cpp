@@ -8,10 +8,10 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/globals.h" 
+//#include "plumbing/globals.h" 
 
 #include "glsol.hpp"
-#include "matep_namespace_utils.hpp"
+//#include "matep_namespace_utils.hpp"
 #include "orch.hpp"
 
 // #if defined USE_PARIO 
@@ -26,6 +26,9 @@ void nextBlocks(glsol &gl, unsigned int &stat_counter, const unsigned int &steps
    *  all next_xxx() functions call happen here.
    */
   /*******************************************************************/
+
+  const unsigned int modSteps = stat_counter % steps;
+  const unsigned int modPSSR = (stat_counter / steps) % gl.config.PSSRatio;
   
   if (
       (gl.config.initialConditionT == 2)
@@ -42,22 +45,28 @@ void nextBlocks(glsol &gl, unsigned int &stat_counter, const unsigned int &steps
 	 // 3D blob without boundary surface effect
          { gl.next_bath_hotblob_quench_Hfield(); }
        
-       if (stat_counter % steps == 0)
-         {// squeze IO a littble bit
-          hila::out0 << "gl.t is " << gl.t 
-	             << ", next_bath_hotblob_quench_Hfield() call " 
-	             << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	             << ", Ttdb0 is " << gl.config.Ttdb0	      
-                     << std::endl;
-         }
+         if (
+             (modSteps == 0)
+	     && (modPSSR == 0)
+            )
+           {// squeze IO a little bit
+            hila::out0 << "gl.t is " << gl.t 
+	               << ", next_bath_hotblob_quench_Hfield() call " 
+	               << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	               << ", Ttdb0 is " << gl.config.Ttdb0	      
+                       << std::endl;
+           }
 
       } // blob evolution block
     else if (stat_counter >= (gl.config.gammaoffc)*steps)
-      {
+      { // configuration catch block
        ++gl.extinguish_t; //estinguish time count, in step of dt
        gl.next_bath_hotblob_quench_Hfield_confCatch();
-       if (stat_counter % steps == 0)
-         {// squeze IO a littble bit
+       if (
+           (modSteps == 0)
+	   && (modPSSR == 0)	   
+          )
+         {// squeze IO a little bit
           hila::out0 << "gl.t is " << gl.t 
 	             << ", next_bath_hotblob_quench_Hfield_confCatch() call " 
 	             << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
@@ -86,19 +95,30 @@ if (
     if (gl.config.use_AdGRz_surfaces != 1)
       {
        gl.next_bath();
-       hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-	          << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
-	          << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	          << std::endl;	    
-
+       if (
+           (modSteps == 0)
+           && (modPSSR == 0)	   
+          )
+	 {
+          hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+	             << ", next_bath() call, T in site is " << gl.T.get_element(originpoints)
+	             << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	             << std::endl;	    
+	 }       	          	          	        
       }
     else if (gl.config.use_AdGRz_surfaces == 1)
       {
        gl.next_AdGRz_bath();
-       // hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-       // 	          << ", next_AdGRz_bath() call, T in site is " << gl.T.get_element(originpoints)
-       // 	          << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-       // 	          << std::endl;	    
+       if (
+           (modSteps == 0)
+           && (modPSSR == 0)	   
+	  )
+	 {
+           hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+	              << ", next_AdGRz_bath() call, T in site is " << gl.T.get_element(originpoints)
+	              << " Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	              << std::endl;	      
+	 }            
       }
   }
 else if (
@@ -112,10 +132,16 @@ else if (
         )
   {
     gl.next_bath_UniT_quench();
-    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-	       << ", next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
-	       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	       << std::endl;	    
+    if (
+        (modSteps == 0)
+        && (modPSSR == 0)	   	
+       )
+      {
+       hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
+	          << ", next_bath_UniT_quench() call, T in site is " << gl.T.get_element(originpoints)
+	          << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	          << std::endl;	    
+      }    
   }
 else if (
          (gl.config.useTbath == 1)
@@ -130,21 +156,37 @@ else if (
     if (gl.config.use_AdGRz_surfaces != 1)
       {
        gl.next_bath_UniT_quench_Hfield();
-       	hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-      	           << ", next_bath_UniT_quench_Hfield() call, T in site is " << gl.T.get_element(originpoints)
-                   << ", |H| is " << norm(gl.H.get_element(originpoints))
-	           << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	           << std::endl;	    
+       if (
+           (modSteps == 0)
+           && (modPSSR == 0)	   	   
+          )
+	 {
+       	  hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is "
+		     << gl.config.gamma
+      	             << ", next_bath_UniT_quench_Hfield() call, T in site is "
+		     << gl.T.get_element(originpoints)
+                     << ", |H| is " << norm(gl.H.get_element(originpoints))
+	             << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	             << std::endl;	    
+	 }       
       }
     else if (gl.config.use_AdGRz_surfaces == 1)
       {
         gl.next_bath_UniT_quench_AdGRz_Hfield();
-       	// hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-      	//            << ", next_bath_UniT_quench_AdGR_Hfield() call, T in site is " << gl.T.get_element(originpoints)
-        //            << ", |H| is " << norm(gl.H.get_element(originpoints))
-	//            << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	//            << std::endl;	    
-
+        if (
+            (modSteps == 0)
+            && (modPSSR == 0)	   	    
+           )
+	  {
+       	   hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is "
+		      << gl.config.gamma
+      	              << ", next_bath_UniT_quench_AdGR_Hfield() call, T in site is "
+		      << gl.T.get_element(originpoints)
+                      << ", |H| is " << norm(gl.H.get_element(originpoints))
+	              << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	              << std::endl;	    
+	  }
+	
       }
 
   }
@@ -152,12 +194,21 @@ else
   {
     // if gl.config.gamma != gl.config.gamma1, program is doing frozen structure
     gl.next();
-    hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is " << gl.config.gamma
-	       << ", next() call, T in site is " << gl.T.get_element(originpoints)
-	       << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
-	       << std::endl;	    
-	    
+    if (
+        (stat_counter % steps == 0)
+        && ((stat_counter / steps) % gl.config.PSSRatio == 0)
+       )
+      {
+       hila::out0 << " gl.t is " << gl.t
+		  << ", gl.config.gamma is "
+		  << gl.config.gamma
+	          << ", next() call, T in site is "
+		  << gl.T.get_element(originpoints)
+	          << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	          << std::endl;	    
+      }   	    
   }
+
 
  } // homogenous quench block
 
