@@ -50,8 +50,11 @@ void glsol::phaseCounting() {
 
   // Volume element in unit of \xi_GL^0
   const double Velem = config.dx*config.dx*config.dx;
+  // Hot Blob initial radius
+  const float rb = MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * (MP.xi0GLp(config.Inip)) * (1e6);
+  
   config.streampc
-	 << t << "," << T000 << ","
+         << rb << "," << t << "," << T000 << ","
 	 /***************************/	 	 	 
 	 << px_acc[/*pxacc::*/p0_acc]/vol << ","    
 	 /***************************/	 	 	 

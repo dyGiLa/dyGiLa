@@ -54,7 +54,9 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
   /* phaseVolume-stream open */
   config.streampc.open(name_files[1], std::ios::out);
 
-  config.streampc << "\"t\"" << "," << "\"T_000Q\"" << ","
+  config.streampc << "\"R_iniBlob_um\"" << ","
+		  << "\"t\"" << ","
+		  << "\"T_000Q\"" << ","
                   << "\"Vratio_p0_acc\"" << ","    
                   << "\"Vratio_p1_acc\"" << ","
                   << "\"Vratio_p2_acc\"" << ","
@@ -85,6 +87,5 @@ void glsol::fstreams_open(const std::vector<std::string> &name_files) {
 void glsol::fstreams_close() {
   config.stream.close();
   config.streampc.close();
-  //system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
 }
   
