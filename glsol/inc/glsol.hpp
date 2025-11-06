@@ -51,7 +51,7 @@ public:
   glsol() = default;                     // default constructor
   
   // read configration file and initiate scaling_sim.config 
-  const std::vector<std::string> allocate(const std::string &fname, int argc, char **argv);
+  const std::vector<std::string> configure(const std::string &fname, int argc, char **argv);
 
   // OP field initialization
   void initialize();

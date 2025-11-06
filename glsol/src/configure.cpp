@@ -12,7 +12,7 @@
 #include "glsol.hpp"
 
 
-const std::vector<std::string> glsol::allocate(const std::string &fname, int argc, char **argv) {
+const std::vector<std::string> glsol::configure(const std::string &fname, int argc, char **argv) {
   
     hila::input parameters(fname);
     
