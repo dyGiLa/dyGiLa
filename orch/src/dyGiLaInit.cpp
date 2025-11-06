@@ -24,7 +24,7 @@ std::tuple<const std::vector<std::string>, const CoordinateVector *const, const 
   // lattice initialization
   hila::initialize(argc, argv);
 
-  std::vector<std::string> name_files = gl.allocate("sim_params.txt", argc, argv);
+  std::vector<std::string> name_files = gl.configure("sim_params.txt", argc, argv);
 
   // host & device memory initialization, gpuMemcpHostToDevice under hood
   matep::init_wrapper_mp();

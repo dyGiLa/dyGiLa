@@ -22,7 +22,7 @@ APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
 # endif
 
 # pario objects, built by HILA pattern rules
-GLSOL_OBJECTS = build/allocate.o              \
+GLSOL_OBJECTS = build/configure.o             \
                 build/fstreams.o              \
                 build/write_energies.o        \
                 build/write_positions.o       \
