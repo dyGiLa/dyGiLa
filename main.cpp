@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
             gl.phaseMarking();
 	    if (
                 (stat_counter % steps == 0)
-		&& ((stat_counter / steps) % gl.config.PSSRatio == 1) 
+		&& ((stat_counter / steps) % gl.config.PSSRatio == 0) 
                )
 	      { hila::out0 << "gl.t is " << gl.t
 		           << ", phaseMarking() call is done. "
