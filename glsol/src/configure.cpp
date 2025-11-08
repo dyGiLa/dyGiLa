@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include <assert.h>
+//#include <assert.h>
 
 #include "plumbing/hila.h"
 //#include "plumbing/fft.h"
@@ -160,6 +160,10 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
        /*********************************************/    	
       }
 
+    config.use_CustomerDctxi = parameters.get_item("use_CustomerDctxi",{"no", "yes"});
+    if ( config.use_CustomerDctxi == true ) { hila::out0 << " use Custom Dctxi. " << std::endl; }
+    config.Dctxi             = parameters.get("Dctxi");
+    
     //initialCondition-p
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
     if (config.initialConditionp == 0) { config.Inip = parameters.get("Inip"); }

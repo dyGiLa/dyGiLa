@@ -89,8 +89,11 @@ struct dyGiLaConf {
       real_t Ttdb1;
       real_t Ttdb0;
       real_t t1;
-      /*-----------------------------------------*/  
- 
+      /*-----------------------------------------*/
+      // Switch for using customer Diffusivity
+      unsigned int use_CustomerDctxi;
+      // Diffusivity in unit of xi0GL^2. tGL^-1
+      real_t Dctxi;     
 
       // p-filed initialing & control parameters
       int initialConditionp;
