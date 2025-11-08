@@ -7,10 +7,10 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
-#include "matep.hpp"
+//#include "matep.hpp"
 #include "pario.hpp"
 
 #include "ascent.hpp"
@@ -145,8 +145,9 @@ void parIO::init(glsol &sol) {
     
     /*********************************/
     /*   all defineActions calls     */
-    /*********************************/        
-
+    /*********************************/
+    
+    hila::out0 << "------------------------------------------------------------" << std::endl;
     
 } // init() end here
 

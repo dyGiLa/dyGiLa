@@ -60,7 +60,7 @@ namespace matep {
 #pragma hila loop_function   
         double N0p(real_t p);                  // deisty of state on Fermi surface
 #pragma hila loop_function      
-        real_t Dd(real_t p);                   // diffusion constant/ diffusive coefficient
+        real_t Dd(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi);                   // diffusion constant/ diffusive coefficient
 
   // ************************************************************************* //
   // >> APIs of key properties of spheric hot bloob; SC-correction parts: <<<< //
@@ -71,10 +71,10 @@ namespace matep {
 
         // time when fountier of Tc achieve maximum     
 #pragma hila loop_function         
-        real_t r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1);
+        real_t r_TcMax_blob(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi, real_t Ttdb1, real_t Ttdb0, real_t t1);
 
 #pragma hila loop_function            
-        real_t r2_Tc_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t);
+        real_t r2_Tc_blob(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t);
 
         // time when fountier of Tc shriks to vanish after this T < Tc over box   
 #pragma hila loop_function         

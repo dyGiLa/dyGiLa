@@ -101,26 +101,33 @@ Matep::N0p(real_t p){
 }
 
 real_t
-Matep::Dd(real_t p){
+Matep::Dd(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi){
   real_t vF = vFp(p);
   real_t xi0GL = xi0GLp(p);
 
-  if ((p == 5.5f) || (p == 9.f) || (p == 12.f) || (p == 22.f))
+  if ( use_CustomerDctxi == true )
     {
-      float Dctxi;
-      // normal phase thermal diffucivity at Tc
-      if (p == 5.5f) Dctxi = 217.154f; // in unit of xi0GL^2. tGL^-1
-      if (p == 9.f) Dctxi = 167.407f; // in unit of xi0GL^2. tGL^-1
-      if (p == 12.f) Dctxi = 140.644f; // in unit of xi0GL^2. tGL^-1
-      if (p == 22.f) Dctxi = 90.2357f; // in unit of xi0GL^2. tGL^-1
-      return Dctxi;
+      return Dctxi; //in unit of xi0GL^2. tGL^-1
     }
   else
     {
-     // convert ratio is made from SI unit value number
-     real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
-     // return diffussion constant in unit of xiGL^2.tGL^-1
-     return vF * vF * wrapper_mp().tau0N * tGLxiGL2_ratio;
+     if ((p == 5.5f) || (p == 9.f) || (p == 12.f) || (p == 22.f))
+       {
+         float Dctxi;
+         // normal phase thermal diffucivity at Tc
+         if (p == 5.5f) Dctxi = 217.154f; // in unit of xi0GL^2. tGL^-1
+         if (p == 9.f) Dctxi = 167.407f; // in unit of xi0GL^2. tGL^-1
+         if (p == 12.f) Dctxi = 140.644f; // in unit of xi0GL^2. tGL^-1
+         if (p == 22.f) Dctxi = 90.2357f; // in unit of xi0GL^2. tGL^-1
+         return Dctxi;
+       }
+     else
+       {
+        // convert ratio is made from SI unit value number
+        real_t tGLxiGL2_ratio = tGL(p)/(xi0GL * xi0GL);
+        // return diffussion constant in unit of xiGL^2.tGL^-1
+        return vF * vF * wrapper_mp().tau0N * tGLxiGL2_ratio;
+       }
     }
 }
 
@@ -143,17 +150,19 @@ Matep::t_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
 }
 
 real_t
-Matep::r_TcMax_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1) {
+Matep::r_TcMax_blob(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi, real_t Ttdb1, real_t Ttdb0, real_t t1) {
 
   real_t TcpmK  = Tcp_mK(p);  
   real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
   real_t T0     = Ttdb0 * TcpmK;
   
-  return sqrt(6./wrapper_mp().E) * sqrt(Dd(p) * t1)* powf((Tx/(-T0 + TcpmK)),0.3333333333333333);
+  return sqrt(6./wrapper_mp().E)
+         * sqrt(Dd(p, use_CustomerDctxi, Dctxi) * t1)
+         * powf((Tx/(-T0 + TcpmK)),0.3333333333333333);
 }
 
 real_t
-Matep::r2_Tc_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t) {
+Matep::r2_Tc_blob(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t) {
 
   real_t TcpmK  = Tcp_mK(p);  
   real_t Tx     = (Ttdb1 - Ttdb0) * TcpmK;
@@ -161,7 +170,8 @@ Matep::r2_Tc_blob(real_t p, real_t Ttdb1, real_t Ttdb0, real_t t1, real_t t) {
 
   // 4*Dd*t*Log(-((tx*Sqrt(tx/t)*Tx)/(t*(T0 - Tc))))
 
-  return 4.f * Dd(p) * t * logf((t1 * sqrt(t1/t) * Tx)/(t * (-T0 + TcpmK)));
+  return 4.f * Dd(p, use_CustomerDctxi, Dctxi)
+         * t * logf((t1 * sqrt(t1/t) * Tx)/(t * (-T0 + TcpmK)));
 }
 
   
