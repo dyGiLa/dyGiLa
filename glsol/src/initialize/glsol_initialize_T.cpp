@@ -54,7 +54,7 @@ void glsol::initializeT() {
      * at the momentum when radius of Tc fronter achieves maximum  
      */
     real_t tm = MP.t_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);
-    real_t rm = MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1);    
+    real_t rm = MP.r_TcMax_blob(config.Inip, config.use_CustomerDctxi, config.Dctxi, config.Ttdb1, config.Ttdb0, config.t1);    
     real_t Tcp_mK = MP.Tcp_mK(config.Inip);
     
     onsites(ALL){
@@ -73,13 +73,13 @@ void glsol::initializeT() {
         T[X] = (r2 <= (rm * rm))
 	       ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
 	          * std::pow(config.t1/tm, 3./2.)
-	          * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
+	          * exp(-r2/(4. * MPonsites.Dd(config.Inip, config.use_CustomerDctxi, config.Dctxi) * tm)))
 	         + config.Ttdb0 * Tcp_mK
 	       : config.Ttdb0 * Tcp_mK;
       else
         T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
 	          * std::pow(config.t1/tm, 3./2.)
-	          * exp(-r2/(4. * MPonsites.Dd(config.Inip) * tm)))
+	          * exp(-r2/(4. * MPonsites.Dd(config.Inip, config.use_CustomerDctxi, config.Dctxi) * tm)))
 	       + config.Ttdb0 * Tcp_mK;
 	
 
@@ -91,12 +91,12 @@ void glsol::initializeT() {
                << "\n"
                << "t1 is "  << config.t1 * MP.tGL(config.Inip) << "s"
                << "\n"
-               << "Dd is "  << MP.Dd(config.Inip) * (MP.xi0GLp(config.Inip) * MP.xi0GLp(config.Inip))/MP.tGL(config.Inip) * (1e6) << " mu-m^2.mu-s^-1"
+               << "Dd is "  << MP.Dd(config.Inip, config.use_CustomerDctxi, config.Dctxi) * (MP.xi0GLp(config.Inip) * MP.xi0GLp(config.Inip))/MP.tGL(config.Inip) * (1e6) << " mu-m^2.mu-s^-1"
 	       << "\n"
                << "xi0GLp is " << MP.xi0GLp(config.Inip) << "m"
                << "\n"
                << "Hot Bloob with radius "
-               << MP.r_TcMax_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * (MP.xi0GLp(config.Inip)) * (1e6) << " mu-m"
+               << MP.r_TcMax_blob(config.Inip, config.use_CustomerDctxi, config.Dctxi, config.Ttdb1, config.Ttdb0, config.t1) * (MP.xi0GLp(config.Inip)) * (1e6) << " mu-m"
                << " in initialized. Tc frontier vasnished at "
                << MP.t_TcVanish_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1) * MP.tGL(config.Inip) << "s"     
                << std::endl;

@@ -58,13 +58,13 @@ void glsol::next_bath_hotblob_quench_Hfield_confCatch() {
              if ( (t + tm) < t0 )
 	       {		 
 	        // compute Tc frontier after time tm, you want this stays inside if block
-                real_t r2Tc = MPonsites.r2_Tc_blob(config.Inip, config.Ttdb1, config.Ttdb0, config.t1, t + tm);  
+                real_t r2Tc = MPonsites.r2_Tc_blob(config.Inip, config.use_CustomerDctxi, config.Dctxi, config.Ttdb1, config.Ttdb0, config.t1, t + tm);  
 
 	        // t1 is in unit of tGL
 	        T[X] = (r2 <= r2Tc)
 	               ? ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
 	   	          * std::pow((config.t1/(tm + t)), 3./2.)
-		          * exp(-r2/(4. * MPonsites.Dd(config.Inip) * (tm + t))))
+		          * exp(-r2/(4. * MPonsites.Dd(config.Inip, config.use_CustomerDctxi, config.Dctxi) * (tm + t))))
 	                 + config.Ttdb0 * Tcp_mK
 	               : config.Ttdb0 * Tcp_mK;
 	       }
@@ -75,7 +75,7 @@ void glsol::next_bath_hotblob_quench_Hfield_confCatch() {
 	    /* Normal phase D and C computed A- & Normal-phase T profile */
 	    T[X] = ((config.Ttdb1 - config.Ttdb0) * Tcp_mK
 	   	    * std::pow((config.t1/(tm + t)), 3./2.)
-		    * exp(-r2/(4. * MPonsites.Dd(config.Inip) * (tm + t))))
+		    * exp(-r2/(4. * MPonsites.Dd(config.Inip, config.use_CustomerDctxi, config.Dctxi) * (tm + t))))
 		   + config.Ttdb0 * Tcp_mK;
 	    	 	  	  
 	} // onsites(ALL) block ends here
