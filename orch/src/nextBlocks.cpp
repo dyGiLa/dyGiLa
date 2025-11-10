@@ -190,13 +190,44 @@ else if (
       }
 
   }
+else if (
+         (gl.config.useTbath == 1)
+         && (gl.t >= gl.config.Tbath_start)
+	 && (gl.config.evolveT == 1)
+	 && (gl.config.Tevolvetype == 2)
+	 && (gl.t > gl.config.tThermalizationWaiting)
+	 && (gl.config.withHfield == 1)
+	 && (gl.config.gamma.abs() >= gl.config.gamma2.abs())
+        )
+  { // configuration catch block 
+    if (gl.config.use_AdGRz_surfaces == false)
+      { /* free UniT quench Hfield */ }
+    else if (gl.config.use_AdGRz_surfaces == true)
+      {
+       ++gl.extinguish_t; //estinguish time count, in step of dt
+       gl.next_bath_UniT_quench_AdGRz_Hfield_confCatch();
+       if (
+           (modSteps == 0)
+	   && (modPSSR == 0)	   
+          )
+         {// squeze IO a little bit
+       	   hila::out0 << " gl.t is " << gl.t << ", gl.config.gamma is "
+		      << gl.config.gamma
+      	              << ", next_bath_UniT_quench_AdGRz_Hfield_confCatch() call, T in site is "
+		      << gl.T.get_element(originpoints)
+                      << ", |H| is " << norm(gl.H.get_element(originpoints))
+	              << ", Tc is " << gl.MP.Tcp_mK(gl.config.Inip)
+	              << std::endl;	    	   
+         }       
+      }
+  } // UniT quench configuration catch block ends here 
 else
   {
     // if gl.config.gamma != gl.config.gamma1, program is doing frozen structure
     gl.next();
     if (
-        (stat_counter % steps == 0)
-        && ((stat_counter / steps) % gl.config.PSSRatio == 0)
+        (modSteps == 0)
+        && (modPSSR == 0)	   	
        )
       {
        hila::out0 << " gl.t is " << gl.t
