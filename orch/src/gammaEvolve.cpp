@@ -34,17 +34,8 @@ void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &step
 		       : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip), gl.phaseMarker.get_element(originpoints));
 		
    }
-  else if (
-           (gl.config.initialConditionT != 2)
-	   && (stat_counter >= (gl.config.gammaoffc)*steps)
-	  )
-      	  // Set gamma to 2nd value after certain momentum for non-blob profile
-	  { gl.config.gamma = gl.config.gamma2; }
-  else if (
-           (gl.config.initialConditionT == 2)
-           && (stat_counter >= (gl.config.gammaoffc)*steps)
-          )
-      	  // Set gamma to 2nd value after certain momentum for blob profile,
+  else if (stat_counter >= (gl.config.gammaoffc)*steps)
+      	  // Set gamma to 2nd value after gamma switching count for all profile,
           // this is for configuraton capture.
           { gl.config.gamma = gl.config.gamma2; }	      	    
   
