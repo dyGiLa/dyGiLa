@@ -87,7 +87,8 @@ public:
   void next_AdGRz_bath();  
   void next_bath_UniT_quench();
   void next_bath_UniT_quench_Hfield();
-  void next_bath_UniT_quench_AdGRz_Hfield();  
+  void next_bath_UniT_quench_AdGRz_Hfield();
+  void next_bath_UniT_quench_AdGRz_Hfield_confCatch();    
   void next_bath_hotblob_quench_Hfield();
   //void next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();  
   void next_bath_hotblob_quench_Hfield_confCatch();        
