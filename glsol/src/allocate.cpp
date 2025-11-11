@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <assert.h>
+#include <algorithm>
 
 #include "plumbing/hila.h"
 #include "plumbing/fft.h"
@@ -117,7 +118,9 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 								      ,"Bphase"               //5
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
-	                                                              ,"hotblob"});           //8
+									  ,"hotblob"			          //8
+                    ,"BnA"                    //9
+	                                                              ,"B_bubble"});           //10
                                                                        
 
     hila::out0 << "config.initialCondition is "
@@ -231,6 +234,18 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
 
     config.ptol = parameters.get("ptol");
 
+    // constrained parameters
+    config.constrained = parameters.get_item("constrained",{"no","yes"});
+    if (config.constrained == 1)
+      {
+       config.lambda0       = parameters.get("lambda0");
+       config.lambda1       = parameters.get("lambda1");
+       config.confSmoothTime = parameters.get("confSmoothTime");
+       config.lambdaIncrement = parameters.get("lambdaIncrement");
+       config.kappa = parameters.get("kappa");
+       config.resetPi = parameters.get_item("resetPi",{"no","yes"});
+      }	
+
     /*----------------------------------------*/    
     /* Approx. Gaussian LP filter parameters  */
     /*----------------------------------------*/
@@ -243,7 +258,22 @@ const std::vector<std::string> glsol::allocate(const std::string &fname, int arg
        /* 3d finite difference coefficients relation */
        config.GLPfc1 = 1. - 6.*config.GLPfc2; 
       }
-    
+
+    config.use_custom_insitu_timesteps = parameters.get_item("use_custom_insitu_timesteps",{"no","yes"});
+    if (config.use_custom_insitu_timesteps == 1)
+      {
+        config.custom_insitu_timesteps = parameters.get("custom_insitu_timesteps");
+        std::sort(config.custom_insitu_timesteps.begin(), config.custom_insitu_timesteps.end());
+
+        if (hila::myrank() == 0) {
+          hila::out0 << "Custom timestep output enabled with " << config.custom_insitu_timesteps.size() << " timesteps:";
+          for (const auto& ts : config.custom_insitu_timesteps) {
+            hila::out0 << " " << ts;
+          }
+          hila::out0 << std::endl;
+        }
+      }
+
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/

@@ -107,9 +107,9 @@ void glsol::initialize() {
 
   case 4: {
     pi = 0.;
-    hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+    hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << " at p = " << config.Inip << ", T = " << config.IniT
                << "\n"
-               << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
+               << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << " at p = " << config.Inip << ", T = " << config.IniT
                << std::endl;
     onsites(ALL) {
       //hila::out0 << "this is case 4" << std::endl;
@@ -239,9 +239,118 @@ void glsol::initialize() {
     break;
   } // case 8 block end here
 
-  case 9:
-    {/*empty block*/}
+  case 9: {
+    pi = 0;
+    real_t gap_A = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gap_B = MP.gap_B_td(config.Inip, config.IniT);    
+    // hila::out0<<"Gap A: "<<gap<<"\n";
+    // if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
     
+    onsites (ALL) {
+    if (
+	(X.coordinate(e_x) <= (config.lx/2.0))
+       )
+      {	
+	    foralldir(d1)foralldir(d2){
+	      if (d1==d2){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;}
+              }
+	    A[X] = gap_B * A[X]/sqrt(3.0);
+       }
+    else if (
+	     (X.coordinate(e_x) > (config.lx/2.0))	     
+	    )    
+	  {
+	    foralldir(d1)foralldir(d2){
+	      if (d1==0 && d2==0){
+		A[X].e(d1,d2).re = 1.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	      else if (d1==0 && d2==1){
+		A[X].e(d1,d2).re = 0.0;  
+		A[X].e(d1,d2).im = 1.0;
+	      }
+	      else {
+		A[X].e(d1,d2).re = 0.0;
+		A[X].e(d1,d2).im = 0.0;
+	      }
+	    }
+	    A[X] = gap_A * A[X]/sqrt(2.0);
+	  }
+    } // onsites block ends here
+
+    hila::out0 << "B and A configuration is initialted "
+               << ", gapA^2 is " << gap_A * gap_A
+               << ", gapB^2 is " << gap_B * gap_B
+               << std::endl;
+
+    break;
+  } // case 9 block end here (BnA)
+  
+  case 10: {
+    pi = 0;
+    real_t gap_A = MP.gap_A_td(config.Inip, config.IniT);
+    real_t gap_B = MP.gap_B_td(config.Inip, config.IniT);
+    
+    // B bubble radius from kappa
+    real_t total_volume = config.lx * config.ly * config.lz;
+    real_t bubble_volume = config.kappa * total_volume;
+    real_t bubble_radius = pow(3.0 * bubble_volume / (4.0 * M_PI), 1.0/3.0);
+    
+    real_t center_x = config.lx / 2.0;
+    real_t center_y = config.ly / 2.0; 
+    real_t center_z = config.lz / 2.0;
+    
+    onsites(ALL) {
+        // distance from center
+        real_t dx = X.coordinate(e_x) - center_x;
+        real_t dy = X.coordinate(e_y) - center_y;
+        real_t dz = X.coordinate(e_z) - center_z;
+        real_t distance = sqrt(dx*dx + dy*dy + dz*dz);
+        
+        if (distance <= bubble_radius) {
+            // B phase (inside bubble)
+            foralldir(d1) foralldir(d2) {
+                if (d1 == d2) {
+                    A[X].e(d1,d2).re = 1.0;
+                    A[X].e(d1,d2).im = 0.0;
+                } else {
+                    A[X].e(d1,d2).re = 0.0;
+                    A[X].e(d1,d2).im = 0.0;
+                }
+            }
+            A[X] = gap_B * A[X] / sqrt(3.0);
+        } else {
+            // A phase (outside bubble)
+            foralldir(d1) foralldir(d2) {
+                if (d1 == 0 && d2 == 0) {
+                    A[X].e(d1,d2).re = 1.0;
+                    A[X].e(d1,d2).im = 0.0;
+                } else if (d1 == 0 && d2 == 1) {
+                    A[X].e(d1,d2).re = 0.0;  
+                    A[X].e(d1,d2).im = 1.0;
+                } else {
+                    A[X].e(d1,d2).re = 0.0;
+                    A[X].e(d1,d2).im = 0.0;
+                }
+            }
+            A[X] = gap_A * A[X] / sqrt(2.0);
+        }
+    }
+    
+    hila::out0 << "B-phase bubble in A-phase background initialized "
+               << ", kappa = " << config.kappa 
+               << ", bubble radius = " << bubble_radius
+               << ", gapA^2 = " << gap_A * gap_A
+               << ", gapB^2 = " << gap_B * gap_B
+               << std::endl;
+    break;
+} // case 10 block ends here (B_bubble)
   default:
     {
      // #pragma hila ast_dump
