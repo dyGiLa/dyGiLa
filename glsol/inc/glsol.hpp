@@ -48,7 +48,8 @@ enum {
 class glsol{
 
 public:
-  glsol() = default;                     // default constructor
+  // glsol() = default;                     // default constructor
+  glsol();
   
   // read configration file and initiate scaling_sim.config 
   const std::vector<std::string> configure(const std::string &fname, int argc, char **argv);
@@ -64,9 +65,6 @@ public:
   
   // H-field initialization    
   void initializeH();
-
-  // bulk coefficients calculating tool, obselete fuc, remove
-  void point_params(real_t T, real_t p, real_t beta[6]);
 
   void fstreams_open(const std::vector<std::string> &);
   void fstreams_close();  

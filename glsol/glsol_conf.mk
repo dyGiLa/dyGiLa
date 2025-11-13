@@ -23,6 +23,7 @@ APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
 
 # pario objects, built by HILA pattern rules
 GLSOL_OBJECTS = build/configure.o             \
+                build/glsol.o                 \
                 build/fstreams.o              \
                 build/write_energies.o        \
                 build/write_positions.o       \
@@ -42,8 +43,7 @@ GLSOL_OBJECTS = build/configure.o             \
                 build/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
-                build/glsol_initialize_H.o    \
-                build/point_params.o          
+                build/glsol_initialize_H.o    
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)
