@@ -2,8 +2,6 @@
 
 # Give the location of the top level distribution directory wrt. this.
 # Can be absolute or relative.
-# If one want use cosfithe HILA instance as library, one could pass
-# HILA_DIR=cosfithe option in command line
 
 # Absolute UNIX path of library HILA
 # Absolute UNIX path of parallel io library Ascent

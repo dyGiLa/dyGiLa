@@ -20,8 +20,8 @@
 
 namespace orch {
   
-void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsigned int &steps) {
-
+void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsigned int &steps)
+{
   const unsigned int modPSSR = (stat_counter / steps) % gl.config.PSSRatio;
   
   // phase marking only for streaming when gamma isn't T-dependent

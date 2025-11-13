@@ -4,13 +4,13 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include <assert.h>
+//#include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
-#include "matep.hpp"
+//#include "matep.hpp"
 
 
 void glsol::phaseCounting() {

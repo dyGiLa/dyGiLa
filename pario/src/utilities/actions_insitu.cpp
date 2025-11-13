@@ -127,8 +127,9 @@ void parIO::defineActions_insitu(glsol &sol) {
 	 = 0.0;
     
        scenes["s4/plots/p1/max_value"]
-	 //= matep.gap_B_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
- 	 = matep.gap_B_td(sol.config.Inip, sol.config.IniT) * (1. + sol.config.clamp_bias_gapMax);
+	 = (sol.config.initialConditionT == 2)
+	   ? matep.gap_B_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax)
+	   : matep.gap_B_td(sol.config.Inip, sol.config.IniT) * (1. + sol.config.clamp_bias_gapMax);
 
        scenes["s4/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s4/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
