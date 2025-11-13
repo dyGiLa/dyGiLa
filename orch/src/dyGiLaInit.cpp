@@ -23,12 +23,20 @@ namespace orch {
 std::tuple<const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(glsol &gl, int &argc, char **&argv) {
   // lattice initialization
   hila::initialize(argc, argv);
-
   std::vector<std::string> name_files = gl.configure("sim_params.txt", argc, argv);
+  CoordinateVector box_dimensions = {gl.config.lx, gl.config.ly, gl.config.lz};
+  lattice.setup(box_dimensions);
+  hila::seed_random(gl.config.seed);
 
   // host & device memory initialization, gpuMemcpHostToDevice under hood
   matep::init_wrapper_mp();
 
+  // log subsection 
+  hila::out0 << "------------------------------------------------------------" << "\n"
+             << "--         dyGiLa Simulation Suits Initial State          --" << "\n"
+             << "------------------------------------------------------------" << "\n"
+             << std::endl;
+  
   // initialize Temperature field
   gl.initializeT();
 

@@ -125,7 +125,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	                                                              ,"hotblob"});           //8
                                                                        
 
-    hila::out0 << "config.initialCondition is "
+    hila::out0 << " config.initialCondition is "
 	       << config.initialCondition
 	       << "\n";
     
@@ -160,7 +160,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
        /*********************************************/    	
       }
 
-    config.use_CustomerDctxi = parameters.get_item("use_CustomerDctxi",{"no", "yes"});
+    config.use_CustomerDctxi = parameters.get_item(" use_CustomerDctxi",{"no", "yes"});
     if ( config.use_CustomerDctxi == true ) { hila::out0 << " use Custom Dctxi. " << std::endl; }
     config.Dctxi             = parameters.get("Dctxi");
     
@@ -418,11 +418,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	
     config.dt = config.dx * config.dtdxRatio;
     t = config.tStart;
-
-    // setup the hila lattice geometry 
-    CoordinateVector box_dimensions = {config.lx, config.ly, config.lz};
-    lattice.setup(box_dimensions);
-    hila::seed_random(config.seed);
 
     return name_files; //output_file pVfile;
     
