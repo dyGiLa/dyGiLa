@@ -8,7 +8,7 @@
  *
  */ 
 
-
+//#define USE_PMD_GAMMA
 #include <iostream>
 #include <cstddef>
 #include <cmath>
@@ -256,6 +256,9 @@ Matep::gamma_td(real_t p, real_t T, real_t pM){
      gtd = 1.;
   else
     {
+#ifndef USE_PMD_GAMMA
+      gtd = exp(3.349621654292973*(1 - 1./t)); // B-phase Value
+#else            
       if ( pM == 9.0 )
 	gtd = std::pow(t, 4.); // A-Phase
       else if ( pM == 5.0f )
@@ -267,7 +270,8 @@ Matep::gamma_td(real_t p, real_t T, real_t pM){
       else if ( pM == 1.0f )   
 	gtd = std::pow(t, 4.); // no-phase
       else
-	gtd = std::pow(t, 4.); // bipolar, alphaa, gamma, beta states	
+	gtd = std::pow(t, 4.); // bipolar, alphaa, gamma, beta states
+#endif      
     }
 
   return gtd * gamma_C;
