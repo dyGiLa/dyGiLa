@@ -22,7 +22,8 @@
 
 namespace orch {
   void heterogeneousQuench(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &, const unsigned int &, const unsigned int &);
-  void homogenousQuench(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &, const unsigned int &, const unsigned int &);  
+  void homogenousQuench(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &, const unsigned int &, const unsigned int &);
+  void phaseMarking(glsol &, unsigned int &, const unsigned int &);
 } // namespace orch ends here
 
 #endif

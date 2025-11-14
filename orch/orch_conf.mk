@@ -13,6 +13,7 @@ ORCH_OBJECTS = build/writeHDF5_xmls.o \
                build/gammaEvolve.o \
                build/dyGiLaInit.o \
                build/heterogeneousQuench.o \
-               build/homogenousQuench.o
+               build/homogenousQuench.o \
+               build/orchPhaseMarking.o
 .PHONY: orch
 orch: $(ORCH_OBJECTS)

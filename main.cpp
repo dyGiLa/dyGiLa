@@ -1,3 +1,4 @@
+//#define USE_PMD_GAMMA
 #define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
@@ -14,6 +15,7 @@
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
 #include "orch.hpp"
+#include "orch_utils.hpp"
 
 #if defined USE_PARIO 
 #include "pario.hpp"
@@ -60,10 +62,17 @@ int main(int argc, char **argv) {
         
     while (gl.t < gl.config.tEnd) {
       
-        if (gl.t > gl.config.tStats) {
-	  
+        if (gl.t > gl.config.tStats) {	  
+#ifdef USE_PMD_GAMMA
+	  if (gl.config.TDependnetgamma == true)
+	    { orch::phaseMarking(gl, stat_counter, steps); }
+#endif	
 	   if (stat_counter % steps == 0) {
 	      meas_timer.start();
+#ifndef USE_PMD_GAMMA
+	      if (gl.config.TDependnetgamma == true)
+		{ orch::phaseMarking(gl, stat_counter, steps); }
+#endif	
 	      orch::pStreaming(gl, paraio, stat_counter, steps);
 	      meas_timer.stop();
 	   } // streaming block
@@ -77,18 +86,6 @@ int main(int argc, char **argv) {
 	   ++stat_counter;
 
         } //gl.t > gl.config.Stats block
-
-	if (gl.config.TDependnetgamma == true) {
-	    // do every-dt phase-Marking when gamma is T-dependent heterogenously
-            gl.phaseMarking();
-	    if (
-                (stat_counter % steps == 0)
-		&& ((stat_counter / steps) % gl.config.PSSRatio == 0) 
-               )
-	      { hila::out0 << "gl.t is " << gl.t
-		           << ", phaseMarking() call is done. "
-			   << std::endl; }
-	  }
 
         // t-evolve call
         orch::nextBlocks(gl, stat_counter, steps, originpoints);
