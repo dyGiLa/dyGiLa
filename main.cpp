@@ -14,8 +14,8 @@
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
-#include "orch.hpp"
-#include "orch_utils.hpp"
+#include "dyGiLa.hpp"
+#include "dyGiLa_utils.hpp"
 
 #if defined USE_PARIO 
 #include "pario.hpp"
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     /*--- dyGiLa initialization --*/
     /*----------------------------*/
     glsol gl;    
-    auto dyGiLa = orch::dyGiLaInit(gl, argc, argv);
+    auto dyGiLa = dyGiLa::dyGiLaInit(gl, argc, argv);
     const std::vector<std::string> name_files = std::get<0>(dyGiLa);
     const CoordinateVector originpoints = *std::get<1>(dyGiLa);
     const unsigned int steps = std::get<2>(dyGiLa);        
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 #if defined USE_PARIO
     parIO paraio;    
     //xml files for MetaData.    
-    orch::writeHDF5_xmls(gl, paraio);    
+    dyGiLa::writeHDF5_xmls(gl, paraio);    
     paraio.init(gl);
 
     if (hila::myrank() == 0) paraio.xdmf(gl);              
@@ -64,20 +64,20 @@ int main(int argc, char **argv) {
         if (gl.t > gl.config.tStats) {	  
 #ifdef USE_PMD_GAMMA
 	  if (gl.config.TDependnetgamma == true)
-	    { orch::phaseMarking(gl, stat_counter, steps); }
+	    { dyGiLa::utils::phaseMarking(gl, stat_counter, steps); }
 #endif	
 	   if (stat_counter % steps == 0) {
 	      meas_timer.start();
 #ifndef USE_PMD_GAMMA
 	      if (gl.config.TDependnetgamma == true)
-		{ orch::phaseMarking(gl, stat_counter, steps); }
+		{ dyGiLa::utils::phaseMarking(gl, stat_counter, steps); }
 #endif	
-	      orch::pStreaming(gl, paraio, stat_counter, steps);
+	      dyGiLa::pStreaming(gl, paraio, stat_counter, steps);
 	      meas_timer.stop();
 	   } // streaming block
 
 	   // gamma handling
-	   orch::gammaEvolve(gl, stat_counter, steps, originpoints);	   
+	   dyGiLa::gammaEvolve(gl, stat_counter, steps, originpoints);	   
 	   if (stat_counter == (gl.config.BCchangec)*steps)
 	     { gl.config.boundaryConditions = gl.config.BCs2; }
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
         } //gl.t > gl.config.Stats block
 
         // t-evolve call
-        orch::nextBlocks(gl, stat_counter, steps, originpoints);
+        dyGiLa::nextBlocks(gl, stat_counter, steps, originpoints);
          	    		
     } // gl.t evolves while loop ends here
     run_timer.stop();
