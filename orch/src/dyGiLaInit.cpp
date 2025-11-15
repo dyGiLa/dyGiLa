@@ -53,6 +53,8 @@ std::tuple<const std::vector<std::string>, const CoordinateVector *const, const 
   // number of steps between reduction streaming
   const unsigned int steps = (gl.config.tEnd - gl.config.tStats)
                              /(gl.config.dt * gl.config.nOutputs);
+  hila::out0 << "steps is " << steps << " in unit of dt. "
+	     << "PSSRatio is " << gl.config.PSSRatio  << "." << std::endl;
 
   // return initialization list
   return std::make_tuple(name_files, &originpoints, steps);

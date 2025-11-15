@@ -15,6 +15,9 @@
 const std::vector<std::string> glsol::configure(const std::string &fname, int argc, char **argv) {
   
     hila::input parameters(fname);
+    hila::out0 << "------------------------------------------------------------" << "\n"
+               << "-- dyGiLa 3D p-Wave TDGL HPC Simulation Suites Parameters --" << "\n"
+               << "------------------------------------------------------------" << std::endl;
     
     config.lx = parameters.get("Nx");
     config.ly = parameters.get("Ny");
