@@ -21,7 +21,8 @@
 
 namespace dyGiLa {
 
-void utils::heterogeneousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
+void
+utils::heterogeneousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
 {
     if (stat_counter < (gl.config.gammaoffc)*steps)
       {

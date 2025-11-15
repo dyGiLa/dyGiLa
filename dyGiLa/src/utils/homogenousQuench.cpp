@@ -12,8 +12,8 @@
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
-#include "orch.hpp"
-#include "orch_utils.hpp"
+#include "dyGiLa.hpp"
+#include "dyGiLa_utils.hpp"
 
 // #if defined USE_PARIO 
 // #include "pario.hpp"
@@ -21,7 +21,8 @@
 
 namespace dyGiLa {
   
-void utils::homogenousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
+void
+utils::homogenousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
 {  
 if (
     ((gl.config.useTbath == 1)
