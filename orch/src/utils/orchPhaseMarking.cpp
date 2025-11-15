@@ -27,15 +27,15 @@ namespace orch {
 #ifdef USE_PMD_GAMMA
      // do every-dt phase-Marking when gamma is T-dependent heterogenously	  
      gl.phaseMarking();
+     if (stat_counter % steps == 0)     
 #endif	    
-     if (stat_counter % steps == 0)
 #ifndef USE_PMD_GAMMA	      
        gl.phaseMarking();
 #endif	    	      
        if ((stat_counter / steps) % gl.config.PSSRatio == 0)
 	 { hila::out0 << "gl.t is " << gl.t
-		             << ", phaseMarking() call is done. "
-			     << std::endl; }
+		      << ", phaseMarking() call is done. "
+		      << std::endl; }
   
    } // orch::phaseMarking func ends here
 

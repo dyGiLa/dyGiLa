@@ -60,8 +60,7 @@ int main(int argc, char **argv) {
     // measurement and stream counter
     unsigned int stat_counter = 0;
         
-    while (gl.t < gl.config.tEnd) {
-      
+    while (gl.t < gl.config.tEnd) {      
         if (gl.t > gl.config.tStats) {	  
 #ifdef USE_PMD_GAMMA
 	  if (gl.config.TDependnetgamma == true)
@@ -78,13 +77,11 @@ int main(int argc, char **argv) {
 	   } // streaming block
 
 	   // gamma handling
-	   orch::gammaEvolve(gl, stat_counter, steps, originpoints);
-	   
+	   orch::gammaEvolve(gl, stat_counter, steps, originpoints);	   
 	   if (stat_counter == (gl.config.BCchangec)*steps)
 	     { gl.config.boundaryConditions = gl.config.BCs2; }
 
 	   ++stat_counter;
-
         } //gl.t > gl.config.Stats block
 
         // t-evolve call
