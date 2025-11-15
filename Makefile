@@ -53,21 +53,21 @@ APP_OPTS := -DNDIM=3
 .DEFAULT_GOAL := dyGiLa
 
 # Read in the main makefile contents, incl. platforms
-include $(HILA_DIR)/libraries/main.mk     \
+include $(HILA_DIR)/libraries/main.mk  \
+        $(DYGILA_DIR)/dyGiLa/dyGiLa_conf.mk \
         $(DYGILA_DIR)/glsol/glsol_conf.mk \
 	$(DYGILA_DIR)/matep/matep_conf.mk \
-        $(DYGILA_DIR)/pario/pario_conf.mk \
-        $(DYGILA_DIR)/orch/orch_conf.mk
+        $(DYGILA_DIR)/pario/pario_conf.mk 
 
 # With multiple targets we want to use "make target", not "make build/target".
 # This is needed to carry the dependencies to build-subdir
 dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
-build/dyGiLa: Makefile $(ORCH_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
                 build/main.o \
                 $(HILA_OBJECTS) $(HEADERS)
-	$(LD) -o $@ $(ORCH_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
+	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
                 build/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
 
 # build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \

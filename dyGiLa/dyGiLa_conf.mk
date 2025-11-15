@@ -7,7 +7,7 @@ vpath %.cpp dyGiLa/src dyGiLa/src/utils
 APP_OPTS += -I $(DYGILA_DIR)/dyGiLa/inc 
 
 # APIs objects, built by HILA pattern rules
-dyGiLaAPIs_OBJECTS = build/writeHDF5_xmls.o \
+DYGILAAPIs_OBJECTS = build/writeHDF5_xmls.o \
                      build/nextBlocks.o \
                      build/pstreaming.o \
                      build/gammaEvolve.o \
@@ -16,4 +16,4 @@ dyGiLaAPIs_OBJECTS = build/writeHDF5_xmls.o \
                      build/homogenousQuench.o \
                      build/dyGiLaPhaseMarking.o
 .PHONY: dyGiLaAPIs
-dyGiLaAPIs: $(dyGiLaAPIs_OBJECTS)
+dyGiLaAPIs: $(DYGIALAAPIs_OBJECTS)
