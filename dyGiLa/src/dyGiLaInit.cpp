@@ -12,13 +12,13 @@
 
 #include "glsol.hpp"
 #include "matep_namespace_utils.hpp"
-#include "orch.hpp"
+#include "dyGiLa.hpp"
 
 // #if defined USE_PARIO 
 // #include "pario.hpp"
 // #endif
 
-namespace orch {
+namespace dyGiLa {
   
 std::tuple<const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(glsol &gl, int &argc, char **&argv) {
   // lattice initialization

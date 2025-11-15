@@ -18,7 +18,7 @@
 // #include "pario.hpp"
 // #endif
 
-namespace orch {
+namespace dyGiLa {
   
 void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints) {
   /* config.gamma update block */
@@ -41,5 +41,5 @@ void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &step
   
 } /* config.gamma update block end here */
 
-} // orch namespace ends here
+} // dyGiLa namespace ends here
 

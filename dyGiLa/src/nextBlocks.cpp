@@ -12,14 +12,14 @@
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
-#include "orch.hpp"
-#include "orch_utils.hpp"
+#include "dyGiLa.hpp"
+#include "dyGiLa_utils.hpp"
 
 // #if defined USE_PARIO 
 // #include "pario.hpp"
 // #endif
 
-namespace orch {
+namespace dyGiLa {
   
 void nextBlocks(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints)
 {
@@ -36,9 +36,9 @@ void nextBlocks(glsol &gl, unsigned int &stat_counter, const unsigned int &steps
       (gl.config.initialConditionT == 2)
       && (gl.config.evolveT == 1)
      )
-    { heterogeneousQuench(gl, stat_counter, steps, originpoints, modSteps, modPSSR); } // heterogenous quench, hot blob T-profile 
+    { utils::heterogeneousQuench(gl, stat_counter, steps, originpoints, modSteps, modPSSR); } // heterogenous quench, hot blob T-profile 
   else
-    { homogenousQuench(gl, stat_counter, steps, originpoints, modSteps, modPSSR); } // homogenous quench block
+    { utils::homogenousQuench(gl, stat_counter, steps, originpoints, modSteps, modPSSR); } // homogenous quench block
 }
 
-} // orch namespace ends here
+} // dyGiLa namespace ends here

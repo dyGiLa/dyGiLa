@@ -12,13 +12,13 @@
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
-#include "orch.hpp"
+#include "dyGiLa.hpp"
 
 #if defined USE_PARIO 
 #include "pario.hpp"
 #endif
 
-namespace orch {
+namespace dyGiLa {
   
 void writeHDF5_xmls(glsol &gl, parIO &paraio) {
   //xml files for MetaData.
@@ -36,4 +36,4 @@ void writeHDF5_xmls(glsol &gl, parIO &paraio) {
 
 } // writeHDF5_xmls() func endds here
 
-} // orch namespace ends here
+} // dyGiLa namespace ends here

@@ -12,16 +12,16 @@
 
 #include "glsol.hpp"
 //#include "matep_namespace_utils.hpp"
-#include "orch.hpp"
-#include "orch_utils.hpp"
+#include "dyGiLa.hpp"
+#include "dyGiLa_utils.hpp"
 
 // #if defined USE_PARIO 
 // #include "pario.hpp"
 // #endif
 
-namespace orch {
-  
-void heterogeneousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
+namespace dyGiLa {
+
+void utils::heterogeneousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
 {
     if (stat_counter < (gl.config.gammaoffc)*steps)
       {
@@ -65,5 +65,5 @@ void heterogeneousQuench(glsol &gl, unsigned int &stat_counter, const unsigned i
       } // conf catch block
     
 } // heterogenous quench, hot blob T-profile 
-
-} // orch namespace ends here
+ 
+} // dyGiLa namespace ends here

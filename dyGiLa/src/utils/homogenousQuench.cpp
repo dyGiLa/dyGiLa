@@ -19,9 +19,9 @@
 // #include "pario.hpp"
 // #endif
 
-namespace orch {
+namespace dyGiLa {
   
-void homogenousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
+void utils::homogenousQuench(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints, const unsigned int &modSteps, const unsigned int &modPSSR)
 {  
 if (
     ((gl.config.useTbath == 1)

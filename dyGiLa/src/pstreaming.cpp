@@ -12,13 +12,13 @@
 
 #include "glsol.hpp"
 #include "matep_namespace_utils.hpp"
-#include "orch.hpp"
+#include "dyGiLa.hpp"
 
 #if defined USE_PARIO 
 #include "pario.hpp"
 #endif
 
-namespace orch {
+namespace dyGiLa {
   
 void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsigned int &steps)
 {
@@ -86,4 +86,4 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
 #endif	            
 } // pstreaming func ends here
 
-} // orch namespace ends here
+} // dyGiLa namespace ends here
