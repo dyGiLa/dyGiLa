@@ -82,7 +82,8 @@ void glsol::initialize() {
   }
 
   case 2: {
-    pi = 0.;                            
+    pi = 0.;
+    phaseMarker = 0.;
     onsites(ALL) {                     
       A[X] = sqrt(0.1) * hila::gaussrand();
     }
@@ -93,6 +94,7 @@ void glsol::initialize() {
   }
   case 3: {
     pi = 0.;
+    phaseMarker = 0;
     onsites(ALL) {
       /*foralldir(al) foralldir(i){
         A[X].e(al,i).real().gaussian_random();
@@ -106,6 +108,7 @@ void glsol::initialize() {
 
   case 4: {
     pi = 0.;
+    phaseMarker = 0.;
     hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
                << "\n"
                << "gapB = " << MP.gap_B_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
@@ -143,7 +146,7 @@ void glsol::initialize() {
     break;
     }
     
-    case 6: {
+  case 6: {
     pi = 0;
     real_t gapA = MP.gap_A_td(config.Inip, config.IniT);
     real_t gapB = MP.gap_B_td(config.Inip, config.IniT);
@@ -177,10 +180,11 @@ void glsol::initialize() {
     hila::out0 << "Aphase_partial is created \n";
 
     break;
-    }
+   }
 
   case 7: {
     pi = 0.;
+    phaseMarker = 0.;
     real_t gap = MP.gap_A_td(config.Inip, config.IniT);
     hila::out0 <<"Gap A " << "at initial p,T is " << gap
                <<"Gap B " << "at initial p,T is " << MP.gap_B_td(config.Inip, config.IniT)
@@ -210,6 +214,7 @@ void glsol::initialize() {
   case 8: {
 
     pi = 0;
+    phaseMarker = 0.; 
     // A  = 0;
     // set all sites to be normal phase with thermal noise
     A[ALL] = sqrt(config.variance_sigma) * A[X].gaussian_random();
