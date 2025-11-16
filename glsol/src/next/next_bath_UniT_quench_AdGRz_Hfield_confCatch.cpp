@@ -30,6 +30,8 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
   std::initializer_list<int> coordsList {0,0,0};
   const CoordinateVector originpoints(coordsList);
 
+  //hila::out0 << "debug: I'm just before update the Temperature field block." << std::endl;
+
   // update the Temperature field
   if ( (T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip))
 	&& config.use_antiQuench == false)
@@ -71,6 +73,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
        }
     } // Temperature handling block ends here
 
+  // hila::out0 << "debug: I'm just before Dirichlet BC block." << std::endl;  
   /***************************************************************************/
   /*        block for OP A field normal component Dirichlet BC               */
   /***************************************************************************/
@@ -123,6 +126,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
 
   } // Bulk energy contribution block
 
+  // hila::out0 << "debug: I'm just before AdGRz treatment block." << std::endl;    
   onsites(ALL) {
     /******************************************************************/
     /*    start: cook up the A_X+j & A_X-j for AdGRz treatment        */
@@ -175,6 +179,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
     deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
   } // djAalj vector field differential block
 
+  // hila::out0 << "debug: I'm just before 2nd AdGRz block." << std::endl;    
   onsites (ALL) {
     /******************************************************************/
     /* start: cook up the A_X+e_z & A_X-e_z for AdGRz treatment       */
@@ -238,6 +243,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
   /***************************************************************************/
   /*    \delta \pi canonical momentum computing blocks ends from here        */
   /***************************************************************************/
+  // hila::out0 << "debug: I'm just before Update block." << std::endl;    
   if (t < config.tdif)
     {
       pi[ALL] = deltaPi[X]/(config.difFac);
@@ -273,7 +279,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
       t += config.dt;
     }
 
-  //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
+  // hila::out0 << "next_* call is done, t is " << t << std::endl;
   next_timer.stop();
 
 } // next_bath() ends here
