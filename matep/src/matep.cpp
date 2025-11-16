@@ -8,7 +8,7 @@
  *
  */ 
 
-//#define USE_PMD_GAMMA
+#define USE_PMD_GAMMA
 #include <iostream>
 #include <cstddef>
 #include <cmath>

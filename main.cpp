@@ -1,4 +1,4 @@
-//#define USE_PMD_GAMMA
+#define USE_PMD_GAMMA
 #define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
