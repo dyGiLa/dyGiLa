@@ -1,7 +1,7 @@
 #ifndef DYGILA_HPP
 #define DYGILA_HPP
 
-#define USE_PARIO 
+//#define USE_PARIO 
 #define USE_MPI 
 // #include <sstream>
 // #include <iostream>
@@ -21,8 +21,7 @@
 #endif
 
 namespace dyGiLa {
-  void writeHDF5_xmls(glsol &, parIO &);
-  void pStreaming(glsol &, parIO &, unsigned int &, const unsigned int &);
+  void pStreaming(glsol &, unsigned int &, const unsigned int &);
   void gammaEvolve(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &);
   void nextBlocks(glsol &, unsigned int &, const unsigned int &, const CoordinateVector &);
   std::tuple<const std::vector<std::string>, const CoordinateVector *const, const unsigned int> dyGiLaInit(glsol &, int &, char **&);    

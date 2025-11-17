@@ -1,5 +1,5 @@
 //#define USE_PMD_GAMMA
-#define USE_PARIO 
+//#define USE_PARIO 
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	      if (gl.config.TDependnetgamma == true)
 		{ dyGiLa::utils::phaseMarking(gl, stat_counter, steps); }
 #endif	
-	      dyGiLa::pStreaming(gl, paraio, stat_counter, steps);
+	      dyGiLa::pStreaming(gl, stat_counter, steps);
 	      meas_timer.stop();
 	   } // streaming block
 
