@@ -15,7 +15,7 @@ else
    HILA_DIR:= /projappl/project_2006478/insHILA
   endif
   ifeq ($(ARCH), mahti-cuda)
-   HILA_DIR:= /projappl/project_2006478/insHILA
+   HILA_DIR:= /projappl/project_2014552/insHILA-main
   endif
 endif
 
@@ -35,13 +35,12 @@ else
    DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
   endif
   ifeq ($(ARCH), mahti-cuda)
-   DYGILA_DIR := /projappl/project_2006478/dyGiLa-GPU
+   DYGILA_DIR := /projappl/project_2014552/dyGiLa-develop-lite
   endif
 endif
 
 APP_OPTS := -DNDIM=3
 #-DEVEN_SITES_FIRST=0
-
 
 # Set default goal and arch
 .DEFAULT_GOAL := dyGiLa
@@ -62,9 +61,3 @@ build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
                 $(HILA_OBJECTS) $(HEADERS)
 	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
                 build/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
-
-# build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-#                build/main.o \
-#                $(HILA_OBJECTS) $(HEADERS)
-# 	$(LD) -o $@ $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-#                build/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
