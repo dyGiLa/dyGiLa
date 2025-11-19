@@ -15,6 +15,7 @@ else
    HILA_DIR:= /projappl/project_2006478/insHILA
   endif
   ifeq ($(ARCH), mahti-cuda)
+   # HILA_DIR:= /projappl/project_2014552/insHILA-v0.0.2
    HILA_DIR:= /projappl/project_2014552/insHILA-main
   endif
 endif
