@@ -32,6 +32,8 @@ dpioCurrent="./pio_Current"
 
 if [ ! -d $dstats ] && [ ! -d $dxmls ] && [ ! -d $dxdmf ] && [ ! -d $dinsitu ] && [ ! -d $dpio ] && [ ! -d $dpioCurrent ]; then
     mkdir stats rank_xmls xdmf insitu pio pio_Current;
+    cd insitu && mkdir gapA-clip1 gapA-clip2 gapA-slice1 gapA-iso feDensity-clip_Camp Temeperature-clip Temperature-slice Temperature-iso pMarker-Slice pMarker-iso pMarker-fieldclip pMarker-isoVolume-Bphase pMarker-fieldclip-Aphase;
+    cd ..
 fi    
 
-srun /projappl/project_2014552/dyGiLa-v0.0.2/build/dyGiLa -i sim_config_dyGiLa-Langevin-blob-quench-Hfield-30mT.txt
+srun /projappl/project_2014552/dyGiLa-develop-lite/build/dyGiLa -i dyGiLa-lite.txt
