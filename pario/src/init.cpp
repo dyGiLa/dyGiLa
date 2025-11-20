@@ -1,3 +1,4 @@
+#define USE_ADGRZ
 #define USE_MPI 
 #include <sstream>
 #include <iostream>
@@ -73,12 +74,19 @@ void parIO::init(glsol &sol) {
     auto ghostNY = lattice.mynode.size[1] + 2 - 1;
     auto ghostNZ = lattice.mynode.size[2] + 2 - 1;
 
+#ifdef USE_ADGRZ
+    auto mynodeExtentZ = lattice.mynode.size[2]; /*+ 2 - 1*;*/
+    auto mynodeMinZcoord = lattice.mynode.min[2] * sol.config.dx;
+    //auto mynodeMaxZcoord = (lattice.mynode.min[2] + mynodeExtentZ) * sol.config.dx;
+#endif    
+    
     ghostVolume = ghostNX * ghostNY * ghostNZ;
     ghostCellsMask = (unsigned char *)memalloc(ghostVolume * sizeof(unsigned char));
 
     long long counter = 0;
     unsigned char Mask = 0;
-    
+
+#ifndef USE_ADGRZ
     for (auto k = 0; k < ghostNZ; k++) {
         for (auto j = 0; j < ghostNY; j++) {
             for (auto i = 0; i < ghostNX; i++) {
@@ -91,6 +99,42 @@ void parIO::init(glsol &sol) {
             }
         }
     }
+#else
+    if (
+	(mynodeExtentZ == 0)
+	/*|| (mynodeMaxZcoord - ( (sol.config.lz - 1) * sol.config.dx ) <= 1e-5*/
+       )
+      {
+       for (auto k = 0; k < ghostNZ; k++) {
+           for (auto j = 0; j < ghostNY; j++) {
+               for (auto i = 0; i < ghostNX; i++) {
+                   bool jGhostFlag = (j == 0);
+                   bool iGhostFlag = (i == 0);
+                   Mask = (iGhostFlag || jGhostFlag);
+                   ghostCellsMask[counter] = Mask;
+                   counter++;
+               }
+           }
+       }
+
+      } // z = 0 rank ghost sits marking
+    else
+      {
+       for (auto k = 0; k < ghostNZ; k++) {
+           for (auto j = 0; j < ghostNY; j++) {
+               for (auto i = 0; i < ghostNX; i++) {
+                   bool kGhostFlag = (k == 0);
+                   bool jGhostFlag = (j == 0);
+                   bool iGhostFlag = (i == 0);
+                   Mask = (iGhostFlag || jGhostFlag || kGhostFlag);
+                   ghostCellsMask[counter] = Mask;
+                   counter++;
+               }
+           }
+       }
+
+      } // no-z=0 node      
+#endif    
 
     /*********************************/
     /*    all describeMesh calls     */
