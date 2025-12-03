@@ -33,23 +33,23 @@ namespace matep {
 
     matep_consts mp_consts;
 
-    mp_consts.Kelvin = 1.f;
-    mp_consts.J = 1.f;
-    mp_consts.s = 1.f;
-    mp_consts.m = 1.f;
-    mp_consts.kg = 1.f;
-    mp_consts.pi = 3.14159265358979323846264338328f;
-    mp_consts.E = 2.718281828459045235360287471352f;
-    mp_consts.p_pcp = 21.22f;
+    mp_consts.Kelvin = 1.;
+    mp_consts.J = 1.;
+    mp_consts.s = 1.;
+    mp_consts.m = 1.;
+    mp_consts.kg = 1.;
+    mp_consts.pi = 3.14159265358979323846264338328;
+    mp_consts.E = 2.718281828459045235360287471352;
+    mp_consts.p_pcp = 21.22;
 
-    mp_consts.u = 1.66053906660f*(10.0e-27)*mp_consts.kg;
-    mp_consts.m3 = 3.016293f*mp_consts.u;
+    mp_consts.u = 1.66053906660*(1.0e-27)*mp_consts.kg;
+    mp_consts.m3 = 3.016293*mp_consts.u;
     mp_consts.nm = (1.0e-9)*mp_consts.m;
-    mp_consts.hbar = 1.054571817f*(10.0e-34)*mp_consts.J*mp_consts.s;
-    mp_consts.kb = 1.380649*(10.0e-23)*mp_consts.J*1.0f;
+    mp_consts.hbar = 1.054571817*(1.0e-34)*mp_consts.J*mp_consts.s;
+    mp_consts.kb = 1.380649*(1.0e-23)*mp_consts.J*1.0; //J.K^-1
     mp_consts.zeta3 = 1.2020569031595942;
-    mp_consts.c_betai = (7.0f*mp_consts.zeta3)/(80.0f*mp_consts.pi*mp_consts.pi);
-    mp_consts.gammahbar = -34.2040866*(10.0e-31f)*mp_consts.J*1.0f; // in unit of J-mT^-1
+    mp_consts.c_betai = (7.0*mp_consts.zeta3)/(80.0f*mp_consts.pi*mp_consts.pi);
+    mp_consts.gammahbar = -34.2040866*(1.0e-31)*mp_consts.J*1.0; // in unit of J-mT^-1
     mp_consts.tau0N = 0.3e-6*mp_consts.s; // normal phase QP life time 0.3 mus in unit of s
 
     real_t c1_ARR[18] = {-0.0098, -0.0127, -0.0155, -0.0181, -0.0207, -0.0231, -0.0254, -0.0275, -0.0295, -0.0314, -0.0330, -0.0345, -0.0358, -0.0370, -0.0381, -0.0391, -0.0402, -0.0413};

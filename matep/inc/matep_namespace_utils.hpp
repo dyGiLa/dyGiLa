@@ -30,7 +30,7 @@ namespace matep {
 
   struct matep_consts {
 
-  real_t Kelvin,
+  double Kelvin,
          J,
          s,
          m,
@@ -40,7 +40,7 @@ namespace matep {
          p_pcp;
 
   // physical constants for he3
-  real_t u,
+  double u,
          m3,
          nm,
          hbar,
@@ -50,18 +50,18 @@ namespace matep {
          gammahbar,
          tau0N;
 
-  real_t c1_arr[18];
-  real_t c2_arr[18];
-  real_t c3_arr[18];
-  real_t c4_arr[18];
-  real_t c5_arr[18];
+  double c1_arr[18];
+  double c2_arr[18];
+  double c3_arr[18];
+  double c4_arr[18];
+  double c5_arr[18];
 
   // ***************************************************
-  real_t Fa0_arr[18];// Landau parameter  
-  real_t Tc_arr[18]; // mK;
-  real_t Ms_arr[18]; // in unit of helium-3 atom;
-  real_t VF_arr[18]; // fermi velosity, m.s^-1;
-  real_t XI0_arr[18];
+  double Fa0_arr[18];// Landau parameter  
+  double Tc_arr[18]; // mK;
+  double Ms_arr[18]; // in unit of helium-3 atom;
+  double VF_arr[18]; // fermi velosity, m.s^-1;
+  double XI0_arr[18];
 
   };
 
