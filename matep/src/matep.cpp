@@ -32,19 +32,26 @@ hila::global<matep::matep_consts> wrapper_mp;
 //***     member functions, interfaces of dimensional qualities     ***
 //*********************************************************************
 namespace matep {
+double
+Matep::hbar() { return wrapper_mp().hbar; };
+
+double
+Matep::hbar3() { /* debug function for overflow */ return wrapper_mp().hbar * wrapper_mp().hbar * wrapper_mp().hbar; };
+  
 real_t
 Matep::Fa0p(real_t p) {return lininterp(wrapper_mp().Fa0_arr, p);
 }
 
-real_t
+double
 Matep::Tcp(real_t p){
-  real_t Tc = lininterp(wrapper_mp().Tc_arr, p)*(10.0e-3f);
-  //real_t Tc = p*p + p*p*p;
+  // This func returns double, which is necessary for certain case in concern of float point underflow
+  // Tc in Klevin, 
+  double Tc = lininterp(wrapper_mp().Tc_arr, p)*(1.0e-3);
   return Tc;
 }
 
 real_t
-Matep::Tcp_mK(real_t p) {return lininterp(wrapper_mp().Tc_arr, p);
+Matep::Tcp_mK(real_t p) {/*Tc in MilliKelvin*/ return lininterp(wrapper_mp().Tc_arr, p);
 }
 
 real_t
@@ -61,25 +68,27 @@ Matep::tauQP(real_t p, real_t T){
 
 }
 
-real_t
-Matep::mEffp(real_t p){  
-  real_t mEff = lininterp(wrapper_mp().Ms_arr, p)*wrapper_mp().m3;
-  //real_t mEff = p*p + p*p*p;  
+double
+Matep::mEffp(real_t p){
+  // This func returns double, which is necessary for certain case in concern of float point underflow
+  // in unit of kg.
+  double mEff = lininterp(wrapper_mp().Ms_arr, p)*wrapper_mp().m3;
+
   return mEff;
 }
 
-real_t
+double
 Matep::vFp(real_t p){
+  // This func returns double, which is necessary for certain case in concern of float point underflow  
   // unit m.s^-1
-  real_t vF = lininterp(wrapper_mp().VF_arr, p);
-  //real_t vF = p*p + p*p*p;  
+  double vF = lininterp(wrapper_mp().VF_arr, p);
+
   return vF;
 }
 
 real_t
 Matep::xi0p(real_t p){
   real_t xi0 = lininterp(wrapper_mp().XI0_arr, p)*wrapper_mp().nm;
-  //real_t xi0 = p*p + p*p*p;  
   return xi0;
 }  
 
@@ -93,13 +102,40 @@ double
 Matep::N0p(real_t p){
   /*
    * the maginitude of N0p is about 10^(50), it must be double type 
+   * This func returns double, which is necessary for certain case in concern of float point underflow.
    */
-  double N0 = (mEffp(p)*mEffp(p)*vFp(p))/((2.0f*wrapper_mp().pi*wrapper_mp().pi)*(wrapper_mp().hbar*wrapper_mp().hbar*wrapper_mp().hbar));
-  //real_t N0 = p*p + p*p*p;  
+  double msmsvf = mEffp(p) * mEffp(p) * vFp(p);
+  double pi2 = wrapper_mp().pi * wrapper_mp().pi;
+  double hbar3 = wrapper_mp().hbar * wrapper_mp().hbar * wrapper_mp().hbar;
+  
   // ((mEff(p)**(2))*vF(p))/((2*pi*pi)*(hbar**(3)))
+  double N0 = msmsvf/(2. * pi2 * hbar3);
   return N0;
 }
 
+double
+Matep::kBTC(real_t p) {
+  // This func returns double, which is necessary for certain case in concern of float point underflow  
+  /*in unit of J*/
+  return wrapper_mp().kb * Tcp(p);
+}
+  
+double
+Matep::f0p(real_t p){
+  /*
+   * GL free energy energy unit in SI unit
+   * f0 = 1/3 N(0) \xi^3_GL (K_B T_c)^2
+   * This func returns double, which is necessary for certain case in concern of float point underflow
+   */
+  double GLVol0  = xi0GLp(p) * xi0GLp(p) * xi0GLp(p);
+  double kbTc = kBTC(p);
+  
+  return (1./3.) * N0p(p) * GLVol0 * kbTc * kbTc;  
+}
+
+real_t
+Matep::kBTCf0p_ratio(real_t p) { return kBTC(p)/f0p(p); }
+  
 real_t
 Matep::Dd(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi){
   real_t vF = vFp(p);

@@ -36,20 +36,24 @@ namespace matep {
   // ************************************************************************** //
   // >>>>>>>>>>>        interfaces of dimensional qualities        <<<<<<<<<<<< //
   // ************************************************************************** //
-
 #pragma hila loop_function
-        real_t Fa0p(real_t p);                 //dimensionless Landau Coefficient
+        double hbar();                         // hbar
 #pragma hila loop_function
-        real_t Tcp(real_t p);                  // in unit of Kelvin
+        double hbar3();                         // hbar^3
+   
+#pragma hila loop_function
+        real_t Fa0p(real_t p);                 // dimensionless Landau Coefficient
+#pragma hila loop_function
+        double Tcp(real_t p);                  // in unit of Kelvin
 #pragma hila loop_function  
         real_t Tcp_mK(real_t p);               // in unit of mK
 
 #pragma hila loop_function  
-        real_t mEffp(real_t p);                // quisiparticle effective mass
+        double mEffp(real_t p);                // quisiparticle effective mass
 #pragma hila loop_function  
         real_t tauQP(real_t p, real_t T);      // Fitted QP releaxing time in \mus
 #pragma hila loop_function     
-        real_t vFp(real_t p);                  // Fermi velocity
+        double vFp(real_t p);                  // Fermi velocity
 #pragma hila loop_function  
         real_t xi0p(real_t p);                 // zero Temperature coherent length
    
@@ -59,6 +63,12 @@ namespace matep {
         real_t tGL(real_t p);                  // GL time, time unit
 #pragma hila loop_function   
         double N0p(real_t p);                  // deisty of state on Fermi surface
+#pragma hila loop_function
+        double kBTC(real_t p);                 // thermal energy in SI unit
+#pragma hila loop_function   
+        double f0p(real_t p);                  // energy unit of GL free energy in SI unit
+#pragma hila loop_function
+        real_t kBTCf0p_ratio(real_t p);                // (K_b T_C)/f0
 #pragma hila loop_function      
         real_t Dd(real_t p, unsigned int use_CustomerDctxi, const real_t Dctxi);                   // diffusion constant/ diffusive coefficient
 
@@ -144,7 +154,7 @@ namespace matep {
 private:
         // linear interpolation function:
 #pragma hila loop_function  
-        real_t lininterp(const real_t *cX_arr, real_t p);
+        double lininterp(const double *cX_arr, real_t p);
 
 
         // fudge expotent calculator
