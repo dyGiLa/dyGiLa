@@ -101,7 +101,7 @@ void parIO::init(glsol &sol) {
     }
 #else
     if (
-	(mynodeExtentZ == 0)
+	mynodeExtentZ == 0
 	/*|| (mynodeMaxZcoord - ( (sol.config.lz - 1) * sol.config.dx ) <= 1e-5*/
        )
       {
@@ -133,7 +133,7 @@ void parIO::init(glsol &sol) {
            }
        }
 
-      } // no-z=0 node      
+      } // no-z=0 rank      
 #endif    
 
     /*********************************/
