@@ -20,6 +20,19 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+  const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
+  const real_t volElemLattice = config.dx * config.dx * config.dx;
+  // hila::out0 << "kBTCf0p_ratio is " << kBTCf0p_ratio << ", volElemLattice is " << volElemLattice
+  // 	     << ", kBTCf0p_ratio/volElemLattice is " << kBTCf0p_ratio/volElemLattice
+  // 	     << ", MP.kBTC(config.Inip) is " << MP.kBTC(config.Inip)
+  // 	     << ", MP.f0p(config.Inip) is " << MP.f0p(config.Inip)
+  // 	     << ", MP.xi0GLp(config.Inip) is " << MP.xi0GLp(config.Inip)
+  // 	     << ", MP.N0p(config.Inip) is " << MP.N0p(config.Inip)
+  // 	     << ", MP.mEffp(config.Inip) is " << MP.mEffp(config.Inip)
+  // 	     << ", MP.vFp(config.Inip) is "<< MP.vFp(config.Inip)
+  //            << ", MP.hbar() is " << MP.hbar()
+  //            << ", MP.hbar3() is " << MP.hbar3()
+  // 	     << std::endl;
 
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
   
@@ -185,7 +198,7 @@ void glsol::next_bath_hotblob_quench_Hfield() {
 
 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
 	/* Langevin refresh  */
-	pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK)) * rad_mat; 
+	pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat; 
 	//modP += sqrt(ep2)*tb*rad_mat.norm();
 
         // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	

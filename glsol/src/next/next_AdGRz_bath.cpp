@@ -19,7 +19,10 @@ void glsol::next_AdGRz_bath() {
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;
 
-  const real_t Tcp_mK = MP.Tcp_mK(config.Inip);   
+  const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+  const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
+  const real_t volElemLattice = config.dx * config.dx * config.dx;
+  
   int bc=config.boundaryConditions;
 
   next_timer.start();
@@ -233,7 +236,7 @@ void glsol::next_AdGRz_bath() {
             // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	
 	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
 	
-            pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK)) * rad_mat;
+            pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
 
             // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
             pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
