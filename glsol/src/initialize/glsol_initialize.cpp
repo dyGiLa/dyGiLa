@@ -119,11 +119,11 @@ void glsol::initialize() {
 	A[X].e(al,i) = sqrt(config.variance_sigma) * hila::gaussian_random<Complex<real_t>>();
       } // doralldir end here
     } // onsites(ALL) end here
-    hila::out0 << "kBTC/f0p is " << kBTCf0p_ratio
+    hila::out0 << "kBTC/f0p is " << MP.kBTCf0p_ratio(config.Inip)
                << "\n" 
 	       << "Thermal fluctuation energy kB*TC is " << MP.kBTC(config.Inip) << "J."
                << "\n"      
-	       << "1/3 N(0) (\xi^0_GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
+	       << "1/3 N(0) (xi0GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
                << "\n"      
 	       << "xi0GL is " << MP.xi0GLp(config.Inip) << "m."
                << "\n"      
@@ -158,11 +158,11 @@ void glsol::initialize() {
       A[X] = (gap/sqrt(3.)) * A[X];
     }
 
-    hila::out0 << "kBTC/f0p is " << kBTCf0p_ratio
+    hila::out0 << "kBTC/f0p is " << MP.kBTCf0p_ratio(config.Inip)
                << "\n" 
 	       << "Thermal fluctuation energy kB*TC is " << MP.kBTC(config.Inip) << "J."
                << "\n"      
-	       << "1/3 N(0) (\xi^0_GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
+	       << "1/3 N(0) (xi0GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
                << "\n"      
 	       << "xi0GL is " << MP.xi0GLp(config.Inip) << "m."
                << "\n"      
@@ -211,11 +211,11 @@ void glsol::initialize() {
       }
       
     }
-   hila::out0 << "kBTC/f0p is " << kBTCf0p_ratio
+   hila::out0 << "kBTC/f0p is " << MP.kBTCf0p_ratio(config.Inip)
               << "\n" 
 	      << "Thermal fluctuation energy kB*TC is " << MP.kBTC(config.Inip) << "J."
               << "\n"      
-	      << "1/3 N(0) (\xi^0_GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
+	      << "1/3 N(0) (xi0GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
               << "\n"      
 	      << "xi0GL is " << MP.xi0GLp(config.Inip) << "m."
               << "\n"      
@@ -258,11 +258,11 @@ void glsol::initialize() {
     } // onsites(ALL) end here
 
     //A[ALL]=A[x].asArray()
-   hila::out0 << "kBTC/f0p is " << kBTCf0p_ratio
+   hila::out0 << "kBTC/f0p is " << MP.kBTCf0p_ratio(config.Inip)
               << "\n" 
 	      << "Thermal fluctuation energy kB*TC is " << MP.kBTC(config.Inip) << "J."
               << "\n"      
-	      << "1/3 N(0) (\xi^0_GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
+	      << "1/3 N(0) (xi0GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
               << "\n"      
 	      << "xi0GL is " << MP.xi0GLp(config.Inip) << "m."
               << "\n"      
@@ -310,11 +310,11 @@ void glsol::initialize() {
        } // Temeprature judgement block
       
     } // onsites(ALL) end here
-    hila::out0 << "kBTC/f0p is " << kBTCf0p_ratio
+    hila::out0 << "kBTC/f0p is " << MP.kBTCf0p_ratio(config.Inip)
                << "\n" 
 	       << "Thermal fluctuation energy kB*TC is " << MP.kBTC(config.Inip) << "J."
                << "\n"      
-	       << "1/3 N(0) (\xi^0_GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
+	       << "1/3 N(0) (xi0GL)^3 (kB TC)^2 is " << MP.f0p(config.Inip) << "J."
                << "\n"      
 	       << "xi0GL is " << MP.xi0GLp(config.Inip) << "m."
                << "\n"      
