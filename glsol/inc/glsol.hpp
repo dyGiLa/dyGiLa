@@ -90,9 +90,13 @@ public:
   void next_bath_hotblob_quench_Hfield();
   //void next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();  
   void next_bath_hotblob_quench_Hfield_confCatch();        
+
+  void dPiGLfe();
   
   Field<phi_t> A;
   Field<phi_t> pi;
+  Field<phi_t> deltaPi;
+  Field<Vector<3,Complex<real_t>>> djAaj;
 
   Field<real_t> T;
   Field<real_t> dT;
