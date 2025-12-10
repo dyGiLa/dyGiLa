@@ -1,7 +1,7 @@
 # Makefie of TDGL-Langvian eqns solver glsol
 
 # *.cpp files searching path
-vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize
+vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize glsol/src/GLfeContri
 
 # Include path, linder flags
 # of path and binary libs into
@@ -43,7 +43,8 @@ GLSOL_OBJECTS = build/configure.o             \
                 build/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
-                build/glsol_initialize_H.o    
+                build/glsol_initialize_H.o    \
+                build/dPiGLfe.o
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)
