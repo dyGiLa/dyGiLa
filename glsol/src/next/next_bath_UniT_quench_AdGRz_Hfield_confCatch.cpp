@@ -16,8 +16,8 @@
 void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
 
   static hila::timer next_timer("timestep");
-  Field<phi_t> deltaPi;
-  Field<Vector<3,Complex<real_t>>> djAaj;
+  // Field<phi_t> deltaPi;
+  // Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
@@ -214,7 +214,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
 
       if ( X.coordinate(e_z) == 0 )
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx))
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
 	               * (A[X + e_x] + A[X-e_x]
                           + A[X + e_y] + A[X-e_y]
                           + A[X + e_z] + A_Xmez
@@ -223,7 +223,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
 	} // starting surface AdGR treatment
       else if ( X.coordinate(e_z) == (config.lz-1) )
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx))
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
 	               * (A[X+e_x] + A[X - e_x]
                           + A[X+e_y] + A[X - e_y]
                           + A_Xpez + A[X - e_z]
@@ -232,7 +232,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
 	} // ending surface AdGR treatment
       else
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                           + A[X + e_y] + A[X - e_y]
                                                           + A[X + e_z] + A[X - e_z]
                                                           - 6.0*A[X]);

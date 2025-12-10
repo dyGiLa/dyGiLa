@@ -27,7 +27,9 @@ void glsol::initialize() {
   switch (config.initialCondition) {
     
   case 0: {
-    pi = 0;                            
+    pi = 0;
+    deltaPi =0;
+    djAaj = 0;
     real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     onsites(ALL) {                     
       A[X] = hila::gaussrand();
@@ -82,7 +84,11 @@ void glsol::initialize() {
   }
 
   case 2: {
+    
     pi = 0.;
+    deltaPi =0;
+    djAaj = 0;
+    
     phaseMarker = 0.;
     onsites(ALL) {                     
       A[X] = sqrt(0.1) * hila::gaussrand();
@@ -94,6 +100,9 @@ void glsol::initialize() {
   }
   case 3: {
     pi = 0.;
+    deltaPi =0;
+    djAaj = 0;
+    
     phaseMarker = 0;
     onsites(ALL) {
       /*foralldir(al) foralldir(i){
@@ -108,6 +117,9 @@ void glsol::initialize() {
 
   case 4: {
     pi = 0.;
+    deltaPi =0;
+    djAaj = 0;
+    
     phaseMarker = 0.;
     hila::out0 << "gapA = " << MP.gap_A_td(config.Inip, config.IniT) << "at p = " << config.Inip << ", T = " << config.IniT
                << "\n"
@@ -144,6 +156,9 @@ void glsol::initialize() {
     
   case 5: {
     pi = 0;
+    deltaPi =0;
+    djAaj = 0;
+    
     real_t gap = MP.gap_B_td(config.Inip, config.IniT);
     hila::out0 <<"Gap B: "<<gap<<"\n";
     onsites(ALL) {
@@ -183,6 +198,9 @@ void glsol::initialize() {
     
   case 6: {
     pi = 0;
+    deltaPi =0;
+    djAaj = 0;
+    
     real_t gapA = MP.gap_A_td(config.Inip, config.IniT);
     real_t gapB = MP.gap_B_td(config.Inip, config.IniT);
     real_t tb = config.Inilc;//config.IniT/ MP.Tcp_mK(config.Inip);
@@ -236,6 +254,9 @@ void glsol::initialize() {
 
   case 7: {
     pi = 0.;
+    deltaPi =0;
+    djAaj = 0;
+    
     phaseMarker = 0.;
     real_t gap = MP.gap_A_td(config.Inip, config.IniT);
     hila::out0 <<"Gap A " << "at initial p,T is " << gap
@@ -283,7 +304,10 @@ void glsol::initialize() {
 
   case 8: {
 
-    pi = 0;
+    pi = 0; 
+    deltaPi =0;
+    djAaj = 0;
+   
     phaseMarker = 0.; 
     // A  = 0;
     // set all sites to be normal phase with thermal noise
@@ -340,6 +364,9 @@ void glsol::initialize() {
     {
      // #pragma hila ast_dump
      pi = 0.0; //set derivative matrix to zero
+     deltaPi =0;
+     djAaj = 0;
+     
      onsites (ALL) { A[X].fill(1.0); }
     
      hila::out0 << "Field matrix set to 1 everywhere \n";

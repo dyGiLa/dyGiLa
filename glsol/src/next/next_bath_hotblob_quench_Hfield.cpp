@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
@@ -16,25 +16,12 @@
 void glsol::next_bath_hotblob_quench_Hfield() {
 
   static hila::timer next_timer("timestep");
-  Field<phi_t> deltaPi;
-  Field<Vector<3,Complex<real_t>>> djAaj;
+  // Field<phi_t> deltaPi;
+  // Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
   const real_t volElemLattice = config.dx * config.dx * config.dx;
-  // hila::out0 << "kBTCf0p_ratio is " << kBTCf0p_ratio << ", volElemLattice is " << volElemLattice
-  // 	     << ", kBTCf0p_ratio/volElemLattice is " << kBTCf0p_ratio/volElemLattice
-  // 	     << ", MP.kBTC(config.Inip) is " << MP.kBTC(config.Inip)
-  // 	     << ", MP.f0p(config.Inip) is " << MP.f0p(config.Inip)
-  // 	     << ", MP.xi0GLp(config.Inip) is " << MP.xi0GLp(config.Inip)
-  // 	     << ", MP.N0p(config.Inip) is " << MP.N0p(config.Inip)
-  // 	     << ", MP.mEffp(config.Inip) is " << MP.mEffp(config.Inip)
-  // 	     << ", MP.vFp(config.Inip) is "<< MP.vFp(config.Inip)
-  //            << ", MP.hbar() is " << MP.hbar()
-  //            << ", MP.hbar3() is " << MP.hbar3()
-  // 	     << std::endl;
-
-  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
   
   int bc=config.boundaryConditions;
   // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
@@ -129,53 +116,54 @@ void glsol::next_bath_hotblob_quench_Hfield() {
   /******************************************************/
   
 
-  onsites (ALL) {
+  // onsites (ALL) {
 
-    matep::Matep MPonsites;
-    auto AxAt = A[X]*A[X].transpose();
-    auto AxAd = A[X]*A[X].dagger();
+  //   matep::Matep MPonsites;
+  //   auto AxAt = A[X]*A[X].transpose();
+  //   auto AxAd = A[X]*A[X].dagger();
 
-    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
-    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
-    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
-    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
-    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
-    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
+  //   real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+  //   real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+  //   real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+  //   real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+  //   real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+  //   real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
   
-    deltaPi[X] = - beta0*A[X]
-      - 2.0*beta1*A[X].conj()*AxAt.trace()
-      - 2.0*beta2*A[X]*AxAd.trace()
-      - 2.0*beta3*AxAt*A[X].conj()
-      - 2.0*beta4*AxAd*A[X]
-      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
-      - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
+  //   deltaPi[X] = - beta0*A[X]
+  //     - 2.0*beta1*A[X].conj()*AxAt.trace()
+  //     - 2.0*beta2*A[X]*AxAd.trace()
+  //     - 2.0*beta3*AxAt*A[X].conj()
+  //     - 2.0*beta4*AxAd*A[X]
+  //     - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
+  //     - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
-  }
+  // }
 
-  onsites(ALL) {
-    djAaj[X] = 0;
-    foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-    }
-  }
+  // onsites(ALL) {
+  //   djAaj[X] = 0;
+  //   foralldir(j) {
+  //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+  //   }
+  // }
 
-  onsites(ALL) {
-    phi_t mat;
-    foralldir(d) {
-      auto col = djAaj[X+d] - djAaj[X-d];
-      for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-    }
+  // onsites(ALL) {
+  //   phi_t mat;
+  //   foralldir(d) {
+  //     auto col = djAaj[X+d] - djAaj[X-d];
+  //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+  //   }
 
-    deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-  }
+  //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+  // }
 
-  onsites (ALL) {
+  // onsites (ALL) {
     
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
-                                                     - 6.0*A[X]);
-  }
+  //   deltaPi[X] += (1.0/(config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+  //                                                + A[X + e_y] + A[X - e_y]
+  //                                                + A[X + e_z] + A[X - e_z]
+  //                                                - 6.0*A[X]);
+  // }
+  dPiGLfe();
 
   if (t < config.tdif)
     {

@@ -17,8 +17,8 @@
 void glsol::next_bath_UniT_quench() {
 
   static hila::timer next_timer("timestep");
-  Field<phi_t> deltaPi;
-  Field<Vector<3,Complex<real_t>>> djAaj;
+  // Field<phi_t> deltaPi;
+  // Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK_Inip = MP.Tcp_mK(config.Inip);
   const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
@@ -110,62 +110,63 @@ void glsol::next_bath_UniT_quench() {
       }
   } // onsite() block ends here
 
-  onsites (ALL) {
+  // onsites (ALL) {
 
-    matep::Matep MPonsites;
+  //   matep::Matep MPonsites;
     
-    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
-    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
-    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
-    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
-    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
-    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
+  //   real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+  //   real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+  //   real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+  //   real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+  //   real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+  //   real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
 
-    auto AxAt = A[X]*A[X].transpose();
-    auto AxAd = A[X]*A[X].dagger();
+  //   auto AxAt = A[X]*A[X].transpose();
+  //   auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - beta0*A[X]
-      - 2.0*beta1*A[X].conj()*AxAt.trace()
-      - 2.0*beta2*A[X]*AxAd.trace()
-      - 2.0*beta3*AxAt*A[X].conj()
-      - 2.0*beta4*AxAd*A[X]
-      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X];
+  //   deltaPi[X] = - beta0*A[X]
+  //     - 2.0*beta1*A[X].conj()*AxAt.trace()
+  //     - 2.0*beta2*A[X]*AxAd.trace()
+  //     - 2.0*beta3*AxAt*A[X].conj()
+  //     - 2.0*beta4*AxAd*A[X]
+  //     - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X];
 
-  }
+  // }
 
-  onsites(ALL) {
-    djAaj[X] = 0;
-    foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-    }
-  }
+  // onsites(ALL) {
+  //   djAaj[X] = 0;
+  //   foralldir(j) {
+  //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+  //   }
+  // }
 
-  onsites(ALL) {
-    phi_t mat;
-    foralldir(d) {
-      auto col = djAaj[X+d] - djAaj[X-d];
-      for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-    }
+  // onsites(ALL) {
+  //   phi_t mat;
+  //   foralldir(d) {
+  //     auto col = djAaj[X+d] - djAaj[X-d];
+  //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+  //   }
 
-    deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-  }
+  //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+  // }
 
-  onsites (ALL) {
+  // onsites (ALL) {
 
-    //Matep MP;
-    //real_t tb = config.IniT/ MP.Tcp_mK(config.Inip);
-    //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
-    //phi_t rad_mat;
+  //   //Matep MP;
+  //   //real_t tb = config.IniT/ MP.Tcp_mK(config.Inip);
+  //   //real_t sig = sqrt(2.0*tb*config.gamma); //should we have t
+  //   //phi_t rad_mat;
     
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
-                                                     - 6.0*A[X]);
-    //rad_mat.gaussian_random();
-    //deltaPi[X] += rad_mat*sig;
+  //   deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+  //                                                    + A[X + e_y] + A[X - e_y]
+  //                                                    + A[X + e_z] + A[X - e_z]
+  //                                                    - 6.0*A[X]);
+  //   //rad_mat.gaussian_random();
+  //   //deltaPi[X] += rad_mat*sig;
 
-  }
+  // }
 
+  dPiGLfe();
   //onsites (ALL) {deltaPi[X] *= config.dt;} // I think that this is the problem, multiplication with respect to dt   
   if (t < config.tdif)
     {

@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
@@ -16,8 +16,8 @@
 void glsol::next_AdGRz_bath() {
 
   static hila::timer next_timer("timestep");
-  Field<phi_t> deltaPi;
-  Field<Vector<3,Complex<real_t>>> djAaj;
+  // Field<phi_t> deltaPi;
+  // Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
@@ -165,7 +165,7 @@ void glsol::next_AdGRz_bath() {
 
       if ( X.coordinate(e_z) == 0 )
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx))
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
 	               * (A[X + e_x] + A[X-e_x]
                           + A[X + e_y] + A[X-e_y]
                           + A[X + e_z] + A_Xmez
@@ -174,7 +174,7 @@ void glsol::next_AdGRz_bath() {
 	} // starting surface AdGR treatment
       else if ( X.coordinate(e_z) == (config.lz-1) )
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx))
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
 	               * (A[X+e_x] + A[X - e_x]
                           + A[X+e_y] + A[X - e_y]
                           + A_Xpez + A[X - e_z]
@@ -183,7 +183,7 @@ void glsol::next_AdGRz_bath() {
 	} // ending surface AdGR treatment
       else
 	{
-         deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+         deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
                                                           + A[X + e_y] + A[X - e_y]
                                                           + A[X + e_z] + A[X - e_z]
                                                           - 6.0*A[X]);

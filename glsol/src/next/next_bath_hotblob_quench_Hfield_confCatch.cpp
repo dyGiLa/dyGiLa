@@ -16,8 +16,8 @@
 void glsol::next_bath_hotblob_quench_Hfield_confCatch() {
 
   static hila::timer next_timer("timestep");
-  Field<phi_t> deltaPi;
-  Field<Vector<3,Complex<real_t>>> djAaj;
+  // Field<phi_t> deltaPi;
+  // Field<Vector<3,Complex<real_t>>> djAaj;
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
 
@@ -116,54 +116,55 @@ void glsol::next_bath_hotblob_quench_Hfield_confCatch() {
   /******************************************************/
   
 
-  onsites (ALL) {
+  // onsites (ALL) {
 
-    matep::Matep MPonsites;
-    auto AxAt = A[X]*A[X].transpose();
-    auto AxAd = A[X]*A[X].dagger();
+  //   matep::Matep MPonsites;
+  //   auto AxAt = A[X]*A[X].transpose();
+  //   auto AxAd = A[X]*A[X].dagger();
 
-    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
-    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
-    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
-    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
-    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
-    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
+  //   real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+  //   real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+  //   real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+  //   real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+  //   real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+  //   real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
   
-    deltaPi[X] = - beta0*A[X]
-      - 2.0*beta1*A[X].conj()*AxAt.trace()
-      - 2.0*beta2*A[X]*AxAd.trace()
-      - 2.0*beta3*AxAt*A[X].conj()
-      - 2.0*beta4*AxAd*A[X]
-      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
-      - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
+  //   deltaPi[X] = - beta0*A[X]
+  //     - 2.0*beta1*A[X].conj()*AxAt.trace()
+  //     - 2.0*beta2*A[X]*AxAd.trace()
+  //     - 2.0*beta3*AxAt*A[X].conj()
+  //     - 2.0*beta4*AxAd*A[X]
+  //     - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
+  //     - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
-  }
+  // }
 
-  onsites(ALL) {
-    djAaj[X] = 0;
-    foralldir(j) {
-      djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
-    }
-  }
+  // onsites(ALL) {
+  //   djAaj[X] = 0;
+  //   foralldir(j) {
+  //     djAaj[X] += A[X + j].column(j) - A[X - j].column(j);
+  //   }
+  // }
 
-  onsites(ALL) {
-    phi_t mat;
-    foralldir(d) {
-      auto col = djAaj[X+d] - djAaj[X-d];
-      for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-    }
+  // onsites(ALL) {
+  //   phi_t mat;
+  //   foralldir(d) {
+  //     auto col = djAaj[X+d] - djAaj[X-d];
+  //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+  //   }
 
-    deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-  }
+  //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+  // }
 
-  onsites (ALL) {
+  // onsites (ALL) {
     
-    deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                     + A[X + e_y] + A[X - e_y]
-                                                     + A[X + e_z] + A[X - e_z]
-                                                     - 6.0*A[X]);
-  }
-
+  //   deltaPi[X] += (1.0/(4.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+  //                                                    + A[X + e_y] + A[X - e_y]
+  //                                                    + A[X + e_z] + A[X - e_z]
+  //                                                    - 6.0*A[X]);
+  // }
+  dPiGLfe();
+  
   // canonic momentum Pi update
   if (t < config.tdif)
     {
