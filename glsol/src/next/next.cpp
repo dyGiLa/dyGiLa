@@ -184,7 +184,43 @@ void glsol::next() {
 	  
       } // bc = 6 block, phase vortices ends here
     /*------------    phaseVortices BC ends ---------------*/
+    else if (bc == 8)
+      {
+	if (X.coordinate(e_x) == 0 or X.coordinate(e_x) == 1)
+	      {	
+	       foralldir(al) foralldir(i)
+		 {
+                  if ((al==0) && (i==0))
+		    { A[X].e(al,i).re = 1.f; }
+		  else if ((al==0) && (i==1))
+		    { A[X].e(al,i).im = 1.f; } 
+		  else
+		    { A[X].e(al,i) = 0.f; }
+		 } // put bulk A-phase elements into OP
 
+	       A[X]=A[X] * (MPonsites.gap_A_td(config.Inip, T[X])/sqrt(2.f)); 		 
+
+	      } // X.e_x < lx/2; A-phase
+	else if (X.coordinate(e_x) == (config.lx - 1) or X.coordinate(e_x) == (config.lx - 2))
+	  {
+	   foralldir(al) foralldir(i)
+	     {
+              if (
+		  ((al==0) && (i==0))
+		  || ((al==1) && (i==1))
+		  || ((al==2) && (i==2))
+		 )
+	       { A[X].e(al,i) = 1.f; }
+	      else
+	       { A[X].e(al,i) = 0.f; }
+	     } // put bulk B-phase elements into OP
+
+	    A[X]=A[X] * (MPonsites.gap_B_td(config.Inip, T[X])/sqrt(3.f)); 		 
+
+	  } // X.e_x > lx/2; B-phase
+
+      } // A-n-B domain wall BC
+	
   } // onsites(ALL) block ends here
 
   /* --------------------------------------------------------------- */  

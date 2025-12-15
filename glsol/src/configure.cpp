@@ -125,7 +125,8 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 								      ,"Bphase"               //5
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
-	                                                              ,"hotblob"});           //8
+	                                                              ,"hotblob"              //8
+                                                                      ,"A-n-B"});             //9
                                                                        
 
     hila::out0 << " config.initialCondition is "
@@ -206,23 +207,25 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     /*----------------------------------------*/
     /* >>>>>>>  boundary conditions  <<<<<<<<<*/
     /*----------------------------------------*/
-    config.BCs1 = parameters.get_item("BCs1",{"periodic",
-					       "AB",
-					       "PairBreaking",
-                                               "PB_y",
-                                               "PairB_yz",
-                                               "BB",
-					       "AdGRz",    
-                                               "phaseVortices"});
+    config.BCs1 = parameters.get_item("BCs1",{"periodic",       //0
+					      "AB",             //1
+					      "PairBreaking",   //2
+					      "PB_y",           //3
+					      "PairB_yz",       //4
+					      "BB",             //5
+					      "AdGRz",          //6
+					      "phaseVortices",  //7
+					      "A-n-B"});        //8
     
-    config.BCs2 = parameters.get_item("BCs2",{"periodic",
-					      "AB",
-					      "PairBreaking",
-                                              "PB_y",
-                                              "PairB_yz",
-                                              "BB",
-					      "AdGRz",
-                                              "phaseVortices"});
+    config.BCs2 = parameters.get_item("BCs2",{"periodic",       //0
+					      "AB",             //1
+					      "PairBreaking",   //2
+                                              "PB_y",           //3
+                                              "PairB_yz",       //4 
+                                              "BB",             //5
+					      "AdGRz",          //6
+                                              "phaseVortices",  //7
+                                              "A-n-B"});        //8
     
     config.BCchangec = parameters.get("BCchangec");
     config.use_AdGRz_surfaces = parameters.get_item("use_AdGRz_surfaces",{"no","yes"});
