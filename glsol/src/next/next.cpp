@@ -228,26 +228,7 @@ void glsol::next() {
   /* --------------------------------------------------------------- */
 
   dPiGLfe(); // compute free energy contribution for delta Pi
-  
-  if (t < config.tdif)
-    {
-      pi[ALL] = deltaPi[X]/(config.difFac);
-      t += config.dt/config.difFac;
-    }
-  else if (t < config.tdis && config.gamma.squarenorm() > 0 )
-    {
-      //hila::out0 << "config.gamma is " << config.gamma << "\n" << std::endl;
-
-      /* this 2.0 infront gamma is not right */
-      /* the despative term indeeds gives 2.0, however, this 2.0 later be absorbed into newly defined \gamma */
-      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X])*config.dt; //Complex<real_t> C(a, b) = r + I *
-      t += config.dt;
-    }
-  else
-    {
-      pi[ALL] = pi[X] + deltaPi[X]*config.dt;
-      t += config.dt;
-    }
+  relax();   // relaxting with fixed gamma  
 
   next_timer.stop();
 

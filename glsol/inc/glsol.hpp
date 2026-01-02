@@ -92,6 +92,9 @@ public:
   void next_bath_hotblob_quench_Hfield_confCatch();        
 
   void dPiGLfe();
+  void ABOBA();
+  void dampAndRelax();
+  void relax();
   
   Field<phi_t> A;
   Field<phi_t> pi;

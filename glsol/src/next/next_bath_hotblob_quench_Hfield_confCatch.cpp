@@ -112,43 +112,43 @@ void glsol::next_bath_hotblob_quench_Hfield_confCatch() {
   } // onsite() block ends here
 
   dPiGLfe(); // compute free energy contribution for delta Pi
-  
+  dampAndRelax(); // remove noise and relaxing
   // canonic momentum Pi update
-  if (t < config.tdif)
-    {
-      pi[ALL] = deltaPi[X]/(config.difFac);
-      t += config.dt/config.difFac;
-    }
-  else if (
-	   t < config.tdis
-	   && config.useTbath == 1
-	   && (extinguish_t * config.dt) < config.extinguish_off_t_count
-	  )
-    {
-      // though config.useTbath == 1 is till be true, only a big damping is needed.
-      pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X]) * config.dt;
-      t += config.dt;
-    }
-  else if (
-	   t < config.tdis
-	   && config.useTbath == 1
-	   && (extinguish_t * config.dt) >= config.extinguish_off_t_count
-	  )
-    {
-      // though config.useTbath == 1 is till be true, no thermal noise is added, we just removed them.
-      onsites(ALL)
-	{
-         matep::Matep MPonsites;
-         pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X]) * config.dt;
-	}
+  // if (t < config.tdif)
+  //   {
+  //     pi[ALL] = deltaPi[X]/(config.difFac);
+  //     t += config.dt/config.difFac;
+  //   }
+  // else if (
+  // 	   t < config.tdis
+  // 	   && config.useTbath == 1
+  // 	   && (extinguish_t * config.dt) < config.extinguish_off_t_count
+  // 	  )
+  //   {
+  //     // though config.useTbath == 1 is till be true, only a big damping is needed.
+  //     pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X]) * config.dt;
+  //     t += config.dt;
+  //   }
+  // else if (
+  // 	   t < config.tdis
+  // 	   && config.useTbath == 1
+  // 	   && (extinguish_t * config.dt) >= config.extinguish_off_t_count
+  // 	  )
+  //   {
+  //     // though config.useTbath == 1 is till be true, no thermal noise is added, we just removed them.
+  //     onsites(ALL)
+  // 	{
+  //        matep::Matep MPonsites;
+  //        pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X]) * config.dt;
+  // 	}
 
-      t += config.dt;
-    }  
-  else
-    {
-      pi[ALL] = pi[X] + deltaPi[X]*config.dt;
-      t += config.dt;
-    }
+  //     t += config.dt;
+  //   }  
+  // else
+  //   {
+  //     pi[ALL] = pi[X] + deltaPi[X]*config.dt;
+  //     t += config.dt;
+  //   }
 
   //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
   next_timer.stop();
