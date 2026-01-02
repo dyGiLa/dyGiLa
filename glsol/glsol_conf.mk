@@ -1,7 +1,8 @@
 # Makefie of TDGL-Langvian eqns solver glsol
 
 # *.cpp files searching path
-vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize glsol/src/GLfeContri
+vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize \
+$(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/confCatchnRelax
 
 # Include path, linder flags
 # of path and binary libs into
@@ -44,7 +45,10 @@ GLSOL_OBJECTS = build/configure.o             \
                 build/glsol_initialize.o      \
                 build/glsol_initialize_T.o    \
                 build/glsol_initialize_H.o    \
-                build/dPiGLfe.o
+                build/dPiGLfe.o               \
+                build/ABOBA.o                 \
+                build/dampAndRelax.o          \
+                build/relax.o
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)
