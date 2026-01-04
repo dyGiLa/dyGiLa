@@ -72,7 +72,14 @@ private:
   void defineActions_AMatrix(glsol &);
   void defineActions_phaseMarker(glsol &);
   
-  void defineActions_printTree();  
+  void defineActions_printTree();
+
+  /* utils */
+  void containerReserve_gapAFETemPMarker(glsol &);
+  void containerReserve_Amatrix();
+  void containerReserve_massCurrent();
+  void containerReserve_spinCurrent();
+  void ghostMask(glsol &);
 
   /*----- fields declearations -----*/
   
