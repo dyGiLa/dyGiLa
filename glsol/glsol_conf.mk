@@ -2,7 +2,7 @@
 
 # *.cpp files searching path
 vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize \
-$(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/confCatchnRelax
+$(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/confCatchnRelax $(DYGILA_DIR)/utils/confInitialize 
 
 # Include path, linder flags
 # of path and binary libs into
@@ -22,14 +22,13 @@ APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
 #            -L/projappl/project_462000465/lib/fftw-3.3.10-fftw3/lib
 # endif
 
-# pario objects, built by HILA pattern rules
+# glsol objects, built by HILA pattern rules
 GLSOL_OBJECTS = build/configure.o             \
                 build/glsol.o                 \
                 build/fstreams.o              \
                 build/write_energies.o        \
                 build/write_positions.o       \
                 build/write_phases.o          \
-                build/write_moduli.o          \
                 build/gaussianLP_matrix.o     \
                 build/phaseMarking.o          \
                 build/phaseCounting.o         \
@@ -48,7 +47,11 @@ GLSOL_OBJECTS = build/configure.o             \
                 build/dPiGLfe.o               \
                 build/ABOBA.o                 \
                 build/dampAndRelax.o          \
-                build/relax.o
+                build/relax.o                 \
+                build/case_0.o build/case_1.o build/case_2.o \
+                build/case_3.o build/case_4.o build/case_5.o \
+                build/case_6.o build/case_7.o build/case_8.o \
+                build/case_9.o 
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)

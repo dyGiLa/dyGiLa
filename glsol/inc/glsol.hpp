@@ -69,7 +69,6 @@ public:
   void fstreams_open(const std::vector<std::string> &);
   void fstreams_close();  
 
-  void write_moduli();
   void write_energies();
   void write_positions();
   void write_phases();
@@ -90,11 +89,6 @@ public:
   void next_bath_hotblob_quench_Hfield();
   //void next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();  
   void next_bath_hotblob_quench_Hfield_confCatch();        
-
-  void dPiGLfe();
-  void ABOBA();
-  void dampAndRelax();
-  void relax();
   
   Field<phi_t> A;
   Field<phi_t> pi;
@@ -107,21 +101,29 @@ public:
   // Field<real_t> p;
 
   Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
-
   Field<real_t> phaseMarker;
   
   real_t t = 0.;
   real_t tc = 0.;
 
-  unsigned int extinguish_t = 0.;
-  
+  unsigned int extinguish_t = 0.;  
   matep::Matep MP;
-
   dyGiLaConf config;
 
-  std::vector<real_t> t_v;
-  std::vector<real_t> T_v;
-  std::vector<real_t> p_v;
+private:
+  
+  /* utils */
+  void dPiGLfe();
+  void ABOBA();
+  void dampAndRelax();
+  void relax();
+
+  /* utils conf init */
+  void case_0(), case_1(), case_2();
+  void case_3(), case_4(), case_5();
+  void case_6(), case_7(), case_8();
+  void case_9();
+  
     
 };
 
