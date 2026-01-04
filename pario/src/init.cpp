@@ -1,3 +1,4 @@
+#define USE_BOTHSIDE_GHOSTS
 #define USE_ADGRZ
 #define USE_MPI 
 #include <sstream>
@@ -9,6 +10,7 @@
 
 #include "plumbing/hila.h"
 //#include "plumbing/fft.h"
+#include "plumbing/memalloc.h"
 
 #include "glsol.hpp"
 //#include "matep.hpp"
@@ -69,15 +71,19 @@ void parIO::init(glsol &sol) {
      u33Container.reserve(latticeVolumeWithGhost); v33Container.reserve(latticeVolumeWithGhost);    
     }
      
-    // Containerne more point in each direction, but cell data (Npts - 1 cells)
+    // cell data (Npts - 1 cells) in each directions
     auto ghostNX = lattice.mynode.size[0] + 2 - 1;
     auto ghostNY = lattice.mynode.size[1] + 2 - 1;
     auto ghostNZ = lattice.mynode.size[2] + 2 - 1;
 
 #ifdef USE_ADGRZ
-    auto mynodeExtentZ = lattice.mynode.size[2]; /*+ 2 - 1*;*/
-    auto mynodeMinZcoord = lattice.mynode.min[2] * sol.config.dx;
-    //auto mynodeMaxZcoord = (lattice.mynode.min[2] + mynodeExtentZ) * sol.config.dx;
+    //auto mynodeExtentZ = lattice.mynode.size[2]; 
+    auto mynodeMinZcoord = lattice.mynode.min[2];
+    auto mynodeMaxZcoord = lattice.mynode.min[2] + (lattice.mynode.size[2]-1 ); // z-roof coordinat index: min+(size-1) 
+
+    // hila::out << "mynodeMinZcoord is " << mynodeMinZcoord
+    // 	      << ", mynodeMaxZcoord is " << mynodeMaxZcoord
+    // 	      << std::endl;
 #endif    
     
     ghostVolume = ghostNX * ghostNY * ghostNZ;
@@ -86,55 +92,33 @@ void parIO::init(glsol &sol) {
     long long counter = 0;
     unsigned char Mask = 0;
 
-#ifndef USE_ADGRZ
+    // i,j,k = 0 left-most halos
     for (auto k = 0; k < ghostNZ; k++) {
         for (auto j = 0; j < ghostNY; j++) {
             for (auto i = 0; i < ghostNX; i++) {
-                bool kGhostFlag = (k == 0);
-                bool jGhostFlag = (j == 0);
-                bool iGhostFlag = (i == 0);
-                Mask = (iGhostFlag || jGhostFlag || kGhostFlag);
-                ghostCellsMask[counter] = Mask;
-                counter++;
+#if !defined(USE_ADGRZ) && defined(USE_BOTHSIDE_GHOSTS)
+	      bool kGhostFlag = (k == 0) || (k == (ghostNZ -1));
+              bool jGhostFlag = (j == 0) || (j == (ghostNY -1));
+              bool iGhostFlag = (i == 0) || (i == (ghostNX -1));	      
+#elif defined(USE_ADGRZ) && defined(USE_BOTHSIDE_GHOSTS)
+              bool kGhostFlag = ((k == 0) && !(mynodeMinZcoord == 0))
+		                || ((k == (ghostNZ -1)) && !(mynodeMaxZcoord == (sol.config.lz-1)));
+              bool jGhostFlag = (j == 0) || (j == (ghostNY -1));
+              bool iGhostFlag = (i == 0) || (i == (ghostNX -1));	      	      
+#elif !defined(USE_ADGRZ) && !defined(USE_BOTHSIDE_GHOSTS)
+	      bool kGhostFlag = (k == 0);
+              bool jGhostFlag = (j == 0);
+              bool iGhostFlag = (i == 0);	      	      
+#elif defined(USE_ADGRZ) && !defined(USE_BOTHSIDE_GHOSTS)
+              bool kGhostFlag = ((k == 0) && !(mynodeMinZcoord == 0));
+              bool jGhostFlag = (j == 0);
+              bool iGhostFlag = (i == 0);	      	      	      
+#endif		
+              Mask = static_cast<unsigned char>(iGhostFlag || jGhostFlag || kGhostFlag);
+              ghostCellsMask[counter++] = Mask;
             }
         }
     }
-#else
-    if (
-	mynodeExtentZ == 0
-	/*|| (mynodeMaxZcoord - ( (sol.config.lz - 1) * sol.config.dx ) <= 1e-5*/
-       )
-      {
-       for (auto k = 0; k < ghostNZ; k++) {
-           for (auto j = 0; j < ghostNY; j++) {
-               for (auto i = 0; i < ghostNX; i++) {
-                   bool jGhostFlag = (j == 0);
-                   bool iGhostFlag = (i == 0);
-                   Mask = (iGhostFlag || jGhostFlag);
-                   ghostCellsMask[counter] = Mask;
-                   counter++;
-               }
-           }
-       }
-
-      } // z = 0 rank ghost sits marking
-    else
-      {
-       for (auto k = 0; k < ghostNZ; k++) {
-           for (auto j = 0; j < ghostNY; j++) {
-               for (auto i = 0; i < ghostNX; i++) {
-                   bool kGhostFlag = (k == 0);
-                   bool jGhostFlag = (j == 0);
-                   bool iGhostFlag = (i == 0);
-                   Mask = (iGhostFlag || jGhostFlag || kGhostFlag);
-                   ghostCellsMask[counter] = Mask;
-                   counter++;
-               }
-           }
-       }
-
-      } // no-z=0 rank      
-#endif    
 
     /*********************************/
     /*    all describeMesh calls     */
