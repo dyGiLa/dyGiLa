@@ -29,7 +29,8 @@ void glsol::initialize() {
     case 6: { case_6(); break; }
     case 7: { case_7(); break; } 
     case 8: { case_8(); break; } 
-    case 9: { case_9(); break; } 
+    case 9: { case_9(); break; }
+    case 10: { case_10(); break; }       
     
     default:
       {
@@ -37,6 +38,7 @@ void glsol::initialize() {
        pi = 0.0; //set derivative matrix to zero
        deltaPi =0;
        djAaj = 0;
+       phaseMarker = 0.F;       
      
        onsites (ALL) { A[X].fill(1.0); }
     

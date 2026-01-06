@@ -126,12 +126,13 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 								      ,"Aphase_partial1"      //6
 								      ,"Aphase_full"          //7
 	                                                              ,"hotblob"              //8
-                                                                      ,"A-n-B"});             //9
+                                                                      ,"A-n-B"                //9
+								      ,"Wiman2016StripeB"});  //10
                                                                        
 
     hila::out0 << " config.initialCondition is "
 	       << config.initialCondition
-	       << "\n";
+	       << std::endl;
     
     config.variance_sigma = parameters.get("sigma");
     

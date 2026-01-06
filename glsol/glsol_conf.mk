@@ -51,7 +51,7 @@ GLSOL_OBJECTS = build/configure.o             \
                 build/case_0.o build/case_1.o build/case_2.o \
                 build/case_3.o build/case_4.o build/case_5.o \
                 build/case_6.o build/case_7.o build/case_8.o \
-                build/case_9.o 
+                build/case_9.o build/case_10.o
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)
