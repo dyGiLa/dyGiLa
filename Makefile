@@ -35,7 +35,7 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000836/dyGiLa-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   DYGILA_DIR := /projappl/project_462000960/dyGiLa-develop
+   DYGILA_DIR := /projappl/project_462000960/dyGiLa-develop-2
   endif
   ifeq ($(ARCH), mahti)
    DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
