@@ -52,6 +52,9 @@ APP_OPTS := -DNDIM=3
 # Set default goal and arch
 .DEFAULT_GOAL := dyGiLa
 
+# main path
+MAIN = build/Targets
+
 # Read in the main makefile contents, incl. platforms
 include $(HILA_DIR)/libraries/main.mk  \
         $(DYGILA_DIR)/dyGiLa/dyGiLa_conf.mk \
@@ -64,14 +67,9 @@ include $(HILA_DIR)/libraries/main.mk  \
 dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
-build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
-                build/main.o \
+build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
+                $(MAIN)/main.o \
                 $(HILA_OBJECTS) $(HEADERS)
-	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(PARIO_OBJECTS) $(MATEP_OBJECTS) \
-                build/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
+	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
+                $(MAIN)/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
 
-# build/dyGiLa: Makefile $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-#                build/main.o \
-#                $(HILA_OBJECTS) $(HEADERS)
-# 	$(LD) -o $@ $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
-#                build/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
