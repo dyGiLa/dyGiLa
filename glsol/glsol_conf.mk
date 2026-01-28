@@ -21,29 +21,32 @@ APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
 #            -L/projappl/project_462000465/lib/fftw-3.3.10-fftw3/lib
 # endif
 
+# Objects path
+GLSOL_PATH = build/Targets
+
 # pario objects, built by HILA pattern rules
-GLSOL_OBJECTS = build/configure.o             \
-                build/glsol.o                 \
-                build/fstreams.o              \
-                build/write_energies.o        \
-                build/write_positions.o       \
-                build/write_phases.o          \
-                build/write_moduli.o          \
-                build/gaussianLP_matrix.o     \
-                build/phaseMarking.o          \
-                build/phaseCounting.o         \
-                build/next.o                  \
-                build/next_bath.o             \
-                build/next_AdGRz_bath.o       \
-                build/next_bath_UniT_quench.o \
-                build/next_bath_UniT_quench_Hfield.o \
-                build/next_bath_UniT_quench_AdGRz_Hfield.o \
-                build/next_bath_hotblob_quench_Hfield.o \
-                build/next_bath_hotblob_quench_Hfield_confCatch.o \
-                build/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
-                build/glsol_initialize.o      \
-                build/glsol_initialize_T.o    \
-                build/glsol_initialize_H.o    
+GLSOL_OBJECTS = $(GLSOL_PATH)/configure.o             \
+                $(GLSOL_PATH)/glsol.o                 \
+                $(GLSOL_PATH)/fstreams.o              \
+                $(GLSOL_PATH)/write_energies.o        \
+                $(GLSOL_PATH)/write_positions.o       \
+                $(GLSOL_PATH)/write_phases.o          \
+                $(GLSOL_PATH)/write_moduli.o          \
+                $(GLSOL_PATH)/gaussianLP_matrix.o     \
+                $(GLSOL_PATH)/phaseMarking.o          \
+                $(GLSOL_PATH)/phaseCounting.o         \
+                $(GLSOL_PATH)/next.o                  \
+                $(GLSOL_PATH)/next_bath.o             \
+                $(GLSOL_PATH)/next_AdGRz_bath.o       \
+                $(GLSOL_PATH)/next_bath_UniT_quench.o \
+                $(GLSOL_PATH)/next_bath_UniT_quench_Hfield.o \
+                $(GLSOL_PATH)/next_bath_UniT_quench_AdGRz_Hfield.o \
+                $(GLSOL_PATH)/next_bath_hotblob_quench_Hfield.o \
+                $(GLSOL_PATH)/next_bath_hotblob_quench_Hfield_confCatch.o \
+                $(GLSOL_PATH)/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
+                $(GLSOL_PATH)/glsol_initialize.o      \
+                $(GLSOL_PATH)/glsol_initialize_T.o    \
+                $(GLSOL_PATH)/glsol_initialize_H.o    
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)
