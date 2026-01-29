@@ -114,7 +114,9 @@ private:
   
   /* utils */
   void dPiGLfe();
+  void dPiGLfe_AdGRz();  
   void ABOBA();
+  void ABOBA_gBranch();
   void dampAndRelax();
   void relax();
 

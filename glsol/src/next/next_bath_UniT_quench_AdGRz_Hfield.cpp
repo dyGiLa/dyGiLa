@@ -19,9 +19,9 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
   // Field<phi_t> deltaPi;
   // Field<Vector<3,Complex<real_t>>> djAaj;
 
-  const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
-  const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
-  const real_t volElemLattice = config.dx * config.dx * config.dx;
+  // const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+  // const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
+  // const real_t volElemLattice = config.dx * config.dx * config.dx;
   
   //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
   
@@ -103,207 +103,210 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
   /*    \delta \pi canonical momentum computing blocks starts from here      */
   /***************************************************************************/
   
-  onsites (ALL) {
-    matep::Matep MPonsites;
+  // onsites (ALL) {
+  //   matep::Matep MPonsites;
 
-    real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
-    real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
-    real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
-    real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
-    real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
-    real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
+  //   real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
+  //   real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
+  //   real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
+  //   real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
+  //   real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
+  //   real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
     
-    auto AxAt = A[X]*A[X].transpose();
-    auto AxAd = A[X]*A[X].dagger();
+  //   auto AxAt = A[X]*A[X].transpose();
+  //   auto AxAd = A[X]*A[X].dagger();
 
-    deltaPi[X] = - beta0*A[X]
-      - 2.0*beta1*A[X].conj()*AxAt.trace()
-      - 2.0*beta2*A[X]*AxAd.trace()
-      - 2.0*beta3*AxAt*A[X].conj()
-      - 2.0*beta4*AxAd*A[X]
-      - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
-      - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
+  //   deltaPi[X] = - beta0*A[X]
+  //     - 2.0*beta1*A[X].conj()*AxAt.trace()
+  //     - 2.0*beta2*A[X]*AxAd.trace()
+  //     - 2.0*beta3*AxAt*A[X].conj()
+  //     - 2.0*beta4*AxAd*A[X]
+  //     - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
+  //     - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
 
-  } // Bulk energy contribution block
+  // } // Bulk energy contribution block
 
-  onsites(ALL) {
+  // onsites(ALL) {
     /******************************************************************/
     /*    start: cook up the A_X+j & A_X-j for AdGRz treatment        */
     /******************************************************************/
-    const real_t abt_ratio=config.dx/config.bt;
-    phi_t A_Xmj, A_Xpj;
-    if ( X.coordinate(e_z) == 0 )
-      {
-        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
-    else if ( X.coordinate(e_z) == (config.lz-1) )
-      {
-        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
+    // const real_t abt_ratio=config.dx/config.bt;
+    // phi_t A_Xmj, A_Xpj;
+    // if ( X.coordinate(e_z) == 0 )
+    //   {
+    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
+    // else if ( X.coordinate(e_z) == (config.lz-1) )
+    //   {
+    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
     /****************************************************************/
     /*      end: cook up the A_X+j & A_X-j for AdGRz treatment      */
     /****************************************************************/
     
-    djAaj[X] = 0;    
-    foralldir(j) {
-      if ( X.coordinate(e_z) == 0 && j == e_z )
-	{ djAaj[X] += A[X + j].column(j) - A_Xmj.column(j); }
-      else if ( X.coordinate(e_z) == (config.lz-1) && j == e_z)
-	{ djAaj[X] += A_Xpj.column(j) - A[X - j].column(j); }
-      else
-	{ djAaj[X] += A[X + j].column(j) - A[X - j].column(j); }      
-    } // computing div A at X
-  } // djAalj onsite(ALL) block done
+  //   djAaj[X] = 0;    
+  //   foralldir(j) {
+  //     if ( X.coordinate(e_z) == 0 && j == e_z )
+  // 	{ djAaj[X] += A[X + j].column(j) - A_Xmj.column(j); }
+  //     else if ( X.coordinate(e_z) == (config.lz-1) && j == e_z)
+  // 	{ djAaj[X] += A_Xpj.column(j) - A[X - j].column(j); }
+  //     else
+  // 	{ djAaj[X] += A[X + j].column(j) - A[X - j].column(j); }      
+  //   } // computing div A at X
+  // } // djAalj onsite(ALL) block done
   
-  onsites(ALL) {
-    phi_t mat;
-    foralldir(d) {
-      auto col = djAaj[X+d] - djAaj[X-d];
-      for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-    }
-    deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-  } // djAalj vector field differential block
+  // onsites(ALL) {
+  //   phi_t mat;
+  //   foralldir(d) {
+  //     auto col = djAaj[X+d] - djAaj[X-d];
+  //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
+  //   }
+  //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
+  // } // djAalj vector field differential block
 
-  onsites (ALL) {
+  // onsites (ALL) {
     /******************************************************************/
     /* start: cook up the A_X+e_z & A_X-e_z for AdGRz treatment       */
     /******************************************************************/
-    const real_t abt_ratio=config.dx/config.bt;
-    phi_t A_Xmez, A_Xpez;
-    if ( X.coordinate(e_z) == 0. )
-      {
-        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
-    else if ( X.coordinate(e_z) == (config.lz-1) )
-      {
-        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
+    // const real_t abt_ratio=config.dx/config.bt;
+    // phi_t A_Xmez, A_Xpez;
+    // if ( X.coordinate(e_z) == 0. )
+    //   {
+    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
+    // else if ( X.coordinate(e_z) == (config.lz-1) )
+    //   {
+    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
     /****************************************************************/
     /*   end: cook up the A_X+e_z & A_X-e_z for AdGRz treatment     */
     /****************************************************************/
 
-      if ( X.coordinate(e_z) == 0 )
-	{
-         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
-	               * (A[X + e_x] + A[X-e_x]
-                          + A[X + e_y] + A[X-e_y]
-                          + A[X + e_z] + A_Xmez
-                          - 6.0*A[X]);
+  //     if ( X.coordinate(e_z) == 0 )
+  // 	{
+  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
+  // 	               * (A[X + e_x] + A[X-e_x]
+  //                         + A[X + e_y] + A[X-e_y]
+  //                         + A[X + e_z] + A_Xmez
+  //                         - 6.0*A[X]);
 
-	} // starting surface AdGR treatment
-      else if ( X.coordinate(e_z) == (config.lz-1) )
-	{
-         deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
-	               * (A[X+e_x] + A[X - e_x]
-                          + A[X+e_y] + A[X - e_y]
-                          + A_Xpez + A[X - e_z]
-                          - 6.0*A[X]);
+  // 	} // starting surface AdGR treatment
+  //     else if ( X.coordinate(e_z) == (config.lz-1) )
+  // 	{
+  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
+  // 	               * (A[X+e_x] + A[X - e_x]
+  //                         + A[X+e_y] + A[X - e_y]
+  //                         + A_Xpez + A[X - e_z]
+  //                         - 6.0*A[X]);
 	  
-	} // ending surface AdGR treatment
-      else
-	{
-         deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-                                                          + A[X + e_y] + A[X - e_y]
-                                                          + A[X + e_z] + A[X - e_z]
-                                                          - 6.0*A[X]);
+  // 	} // ending surface AdGR treatment
+  //     else
+  // 	{
+  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
+  //                                                         + A[X + e_y] + A[X - e_y]
+  //                                                         + A[X + e_z] + A[X - e_z]
+  //                                                         - 6.0*A[X]);
 
-	}           
-  } // Laplacian block done
+  // 	}           
+  // } // Laplacian block done
 
   /***************************************************************************/
   /*    \delta \pi canonical momentum computing blocks ends from here        */
   /***************************************************************************/
+
+  diPiGLfe_AdGRz();
+  ABOBA_gBranch();
   
-  if (t < config.tdif)
-    {
-      pi[ALL] = deltaPi[X]/(config.difFac);
-      t += config.dt/config.difFac;
-    }
-  else if (
-	   (t < config.tdis)
-	   && (config.useTbath == 1)
-	  )
-    {
-      /* Langevien evoltion update blocks starts here*/
-      if (config.TDependnetgamma == true)
-	{
-          onsites(ALL){
+  // if (t < config.tdif)
+  //   {
+  //     pi[ALL] = deltaPi[X]/(config.difFac);
+  //     t += config.dt/config.difFac;
+  //   }
+  // else if (
+  // 	   (t < config.tdis)
+  // 	   && (config.useTbath == 1)
+  // 	  )
+  //   {
+  //     /* Langevien evoltion update blocks starts here*/
+  //     if (config.TDependnetgamma == true)
+  // 	{
+  //         onsites(ALL){
 	
-    	    phi_t rad_mat;
-	    rad_mat.gaussian_random();
+  //   	    phi_t rad_mat;
+  // 	    rad_mat.gaussian_random();
 
-	    matep::Matep MPonsites;
+  // 	    matep::Matep MPonsites;
 
-            real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);	
+  //           real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);	
 
-	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
-	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+  // 	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
+  // 	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
 
-	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	    pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK)) * rad_mat;
+  // 	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+  // 	    pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK)) * rad_mat;
 	
-            // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
-            pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
-          }
-	} // T-dependent gamma block
-      else
-	{
-          onsites(ALL){
+  //           // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
+  //           pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+  //         }
+  // 	} // T-dependent gamma block
+  //     else
+  // 	{
+  //         onsites(ALL){
 	
-    	    phi_t rad_mat;
-	    rad_mat.gaussian_random();
+  //   	    phi_t rad_mat;
+  // 	    rad_mat.gaussian_random();
 
-	    matep::Matep MPonsites;
+  // 	    matep::Matep MPonsites;
 
-            real_t ep2 = 1.0-exp(-2.0 * config.gamma.re * config.dt);	
+  //           real_t ep2 = 1.0-exp(-2.0 * config.gamma.re * config.dt);	
 
-	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
-	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
+  // 	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
+  // 	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
 
-	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-	    pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
+  // 	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
+  // 	    pi[X] = sqrt(1.0-ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
 	
-            // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
-            pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
-          }
-	} // constant gamma block
+  //           // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
+  //           pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
+  //         }
+  // 	} // constant gamma block
 
-      t += config.dt;
-      /* Langevien evoltion update blocks ends here */      
-    }
-  else
-    {
-      pi[ALL] = pi[X] + deltaPi[X]*config.dt;
-      t += config.dt;
-    }
+  //     t += config.dt;
+  //     /* Langevien evoltion update blocks ends here */      
+  //   }
+  // else
+  //   {
+  //     pi[ALL] = pi[X] + deltaPi[X]*config.dt;
+  //     t += config.dt;
+  //   }
 
   //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
   next_timer.stop();
