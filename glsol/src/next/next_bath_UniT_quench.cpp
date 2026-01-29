@@ -112,43 +112,7 @@ void glsol::next_bath_UniT_quench() {
 
   dPiGLfe(); // compute free energy contribution for delta Pi
   ABOBA();   // canonicl momentum Langevin update
-  // if (t < config.tdif)
-  //   {
-  //     pi[ALL] = deltaPi[X]/(config.difFac);
-  //     t += config.dt/config.difFac;
-  //   }
-  // else if (t < config.tdis && config.gamma.squarenorm() > 0 )
-  //   {
 
-  //     onsites(ALL){
-	
-  // 	phi_t rad_mat;       	
-  // 	rad_mat.gaussian_random();
-
-  //       matep::Matep MPonsites;
-
-  //       real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);	
-
-  // 	// damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	
-  // 	pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
-
-  // 	//pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
-  // 	pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2 * (T[X]/Tcp_mK_Inip) * (kBTCf0p_ratio/volElemLattice))*rad_mat;
-
-  //       // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0	      
-  //       pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
-	
-  //     }
-
-  //     t += config.dt;
-  //   }
-  // else
-  //   {
-  //     pi[ALL] = pi[X] + deltaPi[X]*config.dt;
-  //     t += config.dt;
-  //   }
-
-  //hila::out0<<"Per mod: "<<modP / lattice.volume()<<"/n";
   next_timer.stop();
 
 } // next_bath() ends here
