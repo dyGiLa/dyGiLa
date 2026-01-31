@@ -25,11 +25,15 @@ namespace dyGiLa {
     void phaseMarking(glsol &gl, unsigned int &stat_counter, const unsigned int &steps)
        {
 #ifdef USE_PMD_GAMMA
-         // do every-dt phase-Marking when gamma is T-dependent heterogenously	  
+         // do every-dt phase-Marking when gamma is T-dependent heterogenously
+	 if (config.useGaussianLP_filter == true)
+	   { GaussianLPfilter_matrix(/*gl.AwT*/); } // shortwave noise removal 
          gl.phaseMarking();
          if (stat_counter % steps == 0)     
 #endif	    
-#ifndef USE_PMD_GAMMA	      
+#ifndef USE_PMD_GAMMA
+	 if (gl.config.useGaussianLP_filter == true)
+	   { gl.GaussianLPfilter_matrix(/*gl.AwT*/); } // shortwave noise removal 	   
          gl.phaseMarking();
 #endif	    	      
          if ((stat_counter / steps) % gl.config.PSSRatio == 0)

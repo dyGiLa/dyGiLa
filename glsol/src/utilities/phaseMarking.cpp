@@ -15,10 +15,9 @@
 
 void glsol::phaseMarking() {
 
-
-  Field<phi_t> AwT = A;
-  if (config.useGaussianLP_filter == 1)
-    { GaussianLPfilter_matrix(AwT);} // shortwave noise removed A filed preperation
+  //Field<phi_t> AwT = A;
+  // if (config.useGaussianLP_filter == 1)
+  //   { GaussianLPfilter_matrix(AwT);} // shortwave noise removed A filed preperation
   
   onsites (ALL) {
 
@@ -29,16 +28,11 @@ void glsol::phaseMarking() {
                : A[X]/sqrt((A[X]*A[X].dagger()).trace());
 
     R1 = ((Ar*Ar.transpose()).trace()).squarenorm();
-
     R2 = real(((Ar*Ar.dagger()).trace()*(Ar*Ar.dagger()).trace()));
-
     R3 = real(((Ar*Ar.transpose()*Ar.conj()*Ar.dagger()).trace()));
-
     R4 = real(((Ar*Ar.dagger()*Ar*Ar.dagger()).trace()));
-
     R5 = real(((Ar*Ar.dagger()*Ar.conj()*Ar.transpose()).trace()));
     
-
     /* >>>>>>>>> phase marking logic <<<<<<<<  */
     if (abs(R1-0.0) <= config.ptol)
       {

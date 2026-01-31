@@ -25,8 +25,14 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
   const unsigned int modPSSR = (stat_counter / steps) % gl.config.PSSRatio;
   
   // phase marking only for streaming when gamma isn't T-dependent
+  // TDependnetgamma == true is hanlded in main(), so you have to
+  // have it be handled at here for false case.
   if (gl.config.TDependnetgamma == false)
     {
+     // AwT refresh for TDependnetgamma == false case
+     // you have to do this because true case is handled elsewhere. 
+     if (gl.config.useGaussianLP_filter == true)
+       { gl.GaussianLPfilter_matrix(/*gl.AwT*/); }
      // do phase-Marking only for pio when gamma is constant
      gl.phaseMarking();
      if (modPSSR == 0)
