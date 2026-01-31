@@ -1,7 +1,7 @@
 #ifndef DYGILA_CONFIG_HPP
 #define DYGILA_CONFIG_HPP
 
-#define USE_MPI 
+//#define USE_MPI 
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -157,7 +157,7 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      unsigned int pario_compute_feDensity;
+      unsigned int pario_compute_feDensity, pario_Temperature_pStream;
   
       unsigned int do_gapA_clip;
       real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,
