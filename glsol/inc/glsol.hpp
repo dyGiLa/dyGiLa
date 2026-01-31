@@ -74,7 +74,7 @@ public:
   void write_phases();
 
   // Gaussian Low Pass filters
-  void GaussianLPfilter_matrix(Field<phi_t> &);
+  void GaussianLPfilter_matrix(/*Field<phi_t> &*/);
   
   void phaseMarking();
   void phaseCounting();
@@ -90,7 +90,7 @@ public:
   //void next_bath_Quasi2Dhotblob_quench_AdGR_Hfield();  
   void next_bath_hotblob_quench_Hfield_confCatch();        
   
-  Field<phi_t> A;
+  Field<phi_t> A, AwT; // OP field A, & its Wirsterass transformation
   Field<phi_t> pi;
   Field<phi_t> deltaPi;
   Field<Vector<3,Complex<real_t>>> djAaj;

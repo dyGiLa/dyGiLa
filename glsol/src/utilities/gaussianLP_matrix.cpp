@@ -1,19 +1,19 @@
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
 #include <string>
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+// #include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
 
 
-void glsol::GaussianLPfilter_matrix(Field<phi_t> &AwT /* Weierstrass Transformed */) {
+void glsol::GaussianLPfilter_matrix(/*Field<phi_t> &AwT  Weierstrass Transformed */) {
 
      /* --------------------------------------------------------------------------------------------
       * declared and defined Gaussian Low Pass filter member in glsol.hpp.
@@ -40,7 +40,7 @@ void glsol::GaussianLPfilter_matrix(Field<phi_t> &AwT /* Weierstrass Transformed
       * such asc1 = 1/3, c2 = 1/9.
       * ---------------------------------------------------------------------------------------------
       */
-
+     AwT = A; //refresh AwT
      for (unsigned int iter=0; iter < config.numIterGLPfilter; iter++)
        {
         for (Parity par : {EVEN,ODD})
@@ -49,10 +49,7 @@ void glsol::GaussianLPfilter_matrix(Field<phi_t> &AwT /* Weierstrass Transformed
 	   onsites(par)
 	     {
               AwT[X] *= config.GLPfc1;	      
-	      foralldir(d)
-		{
-		  AwT[X] += config.GLPfc2 * (AwT[X-d] + AwT[X+d]);
-		}
+	      foralldir(d) { AwT[X] += config.GLPfc2 * (AwT[X-d] + AwT[X+d]); }
 	     }
 	  }
        
