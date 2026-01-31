@@ -2,15 +2,15 @@
 #define PARIO_HPP
 
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <assert.h>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
+// #include <string>
+// #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "matep.hpp"
 #include "glsol.hpp"
@@ -90,8 +90,8 @@ private:
   Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
   // Field<real_t> eigAv1, eigAv2, eigAv3;
   Field<real_t> jm1, jm2, jm3;
-  Field<real_t> phaseExpModulus, phaseExpAngle/*acosphi, asinphi,*/
-                ,phaseExp2Re, phaseExp2Im;
+  // Field<real_t> phaseExpModulus, phaseExpAngle/*acosphi, asinphi,*/
+  //               ,phaseExp2Re, phaseExp2Im;
   Field<real_t> js11, js21, js31,
                 js12, js22, js32,
                 js13, js23, js33;

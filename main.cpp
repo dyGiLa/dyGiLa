@@ -63,12 +63,14 @@ int main(int argc, char **argv) {
     while (gl.t < gl.config.tEnd) {      
         if (gl.t > gl.config.tStats) {	  
 #ifdef USE_PMD_GAMMA
+	  // do pMarking in every dt
 	  if (gl.config.TDependnetgamma == true)
 	    { dyGiLa::utils::phaseMarking(gl, stat_counter, steps); }
 #endif	
 	   if (stat_counter % steps == 0) {
 	      meas_timer.start();
 #ifndef USE_PMD_GAMMA
+	      // do pMarking in every steps
 	      if (gl.config.TDependnetgamma == true)
 		{ dyGiLa::utils::phaseMarking(gl, stat_counter, steps); }
 #endif	

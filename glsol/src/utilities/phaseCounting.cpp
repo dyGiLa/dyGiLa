@@ -40,7 +40,6 @@ void glsol::phaseCounting() {
   const CoordinateVector originpoints(coordsList);
   real_t T000 = T.get_element(originpoints);
 
-
   double vol = lattice.volume();
   float acc_vol = px_acc[/*pxacc::*/p0_acc] + px_acc[/*pxacc::*/p1_acc]
                   + px_acc[/*pxacc::*/p2_acc] + px_acc[/*pxacc::*/p3_acc]
