@@ -1,14 +1,14 @@
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
+// #include <string>
 #include <assert.h>
 #include <stdlib.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
@@ -20,7 +20,7 @@
 void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
-    gapA[ALL] = real(sqrt((sol.A[X]*(sol.A[X].dagger())).trace()));  
+    gapA[ALL] = real(sqrt((AwT[X]*(AwT[X].dagger())).trace()));  
     gapA.copy_local_data_with_halo(gapAContainer);
 
     /*--------------------     feDensity      --------------------*/
@@ -30,20 +30,26 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
         Complex<double> a(0),b1(0),b2(0),b3(0),b4(0),b5(0);
         Complex<double> k1(0), k2(0), k3(0);
       
-        a = sol.config.alpha * (sol.A[X]*sol.A[X].dagger()).trace();
-        b1 = sol.config.beta1 * ((sol.A[X]*sol.A[X].transpose()).trace()).squarenorm();
-        b2 = sol.config.beta2 * ((sol.A[X]*sol.A[X].dagger()).trace()*(sol.A[X]*sol.A[X].dagger()).trace());
-        b3 = sol.config.beta3 * ((sol.A[X]*sol.A[X].transpose()*sol.A[X].conj()*sol.A[X].dagger()).trace());
-        b4 = sol.config.beta4 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X]*sol.A[X].dagger()).trace());
-        b5 = sol.config.beta5 * ((sol.A[X]*sol.A[X].dagger()*sol.A[X].conj()*sol.A[X].transpose()).trace());
-      
+        a = sol.config.alpha * (AwT[X]*AwT[X].dagger()).trace();
+        b1 = sol.config.beta1 * ((AwT[X]*AwT[X].transpose()).trace()).squarenorm();
+        b2 = sol.config.beta2 * ((AwT[X]*AwT[X].dagger()).trace()*(AwT[X]*AwT[X].dagger()).trace());
+        b3 = sol.config.beta3 * ((AwT[X]*AwT[X].transpose()*AwT[X].conj()*AwT[X].dagger()).trace());
+        b4 = sol.config.beta4 * ((AwT[X]*AwT[X].dagger()*AwT[X]*AwT[X].dagger()).trace());
+        b5 = sol.config.beta5 * ((AwT[X]*AwT[X].dagger()*AwT[X].conj()*AwT[X].transpose()).trace());
+
+
+	/* -----------------------------------------------------------------------------
+         * Warining & TODO: the 2h of differetial devrivative only works for dx=0.5, 
+         * this should be treated as bug becuase you gonna forget it when dx is changing.
+         * -----------------------------------------------------------------------------
+         */
         foralldir(j) foralldir (k) foralldir(al){
-	  k1 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
-	        * (sol.A[X + k].conj().column(j) - sol.A[X - k].conj().column(j)).e(al)/(4.0*sol.config.dx*sol.config.dx);
-	  k2 += (sol.A[X + j].column(j) - sol.A[X - j].column(j)).e(al)
-	        * (sol.A[X + k].conj().column(k) - sol.A[X - k].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
-	  k3 += (sol.A[X + k].column(j) - sol.A[X - k].column(j)).e(al)
-	        * (sol.A[X + j].conj().column(k) - sol.A[X - j].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+	  k1 += (sol.AwT[X + k].column(j) - sol.AwT[X - k].column(j)).e(al)
+	        * (sol.AwT[X + k].conj().column(j) - sol.AwT[X - k].conj().column(j)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+	  k2 += (sol.AwT[X + j].column(j) - sol.AwT[X - j].column(j)).e(al)
+	        * (sol.AwT[X + k].conj().column(k) - sol.AwT[X - k].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
+	  k3 += (sol.AwT[X + k].column(j) - sol.AwT[X - k].column(j)).e(al)
+	        * (sol.AwT[X + j].conj().column(k) - sol.AwT[X - j].conj().column(k)).e(al)/(4.0*sol.config.dx*sol.config.dx);
         }
        feDensity[X] = real(k1 + k2 + k3 + a + b1 + b2 + b3 + b4 + b5);
       } //onsite(All) end here
@@ -53,7 +59,7 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     } // sol.config.pario_compute_feDensity == 1 block
 
     /*-------------------- Temperature field --------------------*/
-    sol.T.copy_local_data_with_halo(Temperature);
+    if (sol.config.pario_Temperature_pStream == 1) { sol.T.copy_local_data_with_halo(Temperature); }
 
     
     /*-------------------- phaseMarker field --------------------*/
@@ -63,13 +69,13 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     /*------------------ mass current components ------------------*/
     if (sol.config.hdf5_mass_current_output == 1){
       Field<Vector<3,double>> jmX;
-      Field<Complex<real_t>>  phaseExp;
+      // Field<Complex<real_t>>  phaseExp;
 
       /*onsites(ALL){
         foralldir(i) foralldir(j) foralldir(al){
-	  jmX[X].e(i) = ((A[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
-	                + (A[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
-			+ (A[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
+	  jmX[X].e(i) = ((AwT[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
+	                + (AwT[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
+			+ (AwT[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
 
         } // foralldir() calls end here
 
@@ -78,9 +84,9 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
       onsites(ALL) {
 	jmX[X] = 0;
 	foralldir(i) foralldir(j) foralldir(al) {
-	  jmX[X].e(i) += (sol.A[X].e(al,j).conj() *(sol.A[X+i].e(al,j) - sol.A[X-i].e(al,j))
-			  + sol.A[X].e(al,j).conj() * (sol.A[X+j].e(al,i) - sol.A[X-j].e(al,i))
-			  + sol.A[X].e(al,i).conj() * (sol.A[X+j].e(al,j) - sol.A[X-j].e(al,j))).imag();
+	  jmX[X].e(i) += (AwT[X].e(al,j).conj() *(sol.AwT[X+i].e(al,j) - sol.AwT[X-i].e(al,j))
+			  + AwT[X].e(al,j).conj() * (sol.AwT[X+j].e(al,i) - sol.AwT[X-j].e(al,i))
+			  + AwT[X].e(al,i).conj() * (sol.AwT[X+j].e(al,j) - sol.AwT[X-j].e(al,j))).imag();
 	} // foralldir end here, outermost foralldir slowest, inner run earier
 	jmX[X] /= 2*sol.config.dx;
       } // onsites(ALL) end here
@@ -90,23 +96,23 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
       jm3[ALL] = jmX[X].e(2);
 
       /* >>>>>>>> Modulus, phase angle, phaseExp   <<<<<<< */
-      phaseExp[ALL]        = ((sol.A[X].transpose()) * sol.A[X]).trace();
-      phaseExp2Re[ALL]    = phaseExp[X].real();
-      phaseExp2Im[ALL]    = phaseExp[X].imag();      
+      // phaseExp[ALL]        = ((AwT[X].transpose()) * AwT[X]).trace();
+      // phaseExp2Re[ALL]    = phaseExp[X].real();
+      // phaseExp2Im[ALL]    = phaseExp[X].imag();      
       
-      phaseExpModulus[ALL] = phaseExp[X].abs();
+      // phaseExpModulus[ALL] = phaseExp[X].abs();
       //phaseExpAngle[ALL]   = phaseExp[X].arg()/2.;
-      phaseExpAngle[ALL]   = std::atan2(phaseExp[X].imag(), phaseExp[X].real())/2.;
+      // phaseExpAngle[ALL]   = std::atan2(phaseExp[X].imag(), phaseExp[X].real())/2.;
       /* >>>>>>>> phase angle and modulus end here   <<<<<<*/
 
       jm1.copy_local_data_with_halo(jm1Container);
       jm2.copy_local_data_with_halo(jm2Container);
       jm3.copy_local_data_with_halo(jm3Container);
 
-      phaseExpModulus.copy_local_data_with_halo(phaseExpModulusContainer);
-      phaseExpAngle.copy_local_data_with_halo(phaseExpAngleContainer);
-      phaseExp2Re.copy_local_data_with_halo(phaseExp2ReContainer);
-      phaseExp2Im.copy_local_data_with_halo(phaseExp2ImContainer);            
+      // phaseExpModulus.copy_local_data_with_halo(phaseExpModulusContainer);
+      // phaseExpAngle.copy_local_data_with_halo(phaseExpAngleContainer);
+      // phaseExp2Re.copy_local_data_with_halo(phaseExp2ReContainer);
+      // phaseExp2Im.copy_local_data_with_halo(phaseExp2ImContainer);            
     }
 
     // /*------------------ spin current components ------------------*/
@@ -118,9 +124,9 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 	jsX[X] = 0;
 	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
           jsX[X].e(i,al) += -MPonsites.epsilon(al,be,ga)
-	                     * (sol.A[X].e(be,i).conj() * (sol.A[X+j].e(ga,j) - sol.A[X-j].e(ga,j))
-			        + sol.A[X].e(be,j).conj() * (sol.A[X+i].e(ga,j) - sol.A[X-i].e(ga,j))
-			        + sol.A[X].e(be,j).conj() * (sol.A[X+j].e(ga,i) - sol.A[X-j].e(ga,i))).real();
+	                     * (AwT[X].e(be,i).conj() * (sol.AwT[X+j].e(ga,j) - sol.AwT[X-j].e(ga,j))
+			        + AwT[X].e(be,j).conj() * (sol.AwT[X+i].e(ga,j) - sol.AwT[X-i].e(ga,j))
+			        + AwT[X].e(be,j).conj() * (sol.AwT[X+j].e(ga,i) - sol.AwT[X-j].e(ga,i))).real();
 	  
 	} // foralldir end here, outermost foralldir slowest, inner run earier
 	jsX[X] /= 2*sol.config.dx;
@@ -152,15 +158,15 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*----------------     A matrix elements ---------------------*/
     if (sol.config.hdf5_A_matrix_output == 1){
-     u11[ALL] = sol.A[X].e(0,0).re; v11[ALL] = sol.A[X].e(0,0).im;
-     u12[ALL] = sol.A[X].e(0,1).re; v12[ALL] = sol.A[X].e(0,1).im;
-     u13[ALL] = sol.A[X].e(0,2).re; v13[ALL] = sol.A[X].e(0,2).im;
-     u21[ALL] = sol.A[X].e(1,0).re; v21[ALL] = sol.A[X].e(1,0).im;
-     u22[ALL] = sol.A[X].e(1,1).re; v22[ALL] = sol.A[X].e(1,1).im;
-     u23[ALL] = sol.A[X].e(1,2).re; v23[ALL] = sol.A[X].e(1,2).im;
-     u31[ALL] = sol.A[X].e(2,0).re; v31[ALL] = sol.A[X].e(2,0).im;
-     u32[ALL] = sol.A[X].e(2,1).re; v32[ALL] = sol.A[X].e(2,1).im;
-     u33[ALL] = sol.A[X].e(2,2).re; v33[ALL] = sol.A[X].e(2,2).im;
+     u11[ALL] = AwT[X].e(0,0).re; v11[ALL] = AwT[X].e(0,0).im;
+     u12[ALL] = AwT[X].e(0,1).re; v12[ALL] = AwT[X].e(0,1).im;
+     u13[ALL] = AwT[X].e(0,2).re; v13[ALL] = AwT[X].e(0,2).im;
+     u21[ALL] = AwT[X].e(1,0).re; v21[ALL] = AwT[X].e(1,0).im;
+     u22[ALL] = AwT[X].e(1,1).re; v22[ALL] = AwT[X].e(1,1).im;
+     u23[ALL] = AwT[X].e(1,2).re; v23[ALL] = AwT[X].e(1,2).im;
+     u31[ALL] = AwT[X].e(2,0).re; v31[ALL] = AwT[X].e(2,0).im;
+     u32[ALL] = AwT[X].e(2,1).re; v32[ALL] = AwT[X].e(2,1).im;
+     u33[ALL] = AwT[X].e(2,2).re; v33[ALL] = AwT[X].e(2,2).im;
 
      u11.copy_local_data_with_halo(u11Container); v11.copy_local_data_with_halo(v11Container);
      u12.copy_local_data_with_halo(u12Container); v12.copy_local_data_with_halo(v12Container);
