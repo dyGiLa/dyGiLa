@@ -20,7 +20,7 @@
 void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
-    gapA[ALL] = real(sqrt((AwT[X]*(AwT[X].dagger())).trace()));  
+    gapA[ALL] = real(sqrt((sol.AwT[X]*(sol.AwT[X].dagger())).trace()));  
     gapA.copy_local_data_with_halo(gapAContainer);
 
     /*--------------------     feDensity      --------------------*/
@@ -30,12 +30,12 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
         Complex<double> a(0),b1(0),b2(0),b3(0),b4(0),b5(0);
         Complex<double> k1(0), k2(0), k3(0);
       
-        a = sol.config.alpha * (AwT[X]*AwT[X].dagger()).trace();
-        b1 = sol.config.beta1 * ((AwT[X]*AwT[X].transpose()).trace()).squarenorm();
-        b2 = sol.config.beta2 * ((AwT[X]*AwT[X].dagger()).trace()*(AwT[X]*AwT[X].dagger()).trace());
-        b3 = sol.config.beta3 * ((AwT[X]*AwT[X].transpose()*AwT[X].conj()*AwT[X].dagger()).trace());
-        b4 = sol.config.beta4 * ((AwT[X]*AwT[X].dagger()*AwT[X]*AwT[X].dagger()).trace());
-        b5 = sol.config.beta5 * ((AwT[X]*AwT[X].dagger()*AwT[X].conj()*AwT[X].transpose()).trace());
+        a = sol.config.alpha * (sol.AwT[X]*sol.AwT[X].dagger()).trace();
+        b1 = sol.config.beta1 * ((sol.AwT[X]*sol.AwT[X].transpose()).trace()).squarenorm();
+        b2 = sol.config.beta2 * ((sol.AwT[X]*sol.AwT[X].dagger()).trace()*(sol.AwT[X]*sol.AwT[X].dagger()).trace());
+        b3 = sol.config.beta3 * ((sol.AwT[X]*sol.AwT[X].transpose()*sol.AwT[X].conj()*sol.AwT[X].dagger()).trace());
+        b4 = sol.config.beta4 * ((sol.AwT[X]*sol.AwT[X].dagger()*sol.AwT[X]*sol.AwT[X].dagger()).trace());
+        b5 = sol.config.beta5 * ((sol.AwT[X]*sol.AwT[X].dagger()*sol.AwT[X].conj()*sol.AwT[X].transpose()).trace());
 
 
 	/* -----------------------------------------------------------------------------
@@ -60,22 +60,23 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------- Temperature field --------------------*/
     if (sol.config.pario_Temperature_pStream == 1) { sol.T.copy_local_data_with_halo(Temperature); }
-
     
     /*-------------------- phaseMarker field --------------------*/
     sol.phaseMarker.copy_local_data_with_halo(phaseMarker);    
 
+    /*------------------- U(1) phase of AwT ---------------------*/
+    if (sol.config.pario_compute_U1Phase == 1) { U1PhaseStreaming(sol); }
     
-    /*------------------ mass current components ------------------*/
+    /*---------------- mass current components ------------------*/
     if (sol.config.hdf5_mass_current_output == 1){
       Field<Vector<3,double>> jmX;
       // Field<Complex<real_t>>  phaseExp;
 
       /*onsites(ALL){
         foralldir(i) foralldir(j) foralldir(al){
-	  jmX[X].e(i) = ((AwT[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
-	                + (AwT[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
-			+ (AwT[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
+	  jmX[X].e(i) = ((sol.AwT[X].conj().column(j)).e(al) * (A[X+i].column(j) - A[X-i].column(j)).e(al)/(2.*config.dx)
+	                + (sol.AwT[X].conj().column(j)).e(al) * (A[X+j].column(i) - A[X-j].column(i)).e(al)/(2.*config.dx)
+			+ (sol.AwT[X].conj().column(i)).e(al) * (A[X+j].column(j) - A[X-j].column(j)).e(al)/(2.*config.dx)).imag();
 
         } // foralldir() calls end here
 
@@ -84,9 +85,9 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
       onsites(ALL) {
 	jmX[X] = 0;
 	foralldir(i) foralldir(j) foralldir(al) {
-	  jmX[X].e(i) += (AwT[X].e(al,j).conj() *(sol.AwT[X+i].e(al,j) - sol.AwT[X-i].e(al,j))
-			  + AwT[X].e(al,j).conj() * (sol.AwT[X+j].e(al,i) - sol.AwT[X-j].e(al,i))
-			  + AwT[X].e(al,i).conj() * (sol.AwT[X+j].e(al,j) - sol.AwT[X-j].e(al,j))).imag();
+	  jmX[X].e(i) += (sol.AwT[X].e(al,j).conj() *(sol.AwT[X+i].e(al,j) - sol.AwT[X-i].e(al,j))
+			  + sol.AwT[X].e(al,j).conj() * (sol.AwT[X+j].e(al,i) - sol.AwT[X-j].e(al,i))
+			  + sol.AwT[X].e(al,i).conj() * (sol.AwT[X+j].e(al,j) - sol.AwT[X-j].e(al,j))).imag();
 	} // foralldir end here, outermost foralldir slowest, inner run earier
 	jmX[X] /= 2*sol.config.dx;
       } // onsites(ALL) end here
@@ -96,7 +97,7 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
       jm3[ALL] = jmX[X].e(2);
 
       /* >>>>>>>> Modulus, phase angle, phaseExp   <<<<<<< */
-      // phaseExp[ALL]        = ((AwT[X].transpose()) * AwT[X]).trace();
+      // phaseExp[ALL]        = ((sol.AwT[X].transpose()) * sol.AwT[X]).trace();
       // phaseExp2Re[ALL]    = phaseExp[X].real();
       // phaseExp2Im[ALL]    = phaseExp[X].imag();      
       
@@ -124,9 +125,9 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 	jsX[X] = 0;
 	foralldir(al) foralldir(i) foralldir(be) foralldir(ga) foralldir(j) {
           jsX[X].e(i,al) += -MPonsites.epsilon(al,be,ga)
-	                     * (AwT[X].e(be,i).conj() * (sol.AwT[X+j].e(ga,j) - sol.AwT[X-j].e(ga,j))
-			        + AwT[X].e(be,j).conj() * (sol.AwT[X+i].e(ga,j) - sol.AwT[X-i].e(ga,j))
-			        + AwT[X].e(be,j).conj() * (sol.AwT[X+j].e(ga,i) - sol.AwT[X-j].e(ga,i))).real();
+	                     * (sol.AwT[X].e(be,i).conj() * (sol.AwT[X+j].e(ga,j) - sol.AwT[X-j].e(ga,j))
+			        + sol.AwT[X].e(be,j).conj() * (sol.AwT[X+i].e(ga,j) - sol.AwT[X-i].e(ga,j))
+			        + sol.AwT[X].e(be,j).conj() * (sol.AwT[X+j].e(ga,i) - sol.AwT[X-j].e(ga,i))).real();
 	  
 	} // foralldir end here, outermost foralldir slowest, inner run earier
 	jsX[X] /= 2*sol.config.dx;
@@ -158,15 +159,15 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*----------------     A matrix elements ---------------------*/
     if (sol.config.hdf5_A_matrix_output == 1){
-     u11[ALL] = AwT[X].e(0,0).re; v11[ALL] = AwT[X].e(0,0).im;
-     u12[ALL] = AwT[X].e(0,1).re; v12[ALL] = AwT[X].e(0,1).im;
-     u13[ALL] = AwT[X].e(0,2).re; v13[ALL] = AwT[X].e(0,2).im;
-     u21[ALL] = AwT[X].e(1,0).re; v21[ALL] = AwT[X].e(1,0).im;
-     u22[ALL] = AwT[X].e(1,1).re; v22[ALL] = AwT[X].e(1,1).im;
-     u23[ALL] = AwT[X].e(1,2).re; v23[ALL] = AwT[X].e(1,2).im;
-     u31[ALL] = AwT[X].e(2,0).re; v31[ALL] = AwT[X].e(2,0).im;
-     u32[ALL] = AwT[X].e(2,1).re; v32[ALL] = AwT[X].e(2,1).im;
-     u33[ALL] = AwT[X].e(2,2).re; v33[ALL] = AwT[X].e(2,2).im;
+     u11[ALL] = sol.AwT[X].e(0,0).re; v11[ALL] = sol.AwT[X].e(0,0).im;
+     u12[ALL] = sol.AwT[X].e(0,1).re; v12[ALL] = sol.AwT[X].e(0,1).im;
+     u13[ALL] = sol.AwT[X].e(0,2).re; v13[ALL] = sol.AwT[X].e(0,2).im;
+     u21[ALL] = sol.AwT[X].e(1,0).re; v21[ALL] = sol.AwT[X].e(1,0).im;
+     u22[ALL] = sol.AwT[X].e(1,1).re; v22[ALL] = sol.AwT[X].e(1,1).im;
+     u23[ALL] = sol.AwT[X].e(1,2).re; v23[ALL] = sol.AwT[X].e(1,2).im;
+     u31[ALL] = sol.AwT[X].e(2,0).re; v31[ALL] = sol.AwT[X].e(2,0).im;
+     u32[ALL] = sol.AwT[X].e(2,1).re; v32[ALL] = sol.AwT[X].e(2,1).im;
+     u33[ALL] = sol.AwT[X].e(2,2).re; v33[ALL] = sol.AwT[X].e(2,2).im;
 
      u11.copy_local_data_with_halo(u11Container); v11.copy_local_data_with_halo(v11Container);
      u12.copy_local_data_with_halo(u12Container); v12.copy_local_data_with_halo(v12Container);

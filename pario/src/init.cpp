@@ -29,7 +29,7 @@ void parIO::init(glsol &sol) {
     /*********************************/
     /*    container reserve calls    */
     /*********************************/       
-    containerReserve_gapAFETemPMarker(sol);
+    containerReserve_gapAFETemPMarkerU1(sol);
     if (sol.config.hdf5_mass_current_output == 1){ containerReserve_massCurrent(); }
     if (sol.config.hdf5_spin_current_output == 1) { containerReserve_spinCurrent(); }
     if (sol.config.hdf5_A_matrix_output == 1) { containerReserve_Amatrix(); }
@@ -42,8 +42,9 @@ void parIO::init(glsol &sol) {
     /*********************************/    
     describeMesh(sol);
     describeMesh_gapA_FEDensity(sol);
-    describeMesh_Temperature();
+    if (sol.config.pario_Temperature_pStream == 1) { describeMesh_Temperature(); }
     describeMesh_phaseMarker();
+    if (sol.config.pario_compute_U1Phase == 1) { describeMesh_U13phi(); }
 
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
