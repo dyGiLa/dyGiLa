@@ -60,6 +60,7 @@ private:
   void describeMesh_gapA_FEDensity(glsol &);
   void describeMesh_Temperature();
   void describeMesh_phaseMarker();
+  void describeMesh_U13phi();
   void describeMesh_massCurrent();
   void describeMesh_spinCurrent();  
   void describeMesh_AMatrix();  
@@ -75,11 +76,14 @@ private:
   void defineActions_printTree();
 
   /* utils */
-  void containerReserve_gapAFETemPMarker(glsol &);
+  void containerReserve_gapAFETemPMarkerU1(glsol &);
   void containerReserve_Amatrix();
   void containerReserve_massCurrent();
   void containerReserve_spinCurrent();
   void ghostMask(glsol &);
+
+  // void lVectorStreaming(glsol &);
+  void U1PhaseStreaming(glsol &);
 
   /*----- fields declearations -----*/
   
@@ -90,8 +94,7 @@ private:
   Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
   // Field<real_t> eigAv1, eigAv2, eigAv3;
   Field<real_t> jm1, jm2, jm3;
-  // Field<real_t> phaseExpModulus, phaseExpAngle/*acosphi, asinphi,*/
-  //               ,phaseExp2Re, phaseExp2Im;
+  Field<real_t> U1_3phi;
   Field<real_t> js11, js21, js31,
                 js12, js22, js32,
                 js13, js23, js33;
@@ -100,7 +103,8 @@ private:
   std::vector<real_t> feDensityContainer;
   std::vector<real_t> Temperature;
   std::vector<real_t> phaseMarker;  
-
+  std::vector<real_t> U1_3phiContainer;
+  
   // std::vector<real_t> trA_reContainer, trA_imContainer;
   std::vector<real_t> u11Container, u12Container, u13Container,
                       u21Container, u22Container, u23Container,

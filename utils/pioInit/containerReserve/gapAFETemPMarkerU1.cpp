@@ -16,14 +16,16 @@
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
-void parIO::containerReserve_gapAFETemPMarker(glsol &sol) {
+void parIO::containerReserve_gapAFETemPMarkerU1(glsol &sol) {
 
     gapAContainer.reserve(latticeVolumeWithGhost);
     
-    if (sol.config.pario_compute_feDensity == 1) { feDensityContainer.reserve(latticeVolumeWithGhost); }
+    if (sol.config.pario_compute_feDensity == 1) { feDensityContainer.reserve(latticeVolumeWithGhost); }    
+    if (sol.config.pario_Temperature_pStream == 1) { Temperature.reserve(latticeVolumeWithGhost); }
     
-    Temperature.reserve(latticeVolumeWithGhost);
     phaseMarker.reserve(latticeVolumeWithGhost);
+
+    if (sol.config.pario_compute_U1Phase == 1) { U1_3phiContainer.reserve(latticeVolumeWithGhost); }
     
-} // containerReserve_gapAFETemPMarker() end here
+} // containerReserve_gapAFETemPMarkerU1() end here
 

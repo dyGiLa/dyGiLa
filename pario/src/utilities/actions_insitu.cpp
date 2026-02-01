@@ -475,6 +475,36 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s14/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
     
+    /* >>>>>>>>>>>>>> pipleline U(1) 3 \phi slice <<<<<<<<<<<<< */
+    
+    if (sol.config.do_U13phi_slice == 1)
+      {
+       pipelines2["pl14/f1/type"] = "exaslice";
+       conduit::Node &slice_params4 = pipelines2["pl14/f1/params"];
+
+       slice_params4["point/x"] = sol.config.U13phi_slice_point_x;
+       slice_params4["point/y"] = sol.config.U13phi_slice_point_y;
+       slice_params4["point/z"] = sol.config.U13phi_slice_point_z;
+       slice_params4["normal/x"] = sol.config.U13phi_slice_norm_x;
+       slice_params4["normal/y"] = sol.config.U13phi_slice_norm_y;
+       slice_params4["normal/z"] = sol.config.U13phi_slice_norm_z;
+
+       scenes["s15/plots/p1/type"] = "pseudocolor";
+       scenes["s15/plots/p1/pipeline"] = "pl14";
+       scenes["s15/plots/p1/field"] = "U1_3phi";
+       scenes["s15/plots/p1/color_table/name"] = "Jet";
+       // scenes["s15/plots/p1/color_table/discrete"] = "true";
+
+       // scenes["s15/plots/p1/min_value"]
+       // 	 = 1.0f;
+    
+       // scenes["s15/plots/p1/max_value"]
+       // 	 = 9.0f; 
+
+       scenes["s15/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes["s15/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
+       scenes["s15/renders/r1/image_prefix"] = "insitu/U1_3phi-Slice/U1_3phi-slice_t-%09d";
+      }
     
 } // defineActions() call end here
 
