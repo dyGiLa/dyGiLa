@@ -157,7 +157,8 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      unsigned int pario_compute_feDensity, pario_Temperature_pStream;
+      unsigned int pario_compute_feDensity, pario_compute_U1Phase;
+      unsigned int pario_Temperature_pStream;
   
       unsigned int do_gapA_clip;
       real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,
@@ -203,7 +204,11 @@ struct dyGiLaConf {
       unsigned int do_phaseMarker_fieldclip,
 	           do_phaseMarker_fieldclip_Bphase,
 	           do_phaseMarker_fieldclip_Aphase;
-  
+
+      unsigned int do_U13phi_slice;
+      real_t U13phi_slice_point_x, U13phi_slice_point_y, U13phi_slice_point_z,
+	     U13phi_slice_norm_x, U13phi_slice_norm_y, U13phi_slice_norm_z;
+    
       unsigned int hdf5_A_matrix_output;
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,

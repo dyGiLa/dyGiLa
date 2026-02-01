@@ -274,7 +274,8 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
     config.pario_compute_feDensity     = parameters.get_item("pario_compute_feDensity",{"no","yes"});
-    config.pario_Temperature_pStream     = parameters.get_item("pario_Temperature_pStream",{"no","yes"});    
+    config.pario_Temperature_pStream     = parameters.get_item("pario_Temperature_pStream",{"no","yes"});
+    config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});    
     
     
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
@@ -406,6 +407,17 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_phaseMarker_fieldclip = parameters.get_item("do_phaseMarker_fieldclip",{"no","yes"});
     config.do_phaseMarker_fieldclip_Bphase = parameters.get_item("do_phaseMarker_fieldclip_Bphase",{"no","yes"});
     config.do_phaseMarker_fieldclip_Aphase = parameters.get_item("do_phaseMarker_fieldclip_Aphase",{"no","yes"});    
+
+    config.do_U13phi_slice = parameters.get_item("do_U13phi_slice",{"no","yes"});
+    if (config.do_U13phi_slice == 1)
+      {
+        config.U13phi_slice_point_x = parameters.get("U13phi_slice_point_x");
+	config.U13phi_slice_point_y = parameters.get("U13phi_slice_point_y");
+	config.U13phi_slice_point_z = parameters.get("U13phi_slice_point_z");
+        config.U13phi_slice_norm_x = parameters.get("U13phi_slice_norm_x");
+	config.U13phi_slice_norm_y = parameters.get("U13phi_slice_norm_y");
+	config.U13phi_slice_norm_z = parameters.get("U13phi_slice_norm_z");
+      }
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
