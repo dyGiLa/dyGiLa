@@ -22,9 +22,9 @@
 void parIO::init(glsol &sol) {
 
     latticeVolumeWithGhost =
-        (lattice.mynode.size[0] + 2) * (lattice.mynode.size[1] + 2) * (lattice.mynode.size[2] + 2);  
+        (lattice->mynode.size[0] + 2) * (lattice->mynode.size[1] + 2) * (lattice->mynode.size[2] + 2);  
     latticeVolume =
-        (lattice.mynode.size[0]) * (lattice.mynode.size[1]) * (lattice.mynode.size[2]);
+        (lattice->mynode.size[0]) * (lattice->mynode.size[1]) * (lattice->mynode.size[2]);
 
     /*********************************/
     /*    container reserve calls    */
@@ -59,7 +59,7 @@ void parIO::init(glsol &sol) {
     /*********************************/    
     
 
-    pio_options["mpi_comm"] = MPI_Comm_c2f(lattice.mpi_comm_lat);
+    pio_options["mpi_comm"] = MPI_Comm_c2f(lattice->mpi_comm_lat);
     pio_options["runtime/type"] = "ascent";
 
 #if defined CUDA

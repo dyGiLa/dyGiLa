@@ -22,14 +22,14 @@
 void parIO::ghostMask(glsol &sol) {
     
     // cell data (Npts - 1 cells) in each directions
-    auto ghostNX = lattice.mynode.size[0] + 2 - 1;
-    auto ghostNY = lattice.mynode.size[1] + 2 - 1;
-    auto ghostNZ = lattice.mynode.size[2] + 2 - 1;
+    auto ghostNX = lattice->mynode.size[0] + 2 - 1;
+    auto ghostNY = lattice->mynode.size[1] + 2 - 1;
+    auto ghostNZ = lattice->mynode.size[2] + 2 - 1;
 
 #ifdef USE_ADGRZ
-    //auto mynodeExtentZ = lattice.mynode.size[2]; 
-    auto mynodeMinZcoord = lattice.mynode.min[2];
-    auto mynodeMaxZcoord = lattice.mynode.min[2] + (lattice.mynode.size[2]-1 ); // z-roof coordinat index: min+(size-1) 
+    //auto mynodeExtentZ = lattice->mynode.size[2]; 
+    auto mynodeMinZcoord = lattice->mynode.min[2];
+    auto mynodeMaxZcoord = lattice->mynode.min[2] + (lattice->mynode.size[2]-1 ); // z-roof coordinat index: min+(size-1) 
 
     // hila::out << "mynodeMinZcoord is " << mynodeMinZcoord
     // 	      << ", mynodeMaxZcoord is " << mynodeMaxZcoord

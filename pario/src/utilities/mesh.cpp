@@ -25,7 +25,7 @@ void parIO::describeMesh(glsol &sol) {
     mesh["state/time"].set_external(&sol.t);
 
 #if defined USE_MPI
-    mesh["state/domain_id"] = lattice.mynode.rank;
+    mesh["state/domain_id"] = lattice->mynode.rank;
 #endif
     mesh["state/software"] = "dyGiLa";
     mesh["state/title"] = "TDGL-Langiven equations simulator";
@@ -33,14 +33,14 @@ void parIO::describeMesh(glsol &sol) {
 
     // create the coordinate set
     mesh["coordsets/coords/type"] = "uniform";
-    mesh["coordsets/coords/dims/i"] = lattice.mynode.size[0] + 2;
-    mesh["coordsets/coords/dims/j"] = lattice.mynode.size[1] + 2;
-    mesh["coordsets/coords/dims/k"] = lattice.mynode.size[2] + 2;
+    mesh["coordsets/coords/dims/i"] = lattice->mynode.size[0] + 2;
+    mesh["coordsets/coords/dims/j"] = lattice->mynode.size[1] + 2;
+    mesh["coordsets/coords/dims/k"] = lattice->mynode.size[2] + 2;
 
     // add origin and spacing to the coordset (optional)
-    mesh["coordsets/coords/origin/x"] = ((lattice.mynode.min[0] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/y"] = ((lattice.mynode.min[1] - 1) * sol.config.dx);
-    mesh["coordsets/coords/origin/z"] = ((lattice.mynode.min[2] - 1) * sol.config.dx);
+    mesh["coordsets/coords/origin/x"] = ((lattice->mynode.min[0] - 1) * sol.config.dx);
+    mesh["coordsets/coords/origin/y"] = ((lattice->mynode.min[1] - 1) * sol.config.dx);
+    mesh["coordsets/coords/origin/z"] = ((lattice->mynode.min[2] - 1) * sol.config.dx);
     mesh["coordsets/coords/spacing/dx"] = sol.config.dx;
     mesh["coordsets/coords/spacing/dy"] = sol.config.dx;
     mesh["coordsets/coords/spacing/dz"] = sol.config.dx;

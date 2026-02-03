@@ -24,9 +24,9 @@ void parIO::xml_Amatrix(glsol &sol){
   const std::string fname = "rank_xmls/" + sol.config.xmf2_Amatrix_fname + "_" + std::to_string(hila::myrank()) + ".xml";
   xml_out.open(fname, std::ios::out);
   
-  const long dim_0 = lattice.mynode.size[0] + 2,
-             dim_1 = lattice.mynode.size[1] + 2,
-             dim_2 = lattice.mynode.size[2] + 2;
+  const long dim_0 = lattice->mynode.size[0] + 2,
+             dim_1 = lattice->mynode.size[1] + 2,
+             dim_2 = lattice->mynode.size[2] + 2;
 
   unsigned int n;
 
@@ -38,9 +38,9 @@ void parIO::xml_Amatrix(glsol &sol){
           << "    <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">"
 	  << "\n"
           << "      "
-          << ((lattice.mynode.min[0] - 1) * sol.config.dx) << " "
-          << ((lattice.mynode.min[1] - 1) * sol.config.dx) << " "
-          << ((lattice.mynode.min[2] - 1) * sol.config.dx) << "\n"
+          << ((lattice->mynode.min[0] - 1) * sol.config.dx) << " "
+          << ((lattice->mynode.min[1] - 1) * sol.config.dx) << " "
+          << ((lattice->mynode.min[2] - 1) * sol.config.dx) << "\n"
           << "    </DataItem>\n"
           << "    <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"
           << "      "
