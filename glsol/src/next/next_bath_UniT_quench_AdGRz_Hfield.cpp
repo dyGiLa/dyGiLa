@@ -1,13 +1,13 @@
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
 #include <string>
-#include <assert.h>
+//#include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
@@ -19,7 +19,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
   // Field<phi_t> deltaPi;
   // Field<Vector<3,Complex<real_t>>> djAaj;
 
-  // const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
+  const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   // const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
   // const real_t volElemLattice = config.dx * config.dx * config.dx;
   
@@ -242,7 +242,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
   /*    \delta \pi canonical momentum computing blocks ends from here        */
   /***************************************************************************/
 
-  diPiGLfe_AdGRz();
+  dPiGLfe_AdGRz();
   ABOBA_gBranch();
   
   // if (t < config.tdif)

@@ -32,7 +32,6 @@ GLSOL_OBJECTS = $(GLSOL_PATH)/configure.o             \
                 $(GLSOL_PATH)/write_energies.o        \
                 $(GLSOL_PATH)/write_positions.o       \
                 $(GLSOL_PATH)/write_phases.o          \
-                $(GLSOL_PATH)/write_moduli.o          \
                 $(GLSOL_PATH)/gaussianLP_matrix.o     \
                 $(GLSOL_PATH)/phaseMarking.o          \
                 $(GLSOL_PATH)/phaseCounting.o         \
@@ -47,7 +46,16 @@ GLSOL_OBJECTS = $(GLSOL_PATH)/configure.o             \
                 $(GLSOL_PATH)/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
                 $(GLSOL_PATH)/glsol_initialize.o      \
                 $(GLSOL_PATH)/glsol_initialize_T.o    \
-                $(GLSOL_PATH)/glsol_initialize_H.o    
+                $(GLSOL_PATH)/glsol_initialize_H.o    \
+                $(GLSOL_PATH)/case_0.o $(GLSOL_PATH)/case_1.o $(GLSOL_PATH)/case_2.o \
+                $(GLSOL_PATH)/case_3.o $(GLSOL_PATH)/case_4.o $(GLSOL_PATH)/case_5.o \
+                $(GLSOL_PATH)/case_6.o $(GLSOL_PATH)/case_7.o $(GLSOL_PATH)/case_8.o \
+                $(GLSOL_PATH)/case_9.o $(GLSOL_PATH)/case_10.o \
+                $(GLSOL_PATH)/dPiGLfe_AdGRz.o $(GLSOL_PATH)/dPiGLfe.o \
+                $(GLSOL_PATH)/ABOBA.o $(GLSOL_PATH)/ABOBA_gBranch.o \
+                $(GLSOL_PATH)/dampAndRelax.o $(GLSOL_PATH)/relax.o \
+
+
 
 .PHONY: glsol
 glsol: $(GLSOL_OBJECTS)

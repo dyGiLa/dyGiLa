@@ -14,6 +14,7 @@ DYGILAAPIs_OBJECTS = $(DYGILAAPIs_PATH)/nextBlocks.o \
                      $(DYGILAAPIs_PATH)/pstreaming.o \
                      $(DYGILAAPIs_PATH)/gammaEvolve.o \
                      $(DYGILAAPIs_PATH)/dyGiLaInit.o \
+                     $(DYGILAAPIs_PATH)/writeHDF5_xmls.o \
                      $(DYGILAAPIs_PATH)/heterogeneousQuench.o \
                      $(DYGILAAPIs_PATH)/homogenousQuench.o \
                      $(DYGILAAPIs_PATH)/dyGiLaPhaseMarking.o

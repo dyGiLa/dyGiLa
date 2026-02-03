@@ -11,16 +11,12 @@ ASCENT_DIR := /projappl/project_462000836/ascent-v0.9.3-mpi/install/ascent-v0.9.
 #ASCENT_DIR := /projappl/project_462000465/ascent-0.9.3/scripts/build_ascent/install/ascent-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   HILA_DIR:= /projappl/project_462000960/insHILA-v0.0.2
+   HILA_DIR:= /projappl/project_462000960/insHILA-develop
    # HILA_DIR:= /projappl/project_462000960/insHILA-809
-   ASCENT_DIR := /projappl/project_462000960/ascent-v0.9.3/install/ascent-v0.9.3
-  endif
-  ifeq ($(ARCH), mahti)
-   HILA_DIR:= /projappl/project_2006478/insHILA
-   ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
+   ASCENT_DIR := /projappl/project_462000960/ascent-v0.9.4/ascent-v0.9.4/scripts/build_ascent/install/ascent-checkout
   endif
   ifeq ($(ARCH), mahti-cuda)
-   HILA_DIR:= /projappl/project_2006478/insHILA
+   HILA_DIR:= /projappl/project_2014552/insHILA
 #   ASCENT_DIR := /projappl/project_2006478/a-2/install/ascent-v0.9.0
   endif
 endif
@@ -35,13 +31,10 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000836/dyGiLa-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   DYGILA_DIR := /projappl/project_462000960/dyGiLa-develop-2
-  endif
-  ifeq ($(ARCH), mahti)
-   DYGILA_DIR := /projappl/project_2006478/dyGiLa-blob
+   DYGILA_DIR := /projappl/project_462000960/dyGiLa-develop
   endif
   ifeq ($(ARCH), mahti-cuda)
-   DYGILA_DIR := /projappl/project_2006478/dyGiLa-GPU
+   DYGILA_DIR := /projappl/project_2014552/dyGiLa-GPU
   endif
 endif
 
@@ -67,9 +60,9 @@ include $(HILA_DIR)/libraries/main.mk  \
 dyGiLa: build/dyGiLa ; @:
 
 # Now the linking step for each target executable
-build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
+build/dyGiLa: Makefile $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) $(PARIO_OBJECTS) \
                 $(MAIN)/main.o \
                 $(HILA_OBJECTS) $(HEADERS)
-	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) \
+	$(LD) -o $@ $(DYGILAAPIs_OBJECTS) $(GLSOL_OBJECTS) $(MATEP_OBJECTS) $(PARIO_OBJECTS)\
                 $(MAIN)/main.o $(HILA_OBJECTS) $(LDFLAGS) $(LDLIBS)
 
