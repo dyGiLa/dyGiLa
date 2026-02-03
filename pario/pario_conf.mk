@@ -2,7 +2,7 @@
 
 # *.cpp files searching path
 vpath %.cpp pario/src pario/src/utilities pario/src/xml \
-$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioInit/containerReserve
+$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioStream $(DYGILA_DIR)/utils/pioInit/containerReserve
 
 # Add Ascent include path, linder flags
 # of path and binary libs into
@@ -25,34 +25,39 @@ endif
 # add headers searching directories
 APP_OPTS += -I $(DYGILA_DIR)/pario/inc
 
+# Object Path
+PARIO_PATH = build/Targets
+
 # pario objects, built by HILA pattern rules
-PARIO_OBJECTS = build/xdmf.o     \
-                build/xml_Amatrix.o \
-                build/xml_pMarker.o \
-                build/xml_massCurrent.o \
-                build/xml_spinCurrent.o \
-                build/pstream.o  \
-                build/init.o     \
-                build/shutdown.o \
-                build/mesh.o     \
-                build/mesh_gapA_FEDensity.o   \
-                build/mesh_insitu_Temperature.o \
-                build/mesh_phaseMarker.o \
-                build/mesh_massCurrent.o      \
-                build/mesh_spinCurrent.o      \
-                build/mesh_AMatrix.o          \
-                build/mesh_addGhost_verify.o  \
-                build/actions_insitu.o  \
-                build/actions_massCurrent.o \
-                build/actions_spinCurrent.o \
-                build/actions_AMatrix.o     \
-                build/actions_phaseMarker.o \
-                build/actions_printTree.o   \
-                build/ghostMask.o           \
-                build/massCurrent.o         \
-                build/spinCurrent.o         \
-                build/Amatrix.o             \
-                build/gapAFETemPMarker.o
+PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
+                $(PARIO_PATH)/xml_Amatrix.o \
+                $(PARIO_PATH)/xml_pMarker.o \
+                $(PARIO_PATH)/xml_massCurrent.o \
+                $(PARIO_PATH)/xml_spinCurrent.o \
+                $(PARIO_PATH)/pstream.o  \
+                $(PARIO_PATH)/init.o     \
+                $(PARIO_PATH)/shutdown.o \
+                $(PARIO_PATH)/mesh.o     \
+                $(PARIO_PATH)/mesh_gapA_FEDensity.o   \
+                $(PARIO_PATH)/mesh_insitu_Temperature.o \
+                $(PARIO_PATH)/mesh_phaseMarker.o \
+                $(PARIO_PATH)/mesh_U1_3phi.o \
+                $(PARIO_PATH)/mesh_massCurrent.o      \
+                $(PARIO_PATH)/mesh_spinCurrent.o      \
+                $(PARIO_PATH)/mesh_AMatrix.o          \
+                $(PARIO_PATH)/mesh_addGhost_verify.o  \
+                $(PARIO_PATH)/actions_insitu.o  \
+                $(PARIO_PATH)/actions_massCurrent.o \
+                $(PARIO_PATH)/actions_spinCurrent.o \
+                $(PARIO_PATH)/actions_AMatrix.o     \
+                $(PARIO_PATH)/actions_phaseMarker.o \
+                $(PARIO_PATH)/actions_printTree.o   \
+                $(PARIO_PATH)/ghostMask.o           \
+                $(PARIO_PATH)/massCurrent.o         \
+                $(PARIO_PATH)/spinCurrent.o         \
+                $(PARIO_PATH)/Amatrix.o             \
+                $(PARIO_PATH)/gapAFETemPMarkerU1.o
+                # $(PARIO_PATH)/U1PhaseStreaming.o 
 
 .PHONY: pario
 pario: $(PARIO_OBJECTS)

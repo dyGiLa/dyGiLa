@@ -65,7 +65,24 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     sol.phaseMarker.copy_local_data_with_halo(phaseMarker);    
 
     /*------------------- U(1) phase of AwT ---------------------*/
-    if (sol.config.pario_compute_U1Phase == 1) { U1PhaseStreaming(sol); }
+    if (sol.config.pario_compute_U1Phase == 1) {
+        onsites(ALL) {
+            Complex<real_t> detAwT_X = sol.AwT[X].det_laplace();
+
+            /* -----------------------------------------------------------
+             * det(AwT) = e^{3\phi} gap^3/3sqrt(3) for standard B-phase OP,
+             * for phases breaking TR-symmetry, such as A-phase, det(AwT) = 0 (or << O(1)),
+             * before introducing A-phase U(1) computation, U1_3phi is simply given as zero.
+             * -----------------------------------------------------------
+             */
+             U1_3phi[X] = (detAwT_X.abs() >= 1e-3)
+	                ?(detAwT_X/detAwT_X.abs()).arg()
+	                : 0.;
+          }
+
+        U1_3phi.copy_local_data_with_halo(U1_3phiContainer);
+            
+    } //{ U1PhaseStreaming(sol); }
     
     /*---------------- mass current components ------------------*/
     if (sol.config.hdf5_mass_current_output == 1){

@@ -21,9 +21,9 @@
 
 void parIO::U1PhaseStreaming(glsol &sol) {
 
-  onsite(ALL)
+  onsites(ALL)
     {
-      Complex<real_t> detAwT_X = hila::linalg::det_laplace(sol.AwT[X]);
+      Complex<real_t> detAwT_X = sol.AwT[X].det_laplace();
 
       /* -----------------------------------------------------------
        * det(AwT) = e^{3\phi} gap^3/3sqrt(3) for standard B-phase OP,
