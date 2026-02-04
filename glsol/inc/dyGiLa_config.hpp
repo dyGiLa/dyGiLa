@@ -159,6 +159,8 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       unsigned int pario_compute_feDensity, pario_compute_U1Phase;
       unsigned int pario_Temperature_pStream;
+
+      real_t U1_3phi_DetA_ZeroTol;
   
       unsigned int do_gapA_clip;
       real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,

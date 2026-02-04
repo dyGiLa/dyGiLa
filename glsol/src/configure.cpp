@@ -276,7 +276,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.pario_compute_feDensity     = parameters.get_item("pario_compute_feDensity",{"no","yes"});
     config.pario_Temperature_pStream     = parameters.get_item("pario_Temperature_pStream",{"no","yes"});
     config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});    
-    
+    config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");    
     
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
     // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
