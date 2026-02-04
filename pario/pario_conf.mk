@@ -56,8 +56,8 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/massCurrent.o         \
                 $(PARIO_PATH)/spinCurrent.o         \
                 $(PARIO_PATH)/Amatrix.o             \
-                $(PARIO_PATH)/gapAFETemPMarkerU1.o
-                # $(PARIO_PATH)/U1PhaseStreaming.o 
+                $(PARIO_PATH)/gapAFETemPMarkerU1.o  \
+                $(PARIO_PATH)/U1PhaseStreaming.o 
 
 .PHONY: pario
 pario: $(PARIO_OBJECTS)

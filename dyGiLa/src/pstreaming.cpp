@@ -83,6 +83,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
 	       || (gl.config.do_phaseMarker_fieldclip == 1)
 	       || (gl.config.do_phaseMarker_fieldclip_Bphase == 1)
 	       || (gl.config.do_phaseMarker_fieldclip_Aphase == 1)
+	       || (gl.config.do_U13phi_slice == 1)
               )
            && (modPSSR == 0)	  
           )

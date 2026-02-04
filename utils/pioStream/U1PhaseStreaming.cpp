@@ -20,7 +20,7 @@
 // #include "conduit_blueprint.hpp"
 
 void parIO::U1PhaseStreaming(glsol &sol) {
-
+  const real_t U1_3phi_DetA_ZeroTol = sol.config.U1_3phi_DetA_ZeroTol;
   onsites(ALL)
     {
       Complex<real_t> detAwT_X = sol.AwT[X].det_laplace();
@@ -31,11 +31,11 @@ void parIO::U1PhaseStreaming(glsol &sol) {
        * before introducing A-phase U(1) computation, U1_3phi is simply given as zero.
        * -----------------------------------------------------------
        */
-      U1_3phi[X] = (detAwT_X.abs() >= 1e-3)
+      U1_3phi[X] = (detAwT_X.abs() >= U1_3phi_DetA_ZeroTol)
 	           ?(detAwT_X/detAwT_X.abs()).arg()
 	           : 0.;
     }
 
-  U1_3phi.copy_local_data_with_halo(U1_3phiContainer);
+  // U1_3phi.copy_local_data_with_halo(U1_3phiContainer);
 } // U1PhaseStreaming(glsol &) end here
 
