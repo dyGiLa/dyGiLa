@@ -181,8 +181,13 @@ void parIO::defineActions_insitu(glsol &sol) {
        conduit::Node &contour_params = pipelines["pl5/f1/params"];
        contour_params["field"] = "gapA";
 
+       //gapA_iso_list_size has to be constexpr in order to fix VLAs warning from Clang
+       //defalt set its size to be 2, this should be carefully obeyed in configuration file.       
        const unsigned int iso_list_size = sol.config.iso_values_vector.size();
-       double iso_vals[iso_list_size];
+
+       //double iso_vals[Temperature_iso_list_size];
+       //fix iso_vals array length; fix Clang 19 VLAs warning       
+       double iso_vals[2];
        for (unsigned int i = 0; i<iso_list_size; ++i) {iso_vals[i] = sol.config.iso_values_vector[i];}
 
        contour_params["iso_values"].set(iso_vals, iso_list_size);
@@ -302,8 +307,12 @@ void parIO::defineActions_insitu(glsol &sol) {
        conduit::Node &contour_params = pipelines["pl8/f1/params"];
        contour_params["field"] = "Temperature";
 
+       //Temperature_iso_list_size has to be constexpr in order to fix VLAs warning from Clang
+       //defalt set its size to be 2, this should be carefully obeyed in configuration file.
        const unsigned int Temperature_iso_list_size = sol.config.Temperature_iso_values_vector.size();
-       double iso_vals[Temperature_iso_list_size];
+       //double iso_vals[Temperature_iso_list_size];
+       //fix iso_vals array length; fix Clang 19 VLAs warning
+       double iso_vals[2];
        for (unsigned int i = 0; i<Temperature_iso_list_size; ++i) {iso_vals[i] = sol.config.Temperature_iso_values_vector[i];}
 
        contour_params["iso_values"].set(iso_vals, Temperature_iso_list_size);
@@ -365,8 +374,12 @@ void parIO::defineActions_insitu(glsol &sol) {
        conduit::Node &contour_params = pipelines2["pl10/f1/params"];
        contour_params["field"] = "phaseMarker";
 
+       //phaseMarker_iso_list_size has to be constexpr in order to fix VLAs warning from Clang
+       //defalt set its size to be 2, this should be carefully obeyed in configuration file.       
        const unsigned int phaseMarker_iso_list_size = sol.config.phaseMarker_iso_values_vector.size();
-       double iso_vals[phaseMarker_iso_list_size];
+       //double iso_vals[Temperature_iso_list_size];
+       //fix iso_vals array length; fix Clang 19 VLAs warning       
+       double iso_vals[2];
        for (unsigned int i = 0; i<phaseMarker_iso_list_size; ++i) {iso_vals[i] = sol.config.phaseMarker_iso_values_vector[i];}
 
        contour_params["iso_values"].set(iso_vals, phaseMarker_iso_list_size);
