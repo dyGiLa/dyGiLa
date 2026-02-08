@@ -12,6 +12,7 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 #include "pario.hpp"
+#include "hsvCyclicSchemeRGBA.hpp"
 
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
@@ -502,17 +503,26 @@ void parIO::defineActions_insitu(glsol &sol) {
        slice_params4["normal/y"] = sol.config.U13phi_slice_norm_y;
        slice_params4["normal/z"] = sol.config.U13phi_slice_norm_z;
 
+       /* ----------------------------------------------------------
+        * custom hsv style Cyclic color map, 
+        * RGBA control points are defined in hsvCyclicSchemeRGBA.hpp
+        * ----------------------------------------------------------
+        */
+       conduit::Node hsv_Cyclic;
+       hsv_Cyclic["r"].set_external(hsv_r);
+       hsv_Cyclic["g"].set_external(hsv_g);
+       hsv_Cyclic["b"].set_external(hsv_b);
+       hsv_Cyclic["a"].set_external(hsv_a);
+       hsv_Cyclic["position"].set_external(hsv_value_point_position);
+       
        scenes["s15/plots/p1/type"] = "pseudocolor";
        scenes["s15/plots/p1/pipeline"] = "pl14";
        scenes["s15/plots/p1/field"] = "U1_3phi";
-       scenes["s15/plots/p1/color_table/name"] = "Jet";
+       scenes["s15/plots/p1/min_value"] = -3.141592653589793;
+       scenes["s15/plots/p1/max_value"] = 3.141592653589793;
+       //scenes["s15/plots/p1/color_table/name"] = "Blue to Orange";
+       scenes["s15/plots/p1/color_table/control_points"] = hsv_Cyclic;
        // scenes["s15/plots/p1/color_table/discrete"] = "true";
-
-       // scenes["s15/plots/p1/min_value"]
-       // 	 = 1.0f;
-    
-       // scenes["s15/plots/p1/max_value"]
-       // 	 = 9.0f; 
 
        scenes["s15/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s15/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    

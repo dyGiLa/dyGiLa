@@ -1,5 +1,6 @@
 #define USE_BOTHSIDE_GHOSTS
 #define USE_ADGRZ
+#define PI 3.141592653589793
 // #define USE_MPI 
 // #include <sstream>
 // #include <iostream>
@@ -31,9 +32,13 @@ void parIO::U1PhaseStreaming(glsol &sol) {
        * before introducing A-phase U(1) computation, U1_3phi is simply given as zero.
        * -----------------------------------------------------------
        */
+      // U1_3phi[X] = (detAwT_X.abs() >= U1_3phi_DetA_ZeroTol)
+      // 	           ?(((detAwT_X/detAwT_X.abs()).arg()) + PI)/(2. * PI)
+      // 	           : 0.5;
       U1_3phi[X] = (detAwT_X.abs() >= U1_3phi_DetA_ZeroTol)
 	           ?(detAwT_X/detAwT_X.abs()).arg()
 	           : 0.;
+      
     }
 
   // U1_3phi.copy_local_data_with_halo(U1_3phiContainer);
