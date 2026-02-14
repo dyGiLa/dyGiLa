@@ -29,10 +29,11 @@ void parIO::init(glsol &sol) {
     /*********************************/
     /*    container reserve calls    */
     /*********************************/       
-    containerReserve_gapAFETemPMarkerU1(sol);
+    containerReserve_gapAFETemPMarkerU1lVecSq(sol);
     if (sol.config.hdf5_mass_current_output == 1){ containerReserve_massCurrent(); }
     if (sol.config.hdf5_spin_current_output == 1) { containerReserve_spinCurrent(); }
     if (sol.config.hdf5_A_matrix_output == 1) { containerReserve_Amatrix(); }
+    if (sol.config.hdf5_lVector_output == 1) { containerReserve_lVec(); }    
 
     // ghost handling
     ghostMask(sol);
@@ -45,12 +46,14 @@ void parIO::init(glsol &sol) {
     if (sol.config.pario_Temperature_pStream == 1) { describeMesh_Temperature(); }
     describeMesh_phaseMarker();
     if (sol.config.pario_compute_U1Phase == 1) { describeMesh_U13phi(); }
+    if (sol.config.pario_compute_lVector == 1) { describeMesh_lVecSq(); }	    
 
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
        if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
        if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
        if (sol.config.hdf5_A_matrix_output == 1) {describeMesh_AMatrix();}
+       if (sol.config.hdf5_lVector_output == 1) {describeMesh_lVec();}           
       }
 
     describeMesh_addGhost_verify();
@@ -58,28 +61,23 @@ void parIO::init(glsol &sol) {
     /*  describeMesh calls end here  */
     /*********************************/    
     
-
     pio_options["mpi_comm"] = MPI_Comm_c2f(lattice->mpi_comm_lat);
     pio_options["runtime/type"] = "ascent";
-
 #if defined CUDA
     pio_options["runtime/vtkm/backend"] = "cuda";
     pio_options["cuda/init"] = "false";
-#endif
-    
-    pio_options["timings"] = "false";
-    
+#endif    
+    pio_options["timings"] = "false";    
     pio.open(pio_options);
     pio.publish(mesh);
-
 
     /*********************************/
     /*   all defineActions calls     */
     /*********************************/        
     defineActions_insitu(sol);
-
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
+       if (sol.config.hdf5_lVector_output == 1) {defineActions_lVec();}		
        if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent(sol);}
        if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent(sol);}
        if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix(sol);}

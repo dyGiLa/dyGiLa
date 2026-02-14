@@ -20,7 +20,8 @@
 void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
-    gapA[ALL] = real(sqrt((sol.AwT[X]*(sol.AwT[X].dagger())).trace()));  
+    //gapA[ALL] = real(sqrt((sol.AwT[X]*(sol.AwT[X].dagger())).trace()));
+    gapA[ALL] = sqrt(((sol.AwT[X]*(sol.AwT[X].dagger())).trace()).real());
     gapA.copy_local_data_with_halo(gapAContainer);
 
     /*--------------------     feDensity      --------------------*/
@@ -69,6 +70,21 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
         U1PhaseStreaming(sol);
         U1_3phi.copy_local_data_with_halo(U1_3phiContainer);            
     } //{ U1PhaseStreaming(sol); }
+
+    /*--------------------- l-vector of AwT ---------------------*/
+    if (sol.config.pario_compute_lVector == 1) {
+      lVectorStreaming(sol);
+      lsq.copy_local_data_with_halo(lsqContainer);
+      // l_1.copy_local_data_with_halo(l1Container);
+      // l_2.copy_local_data_with_halo(l2Container);
+      // l_3.copy_local_data_with_halo(l3Container);
+      if (sol.config.hdf5_lVector_output == 1)
+        {
+          l_1.copy_local_data_with_halo(l1Container);
+          l_2.copy_local_data_with_halo(l2Container);
+          l_3.copy_local_data_with_halo(l3Container);
+        } // only harvest l_i if want to output them      
+    }
     
     /*---------------- mass current components ------------------*/
     if (sol.config.hdf5_mass_current_output == 1){
@@ -194,6 +210,6 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     
     pio.execute(actions);
 
-    system("rm -rf pio/*.root pio_Current/*.root 2>/dev/null");
+    system("rm -rf pio/*.root pio_Current/*.root pio_Vec/*.root 2>/dev/null");
 } // pstream() end here
 
