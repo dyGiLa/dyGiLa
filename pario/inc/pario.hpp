@@ -61,6 +61,8 @@ private:
   void describeMesh_Temperature();
   void describeMesh_phaseMarker();
   void describeMesh_U13phi();
+  void describeMesh_lVecSq();  
+  void describeMesh_lVec();  
   void describeMesh_massCurrent();
   void describeMesh_spinCurrent();  
   void describeMesh_AMatrix();  
@@ -68,6 +70,7 @@ private:
   /* actions definations */
   void defineActions_insitu(glsol &);
 
+  void defineActions_lVec();
   void defineActions_massCurrent(glsol &);
   void defineActions_spinCurrent(glsol &);
   void defineActions_AMatrix(glsol &);
@@ -76,14 +79,15 @@ private:
   void defineActions_printTree();
 
   /* utils */
-  void containerReserve_gapAFETemPMarkerU1(glsol &);
+  void containerReserve_gapAFETemPMarkerU1lVecSq(glsol &);
+  void containerReserve_lVec();
   void containerReserve_Amatrix();
   void containerReserve_massCurrent();
   void containerReserve_spinCurrent();
   void ghostMask(glsol &);
 
-  // void lVectorStreaming(glsol &);
   void U1PhaseStreaming(glsol &);
+  void lVectorStreaming(glsol &);  
 
   /*----- fields declearations -----*/
   
@@ -93,8 +97,12 @@ private:
   Field<real_t> u11, u12, u13, u21, u22, u23, u31, u32, u33;
   Field<real_t> v11, v12, v13, v21, v22, v23, v31, v32, v33;
   // Field<real_t> eigAv1, eigAv2, eigAv3;
+
+  //Field<Vector<3,real_t>> lVec;
+  
   Field<real_t> jm1, jm2, jm3;
   Field<real_t> U1_3phi;
+  Field<real_t> lsq, l_1, l_2, l_3;  
   Field<real_t> js11, js21, js31,
                 js12, js22, js32,
                 js13, js23, js33;
@@ -114,8 +122,9 @@ private:
                       v31Container, v32Container, v33Container;
   // std::vector<real_t> eigAv1Container, eigAv2Container, eigAv3Container;
   std::vector<real_t> jm1Container, jm2Container, jm3Container;
-  std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer /*acosphiContainer, asinphiContainer,*/
-                      ,phaseExp2ReContainer, phaseExp2ImContainer;
+  std::vector<real_t> lsqContainer, l1Container, l2Container, l3Container;
+
+  /* std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer acosphiContainer, asinphiContainer, phaseExp2ReContainer, phaseExp2ImContainer;*/
   std::vector<real_t> js11Container, js21Container, js31Container,
                       js12Container, js22Container, js32Container,
                       js13Container, js23Container, js33Container;
