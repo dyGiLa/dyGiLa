@@ -157,10 +157,11 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      unsigned int pario_compute_feDensity, pario_compute_U1Phase;
+      unsigned int pario_compute_feDensity, pario_compute_U1Phase,
+	           pario_compute_lVector;
       unsigned int pario_Temperature_pStream;
 
-      real_t U1_3phi_DetA_ZeroTol;
+      real_t U1_3phi_DetA_ZeroTol, lVec_SqlTol;
   
       unsigned int do_gapA_clip;
       real_t gapA_clip1_point_x, gapA_clip1_point_y, gapA_clip1_point_z,
@@ -199,6 +200,7 @@ struct dyGiLaConf {
       real_t pMarker_slice_point_x, pMarker_slice_point_y, pMarker_slice_point_z,
 	     pMarker_slice_norm_x, pMarker_slice_norm_y, pMarker_slice_norm_z;
 
+  
       unsigned int do_phaseMarker_isosurface;
       std::vector<double> phaseMarker_iso_values_vector;
 
@@ -210,13 +212,19 @@ struct dyGiLaConf {
       unsigned int do_U13phi_slice;
       real_t U13phi_slice_point_x, U13phi_slice_point_y, U13phi_slice_point_z,
 	     U13phi_slice_norm_x, U13phi_slice_norm_y, U13phi_slice_norm_z;
+
+      unsigned int do_l_sq_slice;
+      real_t l_sq_slice_point_x, l_sq_slice_point_y, l_sq_slice_point_z,
+	     l_sq_slice_norm_x, l_sq_slice_norm_y, l_sq_slice_norm_z;
+  
     
       unsigned int hdf5_A_matrix_output;
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
       unsigned int hdf5_mass_current_output,
                    hdf5_spin_current_output,
-                   hdf5_pMarker_output;
+	           hdf5_pMarker_output,
+	           hdf5_lVector_output;
       real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
 	
       

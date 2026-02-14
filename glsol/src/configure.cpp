@@ -275,20 +275,24 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     /*----------------------------------------*/
     config.pario_compute_feDensity     = parameters.get_item("pario_compute_feDensity",{"no","yes"});
     config.pario_Temperature_pStream     = parameters.get_item("pario_Temperature_pStream",{"no","yes"});
-    config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});    
-    config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");    
+    config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});
+    config.pario_compute_lVector     = parameters.get_item("pario_compute_lVector",{"no","yes"});        
+    
+    config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");
+    config.lVec_SqlTol = parameters.get("lVec_SqlTol");        
     
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
-    // config.hdf5_trA_output             = parameters.get_item("hdf5_trA_output",{"no","yes"});
-    // config.hdf5_eigvA_output           = parameters.get_item("hdf5_eigvA_output",{"no","yes"});
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
     config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
     config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
+    config.hdf5_lVector_output         = parameters.get_item("hdf5_lVector_output",{"no","yes"});    
+    
     if (
         (config.hdf5_A_matrix_output == 1)
 	|| (config.hdf5_mass_current_output == 1)
 	|| (config.hdf5_spin_current_output == 1)
 	|| (config.hdf5_pMarker_output == 1)
+	|| (config.hdf5_lVector_output == 1)
        )
       {
        config.hdf5Ststart = parameters.get("hdf5Ststart");
@@ -417,6 +421,17 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.U13phi_slice_norm_x = parameters.get("U13phi_slice_norm_x");
 	config.U13phi_slice_norm_y = parameters.get("U13phi_slice_norm_y");
 	config.U13phi_slice_norm_z = parameters.get("U13phi_slice_norm_z");
+      }
+
+    config.do_l_sq_slice = parameters.get_item("do_l_sq_slice",{"no","yes"});
+    if (config.do_l_sq_slice == 1)
+      {
+        config.l_sq_slice_point_x = parameters.get("l_sq_slice_point_x");
+	config.l_sq_slice_point_y = parameters.get("l_sq_slice_point_y");
+	config.l_sq_slice_point_z = parameters.get("l_sq_slice_point_z");
+        config.l_sq_slice_norm_x = parameters.get("l_sq_slice_norm_x");
+	config.l_sq_slice_norm_y = parameters.get("l_sq_slice_norm_y");
+	config.l_sq_slice_norm_z = parameters.get("l_sq_slice_norm_z");
       }
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
