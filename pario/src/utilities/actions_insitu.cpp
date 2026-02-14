@@ -528,6 +528,38 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s15/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
        scenes["s15/renders/r1/image_prefix"] = "insitu/U1_3phi-Slice/U1_3phi-slice_t-%09d";
       }
+
+    /* >>>>>>>>>>>>>> pipleline l^2 slice <<<<<<<<<<<<< */
+    
+    if (sol.config.do_l_sq_slice == 1)
+      {
+       pipelines2["pl15/f1/type"] = "exaslice";
+       conduit::Node &slice_params5 = pipelines2["pl15/f1/params"];
+
+       slice_params5["point/x"] = sol.config.l_sq_slice_point_x;
+       slice_params5["point/y"] = sol.config.l_sq_slice_point_y;
+       slice_params5["point/z"] = sol.config.l_sq_slice_point_z;
+       slice_params5["normal/x"] = sol.config.l_sq_slice_norm_x;
+       slice_params5["normal/y"] = sol.config.l_sq_slice_norm_y;
+       slice_params5["normal/z"] = sol.config.l_sq_slice_norm_z;
+
+       scenes["s16/plots/p1/type"] = "pseudocolor";
+       scenes["s16/plots/p1/pipeline"] = "pl15";
+       scenes["s16/plots/p1/field"] = "l_Sq";
+       scenes["s16/plots/p1/color_table/name"] = "Cool to Warm Extended";
+       // scenes["s16/plots/p1/color_table/discrete"] = "true";
+
+       scenes["s16/plots/p1/min_value"]
+	 = 0.f; /*1.f - sol.config.lVec_SqlTol;*/
+    
+       scenes["s16/plots/p1/max_value"]
+	 = 1.f + sol.config.lVec_SqlTol; 
+
+       scenes["s16/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+       scenes["s16/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
+       scenes["s16/renders/r1/image_prefix"] = "insitu/lVec_norm2-Slice/lVec_norm2-slice_t-%09d";
+      }
+
     
 } // defineActions() call end here
 
