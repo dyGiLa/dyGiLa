@@ -42,6 +42,8 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/mesh_insitu_Temperature.o \
                 $(PARIO_PATH)/mesh_phaseMarker.o \
                 $(PARIO_PATH)/mesh_U1_3phi.o \
+                $(PARIO_PATH)/mesh_lVec.o \
+                $(PARIO_PATH)/mesh_lVecSq.o \
                 $(PARIO_PATH)/mesh_massCurrent.o      \
                 $(PARIO_PATH)/mesh_spinCurrent.o      \
                 $(PARIO_PATH)/mesh_AMatrix.o          \
@@ -51,13 +53,16 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/actions_spinCurrent.o \
                 $(PARIO_PATH)/actions_AMatrix.o     \
                 $(PARIO_PATH)/actions_phaseMarker.o \
+                $(PARIO_PATH)/actions_lVec.o \
                 $(PARIO_PATH)/actions_printTree.o   \
                 $(PARIO_PATH)/ghostMask.o           \
                 $(PARIO_PATH)/massCurrent.o         \
                 $(PARIO_PATH)/spinCurrent.o         \
                 $(PARIO_PATH)/Amatrix.o             \
-                $(PARIO_PATH)/gapAFETemPMarkerU1.o  \
-                $(PARIO_PATH)/U1PhaseStreaming.o 
+                $(PARIO_PATH)/lVec.o \
+                $(PARIO_PATH)/gapAFETemPMarkerU1lVecSq.o  \
+                $(PARIO_PATH)/U1PhaseStreaming.o \
+                $(PARIO_PATH)/lVectorStreaming.o
 
 .PHONY: pario
 pario: $(PARIO_OBJECTS)
