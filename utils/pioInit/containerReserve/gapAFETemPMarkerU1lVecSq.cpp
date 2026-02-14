@@ -16,7 +16,7 @@
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
-void parIO::containerReserve_gapAFETemPMarkerU1(glsol &sol) {
+void parIO::containerReserve_gapAFETemPMarkerU1lVecSq(glsol &sol) {
 
     gapAContainer.reserve(latticeVolumeWithGhost);
     
@@ -26,6 +26,8 @@ void parIO::containerReserve_gapAFETemPMarkerU1(glsol &sol) {
     phaseMarker.reserve(latticeVolumeWithGhost);
 
     if (sol.config.pario_compute_U1Phase == 1) { U1_3phiContainer.reserve(latticeVolumeWithGhost); }
+
+    if (sol.config.pario_compute_lVector == 1) { lsqContainer.reserve(latticeVolumeWithGhost); }    
     
 } // containerReserve_gapAFETemPMarkerU1() end here
 
