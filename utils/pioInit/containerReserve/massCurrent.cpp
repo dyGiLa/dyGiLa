@@ -25,10 +25,10 @@ void parIO::containerReserve_massCurrent() {
   jm2Container.reserve(latticeVolumeWithGhost);
   jm3Container.reserve(latticeVolumeWithGhost);
 
-  phaseExpModulusContainer.reserve(latticeVolumeWithGhost);
-  phaseExpAngleContainer.reserve(latticeVolumeWithGhost);
-  phaseExp2ReContainer.reserve(latticeVolumeWithGhost);
-  phaseExp2ImContainer.reserve(latticeVolumeWithGhost);                  
+  // phaseExpModulusContainer.reserve(latticeVolumeWithGhost);
+  // phaseExpAngleContainer.reserve(latticeVolumeWithGhost);
+  // phaseExp2ReContainer.reserve(latticeVolumeWithGhost);
+  // phaseExp2ImContainer.reserve(latticeVolumeWithGhost);                  
     
 } // containerReserve_massCurrent() end here
 
