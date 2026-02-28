@@ -44,15 +44,16 @@ void glsol::next_bath_hotblob_quench_Hfield() {
 	  /* hila's coordinate index is counted from zero at corner,
            * so for a blob at the center of box, you need coordinate transformation
            */
-          auto x = X.coordinate(e_x) - config.lx/2.0;
-	  auto y = X.coordinate(e_y) - config.ly/2.0;
-	  auto z = X.coordinate(e_z) - config.lz/2.0;
+    // auto x = X.coordinate(e_x) - config.lx/2.0;
+	  // auto y = X.coordinate(e_y) - config.ly/2.0;
+	  // auto z = X.coordinate(e_z) - config.lz/2.0;
 
 	  matep::Matep MPonsites;
 
-	  auto r2 = (x*x + y*y + z*z)/4.f;
+	  // auto r2 = (x*x + y*y + z*z)/4.f;
+    auto r2 = (X.coordinates() - lattice.size() / 2).squarenorm() * sqr(config.dx);
 
-          if (config.Blob_Tc_cutoff == true)
+    if (config.Blob_Tc_cutoff == true)
 	    {
 	     /* conduct Tc cutoff  */ 
              if ( (t + tm) < t0 )
