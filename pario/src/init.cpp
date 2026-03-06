@@ -33,7 +33,8 @@ void parIO::init(glsol &sol) {
     if (sol.config.hdf5_mass_current_output == 1){ containerReserve_massCurrent(); }
     if (sol.config.hdf5_spin_current_output == 1) { containerReserve_spinCurrent(); }
     if (sol.config.hdf5_A_matrix_output == 1) { containerReserve_Amatrix(); }
-    if (sol.config.hdf5_lVector_output == 1) { containerReserve_lVec(); }    
+    if (sol.config.hdf5_lVector_output == 1) { containerReserve_lVec(); }
+    if (sol.config.hdf5_GradPhiVector_output == 1) { containerReserve_GradientPhiVec(); }        
 
     // ghost handling
     ghostMask(sol);
@@ -44,16 +45,17 @@ void parIO::init(glsol &sol) {
     describeMesh(sol);
     describeMesh_gapA_FEDensity(sol);
     if (sol.config.pario_Temperature_pStream == 1) { describeMesh_Temperature(); }
-    describeMesh_phaseMarker();
+    describeMesh_phaseMarker(sol);
     if (sol.config.pario_compute_U1Phase == 1) { describeMesh_U13phi(); }
-    if (sol.config.pario_compute_lVector == 1) { describeMesh_lVecSq(); }	    
+    if (sol.config.pario_compute_lVector == 1) { describeMesh_lVecSq(); }
 
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
        if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
        if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
        if (sol.config.hdf5_A_matrix_output == 1) {describeMesh_AMatrix();}
-       if (sol.config.hdf5_lVector_output == 1) {describeMesh_lVec();}           
+       if (sol.config.hdf5_lVector_output == 1) {describeMesh_lVec();}
+       if (sol.config.hdf5_GradPhiVector_output == 1) { describeMesh_GradientPhiVec(); }	               
       }
 
     describeMesh_addGhost_verify();
@@ -77,7 +79,8 @@ void parIO::init(glsol &sol) {
     defineActions_insitu(sol);
     if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
       {
-       if (sol.config.hdf5_lVector_output == 1) {defineActions_lVec();}		
+       if (sol.config.hdf5_lVector_output == 1) {defineActions_lVec();}
+       if (sol.config.hdf5_GradPhiVector_output == 1) {defineActions_GradientPhiVec();}		       
        if (sol.config.hdf5_mass_current_output == 1) {defineActions_massCurrent(sol);}
        if (sol.config.hdf5_spin_current_output == 1) {defineActions_spinCurrent(sol);}
        if (sol.config.hdf5_A_matrix_output == 1) {defineActions_AMatrix(sol);}
