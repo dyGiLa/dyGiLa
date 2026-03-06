@@ -157,8 +157,9 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       /*     parallel IO control parameters     */
       /*----------------------------------------*/
-      unsigned int pario_compute_feDensity, pario_compute_U1Phase,
-	           pario_compute_lVector;
+      unsigned int pario_compute_gapA, pario_compute_feDensity,
+	           pario_compute_phaseMarker, pario_compute_U1Phase,
+	           pario_compute_lVector, pario_compute_GPhiVector;
       unsigned int pario_Temperature_pStream;
 
       real_t U1_3phi_DetA_ZeroTol, lVec_SqlTol;
@@ -224,7 +225,8 @@ struct dyGiLaConf {
       unsigned int hdf5_mass_current_output,
                    hdf5_spin_current_output,
 	           hdf5_pMarker_output,
-	           hdf5_lVector_output;
+	           hdf5_lVector_output,
+	           hdf5_GradPhiVector_output;
       real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
 	
       

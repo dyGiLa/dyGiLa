@@ -273,10 +273,14 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     /*----------------------------------------*/
     /* Parallel IO Engine control parameters  */
     /*----------------------------------------*/
+    config.pario_compute_gapA    = parameters.get_item("pario_compute_gapA",{"no","yes"});    
     config.pario_compute_feDensity     = parameters.get_item("pario_compute_feDensity",{"no","yes"});
     config.pario_Temperature_pStream     = parameters.get_item("pario_Temperature_pStream",{"no","yes"});
+    config.pario_compute_phaseMarker = parameters.get_item("pario_compute_phaseMarker",{"no","yes"});
     config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});
-    config.pario_compute_lVector     = parameters.get_item("pario_compute_lVector",{"no","yes"});        
+    config.pario_compute_lVector     = parameters.get_item("pario_compute_lVector",{"no","yes"});
+    config.pario_compute_GPhiVector     = parameters.get_item("pario_compute_GPhiVector",{"no","yes"});
+    
     
     config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");
     config.lVec_SqlTol = parameters.get("lVec_SqlTol");        
@@ -285,7 +289,8 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
     config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
     config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
-    config.hdf5_lVector_output         = parameters.get_item("hdf5_lVector_output",{"no","yes"});    
+    config.hdf5_lVector_output         = parameters.get_item("hdf5_lVector_output",{"no","yes"});
+    config.hdf5_GradPhiVector_output   = parameters.get_item("hdf5_GradPhiVector_output",{"no","yes"});
     
     if (
         (config.hdf5_A_matrix_output == 1)
@@ -293,6 +298,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	|| (config.hdf5_spin_current_output == 1)
 	|| (config.hdf5_pMarker_output == 1)
 	|| (config.hdf5_lVector_output == 1)
+	|| (config.hdf5_GradPhiVector_output == 1)
        )
       {
        config.hdf5Ststart = parameters.get("hdf5Ststart");
