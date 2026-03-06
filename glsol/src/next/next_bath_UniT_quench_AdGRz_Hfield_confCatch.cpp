@@ -30,8 +30,6 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
   std::initializer_list<int> coordsList {0,0,0};
   const CoordinateVector originpoints(coordsList);
 
-  //hila::out0 << "debug: I'm just before update the Temperature field block." << std::endl;
-
   // update the Temperature field
   if ( (T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip))
 	&& config.use_antiQuench == false)
@@ -82,14 +80,7 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
       // bulk update
       A[X] += config.dt * pi[X];
       
-      if (
-	  /* X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1) ||*/
-	  /* X.coordinate(e_x) == 1 || X.coordinate(e_x) == (config.lx - 2) ||*/
-	  /* X.coordinate(e_y) == 0 || X.coordinate(e_y) == (config.ly - 1) ||*/
-	  /* X.coordinate(e_y) == 1 || X.coordinate(e_y) == (config.ly - 2) ||*/
-	  X.coordinate(e_z) == 0 || X.coordinate(e_z) == (config.lz - 1)
-	  /* X.coordinate(e_z) == 1 || X.coordinate(e_z) == (config.lz - 2) */
-	 )
+      if (X.coordinate(e_z) == 0 || X.coordinate(e_z) == (config.lz - 1))
           {
 	    A[X].e(0,2).re=0.; A[X].e(0,2).im=0.;
             A[X].e(1,2).re=0.; A[X].e(1,2).im=0.;
@@ -99,190 +90,9 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield_confCatch() {
     } // AdGRz Aal_z pair-breaking BC
 
   
-  /***************************************************************************/
-  /*    \delta \pi canonical momentum computing blocks starts from here      */
-  /***************************************************************************/
-  
-  // onsites (ALL) {
-  //   matep::Matep MPonsites;
-
-  //   real_t beta0 = MPonsites.alpha_td(config.Inip, T[X]);
-  //   real_t beta1 = MPonsites.beta1_td(config.Inip, T[X]);
-  //   real_t beta2 = MPonsites.beta2_td(config.Inip, T[X]);
-  //   real_t beta3 = MPonsites.beta3_td(config.Inip, T[X]);
-  //   real_t beta4 = MPonsites.beta4_td(config.Inip, T[X]);
-  //   real_t beta5 = MPonsites.beta5_td(config.Inip, T[X]);
-    
-  //   auto AxAt = A[X]*A[X].transpose();
-  //   auto AxAd = A[X]*A[X].dagger();
-
-  //   deltaPi[X] = - beta0*A[X]
-  //     - 2.0*beta1*A[X].conj()*AxAt.trace()
-  //     - 2.0*beta2*A[X]*AxAd.trace()
-  //     - 2.0*beta3*AxAt*A[X].conj()
-  //     - 2.0*beta4*AxAd*A[X]
-  //     - 2.0*beta5*A[X].conj()*A[X].transpose()*A[X]
-  //     - MPonsites.gz_td(config.Inip)*H[X]*(H[X].transpose()*A[X]);
-
-  // } // Bulk energy contribution block
-
-  // hila::out0 << "debug: I'm just before AdGRz treatment block." << std::endl;    
-  // onsites(ALL) {
-    /******************************************************************/
-    /*    start: cook up the A_X+j & A_X-j for AdGRz treatment        */
-    /******************************************************************/
-    // const real_t abt_ratio=config.dx/config.bt;
-    // phi_t A_Xmj, A_Xpj;
-    // if ( X.coordinate(e_z) == 0 )
-    //   {
-    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    // else if ( X.coordinate(e_z) == (config.lz-1) )
-    //   {
-    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    /****************************************************************/
-    /*      end: cook up the A_X+j & A_X-j for AdGRz treatment      */
-    /****************************************************************/
-    
-  //   djAaj[X] = 0;    
-  //   foralldir(j) {
-  //     if ( X.coordinate(e_z) == 0 && j == e_z )
-  // 	{ djAaj[X] += A[X + j].column(j) - A_Xmj.column(j); }
-  //     else if ( X.coordinate(e_z) == (config.lz-1) && j == e_z)
-  // 	{ djAaj[X] += A_Xpj.column(j) - A[X - j].column(j); }
-  //     else
-  // 	{ djAaj[X] += A[X + j].column(j) - A[X - j].column(j); }      
-  //   } // computing div A at X
-  // } // djAalj onsite(ALL) block done
-  
-  // onsites(ALL) {
-  //   phi_t mat;
-  //   foralldir(d) {
-  //     auto col = djAaj[X+d] - djAaj[X-d];
-  //     for (int i=0; i<NDIM; i++) mat.e(i,d) = col[i];
-  //   }
-  //   deltaPi[X] += (1.0/(2.0*(config.dx*config.dx)))*mat;
-  // } // djAalj vector field differential block
-
-  // hila::out0 << "debug: I'm just before 2nd AdGRz block." << std::endl;    
-  // onsites (ALL) {
-    /******************************************************************/
-    /* start: cook up the A_X+e_z & A_X-e_z for AdGRz treatment       */
-    /******************************************************************/
-  //   const real_t abt_ratio=config.dx/config.bt;
-  //   phi_t A_Xmez, A_Xpez;
-  //   if ( X.coordinate(e_z) == 0. )
-  //     {
-  //       const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-  // 	foralldir(col)
-  // 	  {
-  //          if(col == 2)
-  // 	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
-  // 	   else
-  // 	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-  // 	  } // col loop ends here
-  //     }
-  //   else if ( X.coordinate(e_z) == (config.lz-1) )
-  //     {
-  //       const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-  // 	foralldir(col)
-  // 	  {
-  //          if(col == 2)
-  // 	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
-  // 	   else
-  // 	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-  // 	  } // col loop ends here
-  //     }
-  //   /****************************************************************/
-  //   /*   end: cook up the A_X+e_z & A_X-e_z for AdGRz treatment     */
-  //   /****************************************************************/
-
-  //     if ( X.coordinate(e_z) == 0 )
-  // 	{
-  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
-  // 	               * (A[X + e_x] + A[X-e_x]
-  //                         + A[X + e_y] + A[X-e_y]
-  //                         + A[X + e_z] + A_Xmez
-  //                         - 6.0*A[X]);
-
-  // 	} // starting surface AdGR treatment
-  //     else if ( X.coordinate(e_z) == (config.lz-1) )
-  // 	{
-  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx))
-  // 	               * (A[X+e_x] + A[X - e_x]
-  //                         + A[X+e_y] + A[X - e_y]
-  //                         + A_Xpez + A[X - e_z]
-  //                         - 6.0*A[X]);
-	  
-  // 	} // ending surface AdGR treatment
-  //     else
-  // 	{
-  //        deltaPi[X] += (1.0/(1.0*config.dx*config.dx)) * (A[X + e_x] + A[X - e_x]
-  //                                                         + A[X + e_y] + A[X - e_y]
-  //                                                         + A[X + e_z] + A[X - e_z]
-  //                                                         - 6.0*A[X]);
-
-  // 	}           
-  // } // Laplacian block done
-  
-  /***************************************************************************/
-  /*    \delta \pi canonical momentum computing blocks ends from here        */
-  /***************************************************************************/
   dPiGLfe_AdGRz();
   dampAndRelax();
   
-  // hila::out0 << "debug: I'm just before Update block." << std::endl;    
-  // if (t < config.tdif)
-  //   {
-  //     pi[ALL] = deltaPi[X]/(config.difFac);
-  //     t += config.dt/config.difFac;
-  //   }
-  // else if (
-  // 	   (t < config.tdis)
-  // 	   && (config.useTbath == 1)
-  // 	   && (extinguish_t * config.dt) < config.extinguish_off_t_count	   
-  // 	  )
-  //   {
-  //     // though config.useTbath == 1 is till be true, only a big damping is needed.
-  //     pi[ALL] = pi[X] + (deltaPi[X] - 1.0 * config.gamma * pi[X]) * config.dt;
-  //     t += config.dt;      
-  //   }
-  // else if (
-  // 	   t < config.tdis
-  // 	   && config.useTbath == 1
-  // 	   && (extinguish_t * config.dt) >= config.extinguish_off_t_count
-  // 	  )
-  //   {
-  //     // though config.useTbath == 1 is till be true, no thermal noise is added, we just removed them.
-  //     onsites(ALL)
-  // 	{
-  //        matep::Matep MPonsites;
-  //        pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X]) * config.dt;
-  // 	}
-  //     t += config.dt;
-  //   }    
-  // else
-  //   {
-  //     pi[ALL] = pi[X] + deltaPi[X]*config.dt;
-  //     t += config.dt;
-  //   }
-
-  // hila::out0 << "next_* call is done, t is " << t << std::endl;
   next_timer.stop();
 
 } // next_bath() ends here
