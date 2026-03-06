@@ -59,10 +59,11 @@ private:
   
   void describeMesh_gapA_FEDensity(glsol &);
   void describeMesh_Temperature();
-  void describeMesh_phaseMarker();
+  void describeMesh_phaseMarker(glsol &);
   void describeMesh_U13phi();
   void describeMesh_lVecSq();  
-  void describeMesh_lVec();  
+  void describeMesh_lVec();
+  void describeMesh_GradientPhiVec();    
   void describeMesh_massCurrent();
   void describeMesh_spinCurrent();  
   void describeMesh_AMatrix();  
@@ -71,6 +72,7 @@ private:
   void defineActions_insitu(glsol &);
 
   void defineActions_lVec();
+  void defineActions_GradientPhiVec();  
   void defineActions_massCurrent(glsol &);
   void defineActions_spinCurrent(glsol &);
   void defineActions_AMatrix(glsol &);
@@ -81,13 +83,15 @@ private:
   /* utils */
   void containerReserve_gapAFETemPMarkerU1lVecSq(glsol &);
   void containerReserve_lVec();
+  void containerReserve_GradientPhiVec();  
   void containerReserve_Amatrix();
   void containerReserve_massCurrent();
   void containerReserve_spinCurrent();
   void ghostMask(glsol &);
 
   void U1PhaseStreaming(glsol &);
-  void lVectorStreaming(glsol &);  
+  void lVectorStreaming(glsol &);
+  void GradientPhiVectorStreaming(glsol &);    
 
   /*----- fields declearations -----*/
   
@@ -102,7 +106,8 @@ private:
   
   Field<real_t> jm1, jm2, jm3;
   Field<real_t> U1_3phi;
-  Field<real_t> lsq, l_1, l_2, l_3;  
+  Field<real_t> lsq, l_1, l_2, l_3;
+  Field<real_t> GPhi_1, GPhi_2, GPhi_3;    
   Field<real_t> js11, js21, js31,
                 js12, js22, js32,
                 js13, js23, js33;
@@ -123,6 +128,7 @@ private:
   // std::vector<real_t> eigAv1Container, eigAv2Container, eigAv3Container;
   std::vector<real_t> jm1Container, jm2Container, jm3Container;
   std::vector<real_t> lsqContainer, l1Container, l2Container, l3Container;
+  std::vector<real_t> GPhi1Container, GPhi2Container, GPhi3Container;  
 
   /* std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer acosphiContainer, asinphiContainer, phaseExp2ReContainer, phaseExp2ImContainer;*/
   std::vector<real_t> js11Container, js21Container, js31Container,
