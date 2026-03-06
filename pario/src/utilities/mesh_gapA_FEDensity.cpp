@@ -19,10 +19,14 @@
 
 void parIO::describeMesh_gapA_FEDensity(glsol &sol) {
 
-    // create an vertex associated field named gapAOrdered
-    mesh["fields/gapA/association"] = "vertex";
-    mesh["fields/gapA/topology"] = "topo";
-    mesh["fields/gapA/values"].set_external(gapAContainer.data(), latticeVolumeWithGhost);
+    if (sol.config.pario_compute_gapA == 1)
+      {
+       // create an vertex associated field named gapAOrdered
+       mesh["fields/gapA/association"] = "vertex";
+       mesh["fields/gapA/topology"] = "topo";
+       mesh["fields/gapA/values"].set_external(gapAContainer.data(), latticeVolumeWithGhost);
+
+      }
 
     if (sol.config.pario_compute_feDensity == 1)
       {

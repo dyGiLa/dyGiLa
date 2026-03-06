@@ -1,28 +1,32 @@
 #define USE_MPI 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <assert.h>
+// #include <sstream>
+// #include <iostream>
+// #include <iomanip>
+// #include <fstream>
+// #include <string>
+// #include <assert.h>
 
-#include "plumbing/hila.h"
-#include "plumbing/fft.h"
+// #include "plumbing/hila.h"
+// #include "plumbing/fft.h"
 
-#include "glsol.hpp"
-#include "matep.hpp"
+// #include "glsol.hpp"
+// #include "matep.hpp"
 #include "pario.hpp"
 
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
 
 
-void parIO::describeMesh_phaseMarker() {
+void parIO::describeMesh_phaseMarker(glsol &sol) {
 
-    // create an vertex associated field named phaseMarker
-    mesh["fields/phaseMarker/association"] = "vertex";
-    mesh["fields/phaseMarker/topology"] = "topo";
-    mesh["fields/phaseMarker/values"].set_external(phaseMarker.data(), latticeVolumeWithGhost);
+    if (sol.config.pario_compute_phaseMarker == 1)
+      {
+       // create an vertex associated field named phaseMarker
+       mesh["fields/phaseMarker/association"] = "vertex";
+       mesh["fields/phaseMarker/topology"] = "topo";
+       mesh["fields/phaseMarker/values"].set_external(phaseMarker.data(), latticeVolumeWithGhost);
+
+      }
 
 } // describeMesh() end here
 

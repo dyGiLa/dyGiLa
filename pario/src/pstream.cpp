@@ -20,9 +20,12 @@
 void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 
     /*-------------------    sqrt(Tr[A.A^+) ----------------------*/
-    //gapA[ALL] = real(sqrt((sol.AwT[X]*(sol.AwT[X].dagger())).trace()));
-    gapA[ALL] = sqrt(((sol.AwT[X]*(sol.AwT[X].dagger())).trace()).real());
-    gapA.copy_local_data_with_halo(gapAContainer);
+    if (sol.config.pario_compute_gapA == 1)
+      {
+       //gapA[ALL] = real(sqrt((sol.AwT[X]*(sol.AwT[X].dagger())).trace()));
+       gapA[ALL] = sqrt(((sol.AwT[X]*(sol.AwT[X].dagger())).trace()).real());
+       gapA.copy_local_data_with_halo(gapAContainer);
+      }
 
     /*--------------------     feDensity      --------------------*/
     if (sol.config.pario_compute_feDensity == 1) {
@@ -63,7 +66,7 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     if (sol.config.pario_Temperature_pStream == 1) { sol.T.copy_local_data_with_halo(Temperature); }
     
     /*-------------------- phaseMarker field --------------------*/
-    sol.phaseMarker.copy_local_data_with_halo(phaseMarker);    
+    if (sol.config.pario_compute_phaseMarker == 1) { sol.phaseMarker.copy_local_data_with_halo(phaseMarker); }
 
     /*------------------- U(1) phase of AwT ---------------------*/
     if (sol.config.pario_compute_U1Phase == 1) {
@@ -75,14 +78,22 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     if (sol.config.pario_compute_lVector == 1) {
       lVectorStreaming(sol);
       lsq.copy_local_data_with_halo(lsqContainer);
-      // l_1.copy_local_data_with_halo(l1Container);
-      // l_2.copy_local_data_with_halo(l2Container);
-      // l_3.copy_local_data_with_halo(l3Container);
       if (sol.config.hdf5_lVector_output == 1)
         {
           l_1.copy_local_data_with_halo(l1Container);
           l_2.copy_local_data_with_halo(l2Container);
           l_3.copy_local_data_with_halo(l3Container);
+        } // only harvest l_i if want to output them      
+    }
+
+    /*--------------- Gradient Phi -vector of AwT ----------------*/
+    if (sol.config.pario_compute_GPhiVector == 1) {
+      GradientPhiVectorStreaming(sol);
+      if (sol.config.hdf5_GradPhiVector_output == 1)
+        {
+          GPhi_1.copy_local_data_with_halo(GPhi1Container);
+          GPhi_2.copy_local_data_with_halo(GPhi2Container);
+          GPhi_3.copy_local_data_with_halo(GPhi3Container);
         } // only harvest l_i if want to output them      
     }
     
@@ -210,6 +221,6 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     
     pio.execute(actions);
 
-    system("rm -rf pio/*.root pio_Current/*.root pio_Vec/*.root 2>/dev/null");
+    system("find . "*.root" -delete 2>/dev/null");
 } // pstream() end here
 

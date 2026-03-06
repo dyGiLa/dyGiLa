@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "plumbing/hila.h"
-#include "plumbing/fft.h"
+//#include "plumbing/fft.h"
 
 #include "glsol.hpp"
 #include "matep.hpp"
@@ -43,7 +43,8 @@ void parIO::defineActions_insitu(glsol &sol) {
     double fg_colvec[3] = {0., 0., 0.};
     
     /* >>>>>>>>>>>>>> pipleline gapA  clip <<<<<<<<<<<<< */
-    
+    if (sol.config.pario_compute_gapA == 1)
+      {
     if (sol.config.do_gapA_clip == 1)
       {
        pipelines["pl1/f1/type"] = "clip";
@@ -73,7 +74,6 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s2/renders/r1/camera/azimuth"] = sol.config.camera1_azi;
        scenes["s2/renders/r1/camera/elevation"] = sol.config.camera1_ele;
       }
-
     /* >>>>>>>>>>>>>> pipleline gapA clip 2 <<<<<<<<<<<<< */
 
     if (sol.config.do_gapA_clip == 1)
@@ -138,8 +138,6 @@ void parIO::defineActions_insitu(glsol &sol) {
        // scenes["s4/renders/r1/camera/azimuth"] = -45./*sol.config.camera1_azi*/;
        // scenes["s4/renders/r1/camera/elevation"] = 0./*sol.config.camera1_ele*/;
       }
-
-
     /* >>>>>>>>>>>>>> pipleline gapA slice2 <<<<<<<<<<<<< */
     
     // if (sol.config.do_gapA_slice == 1)
@@ -171,8 +169,7 @@ void parIO::defineActions_insitu(glsol &sol) {
     //    // scenes["s5/renders/r1/camera/azimuth"] = 45. /*sol.config.camera1_azi*/;
     //    // scenes["s5/renders/r1/camera/elevation"] = 0./*sol.config.camera1_ele*/;
     //   }
-    
-    
+
     /* >>>>>>>>>>> pipleline isosurfece <<<<<<<<<<<<< */
 
     if (sol.config.do_gapA_isosurface == 1)
@@ -208,6 +205,12 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s6/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
     }
     
+      } // compute gapA block
+
+    
+    if (sol.config.pario_compute_feDensity == 1)
+      {
+    
     /* >>>>>>>>>>>>>> pipleline clip camp <<<<<<<<<<<<< */
 
     if (sol.config.do_fed_clip == 1)
@@ -237,6 +240,11 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s7/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s7/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
+
+      } // compute feDensity block
+
+    if (sol.config.pario_Temperature_pStream == 1)
+      {
 
     /* >>>>>>>>>>>>>> pipleline Temperaure clip no camp <<<<<<<<<<<<< */
 
@@ -332,7 +340,11 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s9/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes["s9/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
     }
-    
+
+      } // Temperature pStream
+
+    if (sol.config.pario_compute_phaseMarker == 1)
+      {
     /* >>>>>>>>>>>>>> pipleline phaseMarker slice <<<<<<<<<<<<< */
     
     if (sol.config.do_phaseMarker_slice == 1)
@@ -488,8 +500,13 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes2["s14/renders/r1/camera/azimuth"] = sol.config.camera1_azi/*35.0*/;
        scenes2["s14/renders/r1/camera/elevation"] = sol.config.camera1_ele/*30.0*/;
       }
+
+      } // compute phaseMarker block
     
     /* >>>>>>>>>>>>>> pipleline U(1) 3 \phi slice <<<<<<<<<<<<< */
+
+    if (sol.config.pario_compute_U1Phase == 1)
+      {
     
     if (sol.config.do_U13phi_slice == 1)
       {
@@ -529,6 +546,11 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s15/renders/r1/image_prefix"] = "insitu/U1_3phi-Slice/U1_3phi-slice_t-%09d";
       }
 
+      } // compute U1Phase block
+
+
+    if (sol.config.pario_compute_lVector == 1)
+      {
     /* >>>>>>>>>>>>>> pipleline l^2 slice <<<<<<<<<<<<< */
     
     if (sol.config.do_l_sq_slice == 1)
@@ -559,6 +581,8 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s16/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
        scenes["s16/renders/r1/image_prefix"] = "insitu/lVec_norm2-Slice/lVec_norm2-slice_t-%09d";
       }
+
+      } // compute lVector block
 
     
 } // defineActions() call end here

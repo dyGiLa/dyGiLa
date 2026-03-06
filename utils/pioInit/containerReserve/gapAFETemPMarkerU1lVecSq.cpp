@@ -18,12 +18,12 @@
 
 void parIO::containerReserve_gapAFETemPMarkerU1lVecSq(glsol &sol) {
 
-    gapAContainer.reserve(latticeVolumeWithGhost);
+    if (sol.config.pario_compute_gapA == 1) { gapAContainer.reserve(latticeVolumeWithGhost); }
     
     if (sol.config.pario_compute_feDensity == 1) { feDensityContainer.reserve(latticeVolumeWithGhost); }    
     if (sol.config.pario_Temperature_pStream == 1) { Temperature.reserve(latticeVolumeWithGhost); }
     
-    phaseMarker.reserve(latticeVolumeWithGhost);
+    if (sol.config.pario_compute_phaseMarker == 1) { phaseMarker.reserve(latticeVolumeWithGhost); }
 
     if (sol.config.pario_compute_U1Phase == 1) { U1_3phiContainer.reserve(latticeVolumeWithGhost); }
 
