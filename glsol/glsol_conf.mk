@@ -2,7 +2,7 @@
 
 # *.cpp files searching path
 vpath %.cpp glsol/src glsol/src/utilities glsol/src/next glsol/src/initialize \
-$(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/confCatchnRelax $(DYGILA_DIR)/utils/confInitialize 
+$(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/confCatchnRelax $(DYGILA_DIR)/utils/confInitialize
 
 # Include path, linder flags
 # of path and binary libs into
@@ -10,7 +10,7 @@ $(DYGILA_DIR)/utils/GLfeContri $(DYGILA_DIR)/utils/ABOBA $(DYGILA_DIR)/utils/con
 # building and linking rule
 
 # add headers searching directories 
-APP_OPTS += -I $(DYGILA_DIR)/glsol/inc
+APP_OPTS += -I $(DYGILA_DIR)/glsol/inc -I $(DYGILA_DIR)/utils/AdGR
 
 # ifeq ($(ARCH), lumi)
 # # add headers path of ffw
@@ -53,8 +53,7 @@ GLSOL_OBJECTS = $(GLSOL_PATH)/configure.o             \
                 $(GLSOL_PATH)/case_9.o $(GLSOL_PATH)/case_10.o \
                 $(GLSOL_PATH)/dPiGLfe_AdGRz.o $(GLSOL_PATH)/dPiGLfe.o \
                 $(GLSOL_PATH)/ABOBA.o $(GLSOL_PATH)/ABOBA_gBranch.o \
-                $(GLSOL_PATH)/dampAndRelax.o $(GLSOL_PATH)/relax.o \
-
+                $(GLSOL_PATH)/dampAndRelax.o $(GLSOL_PATH)/relax.o
 
 
 .PHONY: glsol

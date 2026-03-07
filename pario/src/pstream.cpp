@@ -221,6 +221,6 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     
     pio.execute(actions);
 
-    system("find . "*.root" -delete 2>/dev/null");
+    system(R"(find . -name "*.root" -delete 2>/dev/null)");
 } // pstream() end here
 

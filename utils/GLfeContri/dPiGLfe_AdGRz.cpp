@@ -12,7 +12,6 @@
 #include "glsol.hpp"
 #include "matep.hpp"
 
-
 void glsol::dPiGLfe_AdGRz() {
 
   const real_t abt_ratio=config.dx/config.bt;
@@ -47,37 +46,32 @@ void glsol::dPiGLfe_AdGRz() {
   } // Bulk GL free energy block
   
   onsites(ALL) {
-    /******************************************************************/
-    /*    start: cook up the A_X+j & A_X-j for AdGRz treatment        */
-    /******************************************************************/
-
     phi_t A_Xmj, A_Xpj;
-    AdGRzTreat(A_Xmj, A_Xpj, abt_ratio);
-    // if ( X.coordinate(e_z) == 0 )
-    //   {
-    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    // else if ( X.coordinate(e_z) == (config.lz-1) )
-    //   {
-    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    /****************************************************************/
-    /*      end: cook up the A_X+j & A_X-j for AdGRz treatment      */
-    /****************************************************************/
+//     phi_t A_Xmj, A_Xpj, A_Xmez = A[X-e_z], A_Xpez = A[X+e_z];
+// #include "AdGRzTreat.hpp"    
+//     AdGRzTreat1(A_Xmj, A_Xpj, A_Xmez, A_Xpez, abt_ratio);
+    if ( X.coordinate(e_z) == 0 )
+      {
+        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+	foralldir(col)
+	  {
+           if(col == 2)
+	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
+	   else
+	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+	  } // col loop ends here
+      }
+    else if ( X.coordinate(e_z) == (config.lz-1) )
+      {
+        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+	foralldir(col)
+	  {
+           if(col == 2)
+	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
+	   else
+	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+	  } // col loop ends here
+      }
     
     djAaj[X] = 0;    
     foralldir(j) {
@@ -100,36 +94,32 @@ void glsol::dPiGLfe_AdGRz() {
   } // 2.0 \partial_i djAaj, djAalj vector field differential block
   
   onsites (ALL) {
-    /******************************************************************/
-    /* start: cook up the A_X+e_z & A_X-e_z for AdGRz treatment       */
-    /******************************************************************/
-    phi_t A_Xmez, A_Xpez;
-    AdGRzTreat(A_Xmez, A_Xpez, abt_ratio);
-    // if ( X.coordinate(e_z) == 0. )
-    //   {
-    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    // else if ( X.coordinate(e_z) == (config.lz-1) )
-    //   {
-    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-    // 	foralldir(col)
-    // 	  {
-    //        if(col == 2)
-    // 	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
-    // 	   else
-    // 	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-    // 	  } // col loop ends here
-    //   }
-    /****************************************************************/
-    /*   end: cook up the A_X+e_z & A_X-e_z for AdGRz treatment     */
-    /****************************************************************/
+    phi_t A_Xmez, A_Xpez;    
+//     phi_t A_Xmez, A_Xpez, A_Xm_ez = A[X-e_z], A_Xp_ez = A[X+e_z];
+// #include "AdGRzTreat.hpp"    
+//     AdGRzTreat2(A_Xmez, A_Xpez, A_Xm_ez, A_Xp_ez, abt_ratio);
+    if ( X.coordinate(e_z) == 0. )
+      {
+        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+	foralldir(col)
+	  {
+           if(col == 2)
+	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
+	   else
+	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+	  } // col loop ends here
+      }
+    else if ( X.coordinate(e_z) == (config.lz-1) )
+      {
+        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+	foralldir(col)
+	  {
+           if(col == 2)
+	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
+	   else
+	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+	  } // col loop ends here
+      }    
 
     if ( X.coordinate(e_z) == 0 )
 	{

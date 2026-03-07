@@ -119,7 +119,7 @@ private:
   void ABOBA_gBranch();
   void dampAndRelax();
   void relax();
-  void AdGRzTreat(phi_t &, phi_t &, const real_t &);
+  //void AdGRzTreat(phi_t &, phi_t &, phi_t &, phi_t &, const real_t &);
 
   /* utils conf init */
   void case_0(), case_1(), case_2();
