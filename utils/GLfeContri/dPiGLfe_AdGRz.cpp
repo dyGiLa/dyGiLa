@@ -15,8 +15,7 @@
 
 void glsol::dPiGLfe_AdGRz() {
 
-  // Field<phi_t> deltaPi;
-  // Field<Vector<3,Complex<real_t>>> djAaj;  
+  const real_t abt_ratio=config.dx/config.bt;
 
   /******************************************************/
   /*          Bulk Free energy contribution             */
@@ -51,30 +50,31 @@ void glsol::dPiGLfe_AdGRz() {
     /******************************************************************/
     /*    start: cook up the A_X+j & A_X-j for AdGRz treatment        */
     /******************************************************************/
-    const real_t abt_ratio=config.dx/config.bt;
+
     phi_t A_Xmj, A_Xpj;
-    if ( X.coordinate(e_z) == 0 )
-      {
-        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
-    else if ( X.coordinate(e_z) == (config.lz-1) )
-      {
-        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
+    AdGRzTreat(A_Xmj, A_Xpj, abt_ratio);
+    // if ( X.coordinate(e_z) == 0 )
+    //   {
+    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xmj.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xmj.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
+    // else if ( X.coordinate(e_z) == (config.lz-1) )
+    //   {
+    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xpj.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xpj.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
     /****************************************************************/
     /*      end: cook up the A_X+j & A_X-j for AdGRz treatment      */
     /****************************************************************/
@@ -103,30 +103,30 @@ void glsol::dPiGLfe_AdGRz() {
     /******************************************************************/
     /* start: cook up the A_X+e_z & A_X-e_z for AdGRz treatment       */
     /******************************************************************/
-    const real_t abt_ratio=config.dx/config.bt;
     phi_t A_Xmez, A_Xpez;
-    if ( X.coordinate(e_z) == 0. )
-      {
-        const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
-    else if ( X.coordinate(e_z) == (config.lz-1) )
-      {
-        const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
-	foralldir(col)
-	  {
-           if(col == 2)
-	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
-	   else
-	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
-	  } // col loop ends here
-      }
+    AdGRzTreat(A_Xmez, A_Xpez, abt_ratio);
+    // if ( X.coordinate(e_z) == 0. )
+    //   {
+    //     const real_t trcoef=(1.-abt_ratio)/(1.+abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xmez.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xmez.e(row, col)=A[X+e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
+    // else if ( X.coordinate(e_z) == (config.lz-1) )
+    //   {
+    //     const real_t trcoef=(1.+abt_ratio)/(1.-abt_ratio);
+    // 	foralldir(col)
+    // 	  {
+    //        if(col == 2)
+    // 	     { foralldir(row){ A_Xpez.e(row, col)=0.0; } }
+    // 	   else
+    // 	     { foralldir(row){ A_Xpez.e(row, col)=A[X-e_z].e(row, col)*trcoef;} }
+    // 	  } // col loop ends here
+    //   }
     /****************************************************************/
     /*   end: cook up the A_X+e_z & A_X-e_z for AdGRz treatment     */
     /****************************************************************/
