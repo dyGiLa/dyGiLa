@@ -26,7 +26,7 @@ void parIO::defineActions_phaseMarker(glsol &sol) {
 
      conduit::Node &extracts = add_act8["extracts"];
      extracts["e4/type"] = "relay";
-     extracts["e4/params/path"] = "pio/dyGiLa-sim-pMarker";
+     extracts["e4/params/path"] = "pio/dyGiLa-sim-pMarker_t-%09d";
      extracts["e4/params/protocol"] = "blueprint/mesh/hdf5";
 
      extracts["e4/params/fields"].append().set("gapA");

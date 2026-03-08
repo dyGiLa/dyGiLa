@@ -26,7 +26,7 @@ void parIO::defineActions_lVec() {
 
       conduit::Node &extracts = add_act9["extracts"];
       extracts["e5/type"] = "relay";
-      extracts["e5/params/path"] = "pio_Vec/dyGiLa-sim-lVector";
+      extracts["e5/params/path"] = "pio_Vec/dyGiLa-sim-lVector_t-%09d";
       extracts["e5/params/protocol"] = "blueprint/mesh/hdf5";
 
       //extracts["e5/params/fields"].append().set("l_Sq");

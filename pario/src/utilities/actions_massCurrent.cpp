@@ -24,7 +24,7 @@ void parIO::defineActions_massCurrent(glsol &sol) {
 
       conduit::Node &extracts = add_act6["extracts"];
       extracts["e2/type"] = "relay";
-      extracts["e2/params/path"] = "pio_Current/dyGiLa-sim-massCurrent";
+      extracts["e2/params/path"] = "pio_Current/dyGiLa-sim-massCurrent_t-%09d";
       extracts["e2/params/protocol"] = "blueprint/mesh/hdf5";
 
       // extracts["e2/params/fields"].append().set("gapAContainer");

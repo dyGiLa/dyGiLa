@@ -26,7 +26,7 @@ void parIO::defineActions_GradientPhiVec() {
 
       conduit::Node &extracts = add_act10["extracts"];
       extracts["e6/type"] = "relay";
-      extracts["e6/params/path"] = "pio_Vec/dyGiLa-sim-GPhiVector";
+      extracts["e6/params/path"] = "pio_Vec/dyGiLa-sim-GPhiVector_t-%09d";
       extracts["e6/params/protocol"] = "blueprint/mesh/hdf5";
 
       extracts["e6/params/fields"].append().set("GPhi1");

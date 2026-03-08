@@ -24,7 +24,7 @@ void parIO::defineActions_spinCurrent(glsol &sol) {
 
       conduit::Node &extracts = add_act7["extracts"];
       extracts["e3/type"] = "relay";
-      extracts["e3/params/path"] = "pio_Current/dyGiLa-sim-spinCurrent";
+      extracts["e3/params/path"] = "pio_Current/dyGiLa-sim-spinCurrent_t-%09d";
       extracts["e3/params/protocol"] = "blueprint/mesh/hdf5";
 
       // extracts["e3/params/fields"].append().set("gapAContainer");
