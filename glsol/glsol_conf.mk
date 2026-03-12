@@ -42,6 +42,7 @@ GLSOL_OBJECTS = $(GLSOL_PATH)/configure.o             \
                 $(GLSOL_PATH)/next_bath_UniT_quench_Hfield.o \
                 $(GLSOL_PATH)/next_bath_UniT_quench_AdGRz_Hfield.o \
                 $(GLSOL_PATH)/next_bath_hotblob_quench_Hfield.o \
+                $(GLSOL_PATH)/next_bath_Quasi2Dhotblob_quench_AdGR_Hfield.o \
                 $(GLSOL_PATH)/next_bath_hotblob_quench_Hfield_confCatch.o \
                 $(GLSOL_PATH)/next_bath_UniT_quench_AdGRz_Hfield_confCatch.o \
                 $(GLSOL_PATH)/glsol_initialize.o      \
