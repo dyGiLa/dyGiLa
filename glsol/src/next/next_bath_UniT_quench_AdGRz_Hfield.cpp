@@ -75,8 +75,8 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
     } // Temperature handling block ends here
 
   /***************************************************************************/
-  /*        block for OP A field normal component Dirichlet BC               */
-  /***************************************************************************/
+  /*         OP A field update & normal component Dirichlet BC               */
+  /***************************************************************************/  
   onsites (ALL)
     {
       // bulk update
@@ -91,6 +91,10 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
 
     } // AdGRz Aal_z pair-breaking BC
 
+  /***************************************************************************/
+  /*      OP A field update & normal component Dirichlet BC ends             */
+  /***************************************************************************/
+  
   dPiGLfe_AdGRz();
   ABOBA_gBranch();
   
