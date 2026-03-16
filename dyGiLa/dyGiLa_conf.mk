@@ -17,7 +17,8 @@ DYGILAAPIs_OBJECTS = $(DYGILAAPIs_PATH)/nextBlocks.o \
                      $(DYGILAAPIs_PATH)/writeHDF5_xmls.o \
                      $(DYGILAAPIs_PATH)/heterogeneousQuench.o \
                      $(DYGILAAPIs_PATH)/homogenousQuench.o \
-                     $(DYGILAAPIs_PATH)/dyGiLaPhaseMarking.o
+                     $(DYGILAAPIs_PATH)/dyGiLaPhaseMarking.o \
+                     $(DYGILAAPIs_PATH)/LatticeSaturationCheck.o
 
 .PHONY: dyGiLaAPIs
 dyGiLaAPIs: $(DYGIALAAPIs_OBJECTS)
