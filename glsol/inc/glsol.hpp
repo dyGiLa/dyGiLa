@@ -103,8 +103,9 @@ public:
   Field<Vector<3,real_t>> H; // H-field, 3-component column vector field
   Field<real_t> phaseMarker;
   
-  real_t t = 0.;
+  real_t t = 0., pM5VolR = 0., pM9VolR = 0.;
   real_t tc = 0.;
+  
 
   unsigned int extinguish_t = 0.;  
   matep::Matep MP;

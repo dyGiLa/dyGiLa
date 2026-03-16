@@ -86,6 +86,9 @@ int main(int argc, char **argv) {
 	   ++stat_counter;
         } //gl.t > gl.config.Stats block
 
+	// lattice saturation check
+	if (dyGiLa::utils::latticeSaturationCheck(gl) == true) break;
+
         // t-evolve call
         dyGiLa::nextBlocks(gl, stat_counter, steps, originpoints);
          	    		

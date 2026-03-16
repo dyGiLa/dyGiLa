@@ -47,6 +47,10 @@ void glsol::phaseCounting() {
                   + px_acc[/*pxacc::*/p6_acc] + px_acc[/*pxacc::*/p7_acc]
                   + px_acc[/*pxacc::*/p8_acc] + px_acc[/*pxacc::*/p9_acc];
 
+  // update pM5VolR and pM9VoR
+  pM5VolR = px_acc[/*pxacc::*/p5_acc]/vol;
+  pM9VolR = px_acc[/*pxacc::*/p9_acc]/vol;  
+  
   // Volume element in unit of \xi_GL^0
   const double Velem = config.dx*config.dx*config.dx;
   // Hot Blob initial radius
