@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <assert.h>
+#include <cmath>
 
 #include "plumbing/hila.h"
 #include "plumbing/globals.h" 
@@ -51,8 +52,8 @@ std::tuple<const std::vector<std::string>, const CoordinateVector *const, const 
   const CoordinateVector originpoints(coordsList);
 
   // number of steps between reduction streaming
-  const unsigned int steps = (gl.config.tEnd - gl.config.tStats)
-                             /(gl.config.dt * gl.config.nOutputs);
+  const unsigned int steps = std::round((gl.config.tEnd - gl.config.tStats)
+					/(gl.config.dt * gl.config.nOutputs));
   hila::out0 << "steps is " << steps << " in unit of dt. "
 	     << "PSSRatio is " << gl.config.PSSRatio  << "." << std::endl;
 
