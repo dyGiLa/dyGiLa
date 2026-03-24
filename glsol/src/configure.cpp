@@ -62,6 +62,10 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 
     // switch for turning on the T-dependent gamma
     config.TDependnetgamma = parameters.get_item("TDependnetgamma",{"no", "yes"});
+
+    // switch for shifting the T-dependent gamma base line
+    config.shiftTDependent_gamma_td = parameters.get_item("shiftTDependent_gamma_td",{"no", "yes"});
+    if (config.shiftTDependent_gamma_td == true) { config.gamma_td_BaseLine = parameters.get("gamma_td_BaseLine"); }
     
     //config.gamma = parameters.get("gamma");
     std::vector<real_t> tmp1 = parameters.get("gamma1");

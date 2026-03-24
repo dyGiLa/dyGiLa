@@ -29,19 +29,27 @@ void glsol::ABOBA_gBranch() {
 	{
           onsites(ALL){
 	    matep::Matep MPonsites;
+	    const real_t gamma_td_onsite = (config.shiftTDependent_gamma_td == true)
+	                                   ? MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) + config.gamma_td_BaseLine
+	                                   : MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]);
+	    
 
-            real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);		    	
+            //real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);
+            real_t ep2 = 1.0-exp(-2.0 * gamma_td_onsite * config.dt);
+	    
     	    phi_t rad_mat;
 	    rad_mat.gaussian_random();
 
 	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
-	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+	    // pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+            pi[X] = pi[X] + (deltaPi[X] - 1.0 * gamma_td_onsite * pi[X])*(config.dt/2.0);
 
 	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
 	    pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
 	
             // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
-            pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+            // pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
+            pi[X] = pi[X] + (deltaPi[X] - 1.0 * gamma_td_onsite * pi[X])*(config.dt/2.0);
           }
 	} // T-dependent gamma block
       else

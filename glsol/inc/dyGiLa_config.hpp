@@ -47,6 +47,8 @@ struct dyGiLaConf {
 
       //real_t gamma;
       unsigned int TDependnetgamma;
+      unsigned int shiftTDependent_gamma_td;
+      real_t gamma_td_BaseLine = 0.f;
       Complex<real_t> gamma;
       Complex<real_t> gamma1;
       Complex<real_t> gamma2;
