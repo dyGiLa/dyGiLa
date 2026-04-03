@@ -399,17 +399,28 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         for (auto i : tmp3) { config.Temperature_iso_values_vector.push_back(i * TcpmK); }
       } // gapA clip control parammeters
 
-    config.do_phaseMarker_slice = parameters.get_item("do_phaseMarker_slice",{"no","yes"});
-    if (config.do_phaseMarker_slice == 1)
+    config.do_phaseMarker_slice1 = parameters.get_item("do_phaseMarker_slice1",{"no","yes"});
+    if (config.do_phaseMarker_slice1 == 1)
       {
-        config.pMarker_slice_point_x = parameters.get("pMarker_slice_point_x");
-	config.pMarker_slice_point_y = parameters.get("pMarker_slice_point_y");
-	config.pMarker_slice_point_z = parameters.get("pMarker_slice_point_z");
-        config.pMarker_slice_norm_x = parameters.get("pMarker_slice_norm_x");
-	config.pMarker_slice_norm_y = parameters.get("pMarker_slice_norm_y");
-	config.pMarker_slice_norm_z = parameters.get("pMarker_slice_norm_z");
+        config.pMarker_slice1_point_x = parameters.get("pMarker_slice1_point_x");
+	config.pMarker_slice1_point_y = parameters.get("pMarker_slice1_point_y");
+	config.pMarker_slice1_point_z = parameters.get("pMarker_slice1_point_z");
+        config.pMarker_slice1_norm_x = parameters.get("pMarker_slice1_norm_x");
+	config.pMarker_slice1_norm_y = parameters.get("pMarker_slice1_norm_y");
+	config.pMarker_slice1_norm_z = parameters.get("pMarker_slice1_norm_z");
       }
 
+    config.do_phaseMarker_slice2 = parameters.get_item("do_phaseMarker_slice2",{"no","yes"});
+    if (config.do_phaseMarker_slice2 == 1)
+      {
+        config.pMarker_slice2_point_x = parameters.get("pMarker_slice2_point_x");
+	config.pMarker_slice2_point_y = parameters.get("pMarker_slice2_point_y");
+	config.pMarker_slice2_point_z = parameters.get("pMarker_slice2_point_z");
+        config.pMarker_slice2_norm_x = parameters.get("pMarker_slice2_norm_x");
+	config.pMarker_slice2_norm_y = parameters.get("pMarker_slice2_norm_y");
+	config.pMarker_slice2_norm_z = parameters.get("pMarker_slice2_norm_z");
+      }
+    
     config.do_phaseMarker_isosurface = parameters.get_item("do_phaseMarker_isosurface",{"no","yes"});
     if (config.do_phaseMarker_isosurface == 1)
       {
@@ -452,11 +463,24 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
     config.clamp_bias_fed_Min = parameters.get("clamp_bias_fed_Min");
     config.clamp_bias_fed_Max = parameters.get("clamp_bias_fed_Max");
+
+    config.CBxMin = parameters.get("CBxMin");
+    config.CBxMax = parameters.get("CBxMax");
+    config.CByMin = parameters.get("CByMin");
+    config.CByMax = parameters.get("CByMax");    
+    
+    config.image_width1 = parameters.get("image_width1");
+    config.image_height1 = parameters.get("image_height1");
+    config.image_width2 = parameters.get("image_width2");
+    config.image_height2 = parameters.get("image_height2");
     
     config.camera1_azi = parameters.get("camera1_azi");
     config.camera1_ele = parameters.get("camera1_ele");
     config.camera2_azi = parameters.get("camera2_azi");
     config.camera2_ele = parameters.get("camera2_ele");
+
+    config.zoom1 = parameters.get("zoom1");
+    config.zoom2 = parameters.get("zoom2");    
     
     /*----------------------------------------*/
     /* Parallel IO Engine parameters end      */

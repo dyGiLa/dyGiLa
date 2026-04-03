@@ -199,9 +199,11 @@ struct dyGiLaConf {
       unsigned int do_gapA_isosurface;
       std::vector<double> iso_values_vector;
 
-      unsigned int do_phaseMarker_slice;
-      real_t pMarker_slice_point_x, pMarker_slice_point_y, pMarker_slice_point_z,
-	     pMarker_slice_norm_x, pMarker_slice_norm_y, pMarker_slice_norm_z;
+      unsigned int do_phaseMarker_slice1, do_phaseMarker_slice2;
+      real_t pMarker_slice1_point_x, pMarker_slice1_point_y, pMarker_slice1_point_z,
+	     pMarker_slice1_norm_x, pMarker_slice1_norm_y, pMarker_slice1_norm_z,
+	     pMarker_slice2_point_x, pMarker_slice2_point_y, pMarker_slice2_point_z,
+	     pMarker_slice2_norm_x, pMarker_slice2_norm_y, pMarker_slice2_norm_z;
 
   
       unsigned int do_phaseMarker_isosurface;
@@ -230,12 +232,17 @@ struct dyGiLaConf {
 	           hdf5_lVector_output,
 	           hdf5_GradPhiVector_output;
       real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
-	
-      
+	      
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
-      real_t clamp_bias_fed_Min, clamp_bias_fed_Max;      
+      real_t clamp_bias_fed_Min, clamp_bias_fed_Max;
+
+      real_t CBxMin, CBxMax, CByMin, CByMax;
+  
+      unsigned int image_width1, image_height1,
+	           image_width2, image_height2;
       real_t camera1_azi, camera1_ele,
              camera2_azi, camera2_ele;
+      real_t zoom1, zoom2;
       /*----------------------------------------*/
       /*    parallel IO parameter end           */
       /*----------------------------------------*/
