@@ -89,7 +89,10 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     /*--------------- Gradient Phi -vector of AwT ----------------*/
     if (sol.config.pario_compute_GPhiVector == 1) {
       GradientPhiVectorStreaming(sol);
-      if (sol.config.hdf5_GradPhiVector_output == 1)
+      if (
+	  sol.config.hdf5_GradPhiVector_output == 1
+	  || sol.config.hdf5_GradPhiVector_exaslice_output == 1
+	 )
         {
           GPhi_1.copy_local_data_with_halo(GPhi1Container);
           GPhi_2.copy_local_data_with_halo(GPhi2Container);

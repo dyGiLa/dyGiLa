@@ -61,7 +61,8 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
       || (gl.config.hdf5_mass_current_output == 1)
       || (gl.config.hdf5_spin_current_output == 1)
       || (gl.config.hdf5_lVector_output == 1)
-      || (gl.config.hdf5_GradPhiVector_output == 1))
+      || (gl.config.hdf5_GradPhiVector_output == 1)
+      || (gl.config.hdf5_GradPhiVector_exaslice_output == 1))      
       && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
       && (modPSSR == 0)
      )
@@ -74,6 +75,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
            && (gl.config.hdf5_spin_current_output != 1)
            && (gl.config.hdf5_lVector_output != 1)
            && (gl.config.hdf5_GradPhiVector_output != 1)
+           && (gl.config.hdf5_GradPhiVector_exaslice_output != 1)	   
 	   && (
                (gl.config.do_gapA_clip == 1)
    	       || (gl.config.do_gapA_slice == 1)

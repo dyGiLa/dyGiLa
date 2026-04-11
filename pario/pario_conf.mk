@@ -56,6 +56,7 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/actions_phaseMarker.o \
                 $(PARIO_PATH)/actions_lVec.o \
                 $(PARIO_PATH)/actions_GradientPhiVec.o \
+                $(PARIO_PATH)/actions_GradientPhiVec_exaslice.o \
                 $(PARIO_PATH)/actions_printTree.o   \
                 $(PARIO_PATH)/ghostMask.o           \
                 $(PARIO_PATH)/massCurrent.o         \

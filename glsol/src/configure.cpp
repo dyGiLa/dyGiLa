@@ -295,6 +295,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
     config.hdf5_lVector_output         = parameters.get_item("hdf5_lVector_output",{"no","yes"});
     config.hdf5_GradPhiVector_output   = parameters.get_item("hdf5_GradPhiVector_output",{"no","yes"});
+    config.hdf5_GradPhiVector_exaslice_output   = parameters.get_item("hdf5_GradPhiVector_exaslice_output",{"no","yes"});
     
     if (
         (config.hdf5_A_matrix_output == 1)
@@ -303,6 +304,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	|| (config.hdf5_pMarker_output == 1)
 	|| (config.hdf5_lVector_output == 1)
 	|| (config.hdf5_GradPhiVector_output == 1)
+	|| (config.hdf5_GradPhiVector_exaslice_output == 1)	
        )
       {
        config.hdf5Ststart = parameters.get("hdf5Ststart");
@@ -453,6 +455,18 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.l_sq_slice_norm_x = parameters.get("l_sq_slice_norm_x");
 	config.l_sq_slice_norm_y = parameters.get("l_sq_slice_norm_y");
 	config.l_sq_slice_norm_z = parameters.get("l_sq_slice_norm_z");
+      }
+
+    config.do_GPhi_slice_extract = parameters.get_item("do_GPhi_slice_extract",{"no","yes"});
+    if (config.do_GPhi_slice_extract == 1)
+      {
+        std::vector<real_t> exaslice_params = parameters.get("GPhi_slice_params");        	
+        config.GPhi_slice1_point_x = exaslice_params[0];
+	config.GPhi_slice1_point_y = exaslice_params[1];
+	config.GPhi_slice1_point_z = exaslice_params[2];
+        config.GPhi_slice1_norm_x = exaslice_params[3];
+	config.GPhi_slice1_norm_y = exaslice_params[4];
+	config.GPhi_slice1_norm_z = exaslice_params[5];
       }
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
