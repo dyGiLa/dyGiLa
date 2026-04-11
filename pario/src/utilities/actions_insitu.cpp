@@ -13,6 +13,7 @@
 #include "matep.hpp"
 #include "pario.hpp"
 #include "hsvCyclicSchemeRGBA.hpp"
+#include "discreteColorBarScheme.hpp"
 
 #include "ascent.hpp"
 #include "conduit_blueprint.hpp"
@@ -369,56 +370,12 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s10/plots/p1/field"] = "phaseMarker";
        //scenes["s10/plots/p1/color_table/name"] = "Jet";
        scenes["s10/plots/p1/color_table/discrete"] = "true";
-       // scenes["s10/plots/p1/min_value"] = 1.0f;    
-       // scenes["s10/plots/p1/max_value"] = 9.0f; 
+       scenes["s10/plots/p1/min_value"] = 1.0f;    
+       scenes["s10/plots/p1/max_value"] = 9.0f; 
 
        conduit::Node control_points;
-
-       // Jet 9 colors
-       double colors[9][3] = {
-	 {0.0, 0.0, 0.5},
-	 {0.0, 0.0, 1.0},
-	 {0.0, 0.5, 1.0},
-	 {0.0, 1.0, 1.0},
-	 {0.5, 1.0, 0.5},
-	 {1.0, 1.0, 0.0},
-	 {1.0, 0.5, 0.0},
-	 {1.0, 0.0, 0.0},
-	 {0.5, 0.0, 0.0}
-       };
-
-       for(unsigned int i = 0; i < 9; i++)
-        {
-          double p0 = double(i) / 9.0;
-          double p1 = double(i+1) / 9.0;
-          // left edge
-          {
-            conduit::Node &cp = control_points.append();
-            cp["type"] = "rgb";
-            cp["position"] = p0;
-            cp["color"].set(std::vector<double>{
-               colors[i][0],
-               colors[i][1],
-               colors[i][2]
-            });
-          }
-
-          // right edge (same color!)
-          {
-            conduit::Node &cp = control_points.append();
-            cp["type"] = "rgb";
-            cp["position"] = p1 - 1e-6;   // critical
-            cp["color"].set(std::vector<double>{
-               colors[i][0],
-               colors[i][1],
-               colors[i][2]
-            });
-          }
-        } // for loop end here
-
-       
-       scenes["s10/plots/p1/color_table/control_points"] = control_points;
-       
+       colorControlPointsGenerator(control_points);       
+       scenes["s10/plots/p1/color_table/control_points"] = control_points;       
        //double colorbar_position[4] = {-0.6, 0.6, 0.8, 0.9};       
        scenes["s10/renders/r1/color_bar_position"].set(colorbar_position,4);       
        
@@ -452,53 +409,11 @@ void parIO::defineActions_insitu(glsol &sol) {
        //scenes["s11/plots/p1/color_table/name"] = "Jet";
        scenes["s11/plots/p1/color_table/annotation"] = "false"; 
        scenes["s11/plots/p1/color_table/discrete"] = "true";
-       // scenes["s11/plots/p1/min_value"] = 1.0f;
-       // scenes["s11/plots/p1/max_value"] = 9.0f; 
+       scenes["s11/plots/p1/min_value"] = 1.0f;
+       scenes["s11/plots/p1/max_value"] = 9.0f; 
 
        conduit::Node control_points;
-
-       // Jet 9 colors
-       double colors[9][3] = {
-	 {0.0, 0.0, 0.5},
-	 {0.0, 0.0, 1.0},
-	 {0.0, 0.5, 1.0},
-	 {0.0, 1.0, 1.0},
-	 {0.5, 1.0, 0.5},
-	 {1.0, 1.0, 0.0},
-	 {1.0, 0.5, 0.0},
-	 {1.0, 0.0, 0.0},
-	 {0.5, 0.0, 0.0}
-       };
-
-       for(unsigned int i = 0; i < 9; i++)
-        {
-          double p0 = double(i) / 9.0;
-          double p1 = double(i+1) / 9.0;
-          // left edge
-          {
-            conduit::Node &cp = control_points.append();
-            cp["type"] = "rgb";
-            cp["position"] = p0;
-            cp["color"].set(std::vector<double>{
-               colors[i][0],
-               colors[i][1],
-               colors[i][2]
-            });
-          }
-
-          // right edge (same color!)
-          {
-            conduit::Node &cp = control_points.append();
-            cp["type"] = "rgb";
-            cp["position"] = p1 - 1e-6;   // critical
-            cp["color"].set(std::vector<double>{
-               colors[i][0],
-               colors[i][1],
-               colors[i][2]
-            });
-          }
-        } // for loop end here
-       
+       colorControlPointsGenerator(control_points);       
        scenes["s11/plots/p1/color_table/control_points"] = control_points;       
        //double colorbar_position[4] = {-0.6, 0.6, 0.8, 0.9};       
        scenes["s11/renders/r1/color_bar_position"].set(colorbar_position,4);       

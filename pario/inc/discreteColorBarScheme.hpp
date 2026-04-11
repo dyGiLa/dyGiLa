@@ -46,7 +46,7 @@ void colorControlPointsGenerator(conduit::Node &control_points) {
             colors[i][2]
         });
     }
- }
+  } // for loop ends here
 
 } // colorControlPointGenerator() ends here
 #endif
