@@ -222,9 +222,13 @@ struct dyGiLaConf {
       real_t l_sq_slice_point_x, l_sq_slice_point_y, l_sq_slice_point_z,
 	     l_sq_slice_norm_x, l_sq_slice_norm_y, l_sq_slice_norm_z;
 
-      unsigned int do_GPhi_slice_extract;
+      unsigned int do_GPhi_slice_extract, do_GPhi_clip_extract;
       real_t GPhi_slice1_point_x, GPhi_slice1_point_y, GPhi_slice1_point_z,
-	     GPhi_slice1_norm_x, GPhi_slice1_norm_y, GPhi_slice1_norm_z;
+	     GPhi_slice1_norm_x, GPhi_slice1_norm_y, GPhi_slice1_norm_z,
+	     // GPhi_clip1_pMin_x, GPhi_clip1_pMin_y, GPhi_clip1_pMin_z,
+	     // GPhi_clip1_pMax_x, GPhi_clip1_pMax_y, GPhi_clip1_pMax_z;	      	
+	     GPhi_clip1_point_x, GPhi_clip1_point_y, GPhi_clip1_point_z,
+	     GPhi_clip1_norm_x, GPhi_clip1_norm_y, GPhi_clip1_norm_z;
   
       unsigned int hdf5_A_matrix_output;
       //              hdf5_trA_output,
@@ -234,7 +238,8 @@ struct dyGiLaConf {
 	           hdf5_pMarker_output,
 	           hdf5_lVector_output,
 	           hdf5_GradPhiVector_output,
-	           hdf5_GradPhiVector_exaslice_output;
+	           hdf5_GradPhiVector_exaslice_output,
+	           hdf5_GradPhiVector_clip_output;
       real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
 	      
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
