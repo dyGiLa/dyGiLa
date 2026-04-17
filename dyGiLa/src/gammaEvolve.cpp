@@ -21,9 +21,17 @@
 namespace dyGiLa {
   
 void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &steps, const CoordinateVector &originpoints) {
-  /* config.gamma update block */
+      /* config.gamma update block */
+      //----------------------------------------------
+      // This only handles gamma for homogenuous quench
+      //----------------------------------------------  
   if (
-      (gl.config.TDependnetgamma == 1)
+      //----------------------------------------------
+      // T-dependent gamma,
+      // but not HotBlob (iniCondT =/= 2);
+      // before gamma switch momentum.
+      //----------------------------------------------
+      (gl.config.TDependnetgamma == true)
       && (gl.config.initialConditionT != 2)
       && (stat_counter < (gl.config.gammaoffc)*steps)
      )
@@ -34,9 +42,13 @@ void gammaEvolve(glsol &gl, unsigned int &stat_counter, const unsigned int &step
 		       : gl.MP.gamma_td(gl.config.Inip, gl.MP.Tcp_mK(gl.config.Inip), gl.phaseMarker.get_element(originpoints));
 		
    }
-  else if (stat_counter >= (gl.config.gammaoffc)*steps)
-      	  // Set gamma to 2nd value after gamma switching count for all profile,
+  else if (
+          //-----------------------------------------------	   
+      	  // Set gamma to 2nd value after gamma switch 
           // this is for configuraton capture.
+          //-----------------------------------------------	   	   
+	   stat_counter >= (gl.config.gammaoffc)*steps
+	  )
           { gl.config.gamma = gl.config.gamma2; }	      	    
   
 } /* config.gamma update block end here */

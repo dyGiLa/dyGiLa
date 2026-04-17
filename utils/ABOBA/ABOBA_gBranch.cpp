@@ -35,15 +35,12 @@ void glsol::ABOBA_gBranch() {
 	    
 
             //real_t ep2 = 1.0-exp(-2.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * config.dt);
-            real_t ep2 = 1.0-exp(-2.0 * gamma_td_onsite * config.dt);
-	    
+            real_t ep2 = 1.0-exp(-2.0 * gamma_td_onsite * config.dt);	    
     	    phi_t rad_mat;
 	    rad_mat.gaussian_random();
-
 	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
 	    // pi[X] = pi[X] + (deltaPi[X] - 1.0 * MPonsites.gamma_td(config.Inip, T[X], phaseMarker[X]) * pi[X])*(config.dt/2.0);
             pi[X] = pi[X] + (deltaPi[X] - 1.0 * gamma_td_onsite * pi[X])*(config.dt/2.0);
-
 	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
 	    pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
 	
@@ -56,7 +53,6 @@ void glsol::ABOBA_gBranch() {
 	{
           onsites(ALL){
 	    matep::Matep MPonsites;
-
             real_t ep2 = 1.0-exp(-2.0 * config.gamma.re * config.dt);		    
 	
     	    phi_t rad_mat;
@@ -65,16 +61,14 @@ void glsol::ABOBA_gBranch() {
 	    // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0
 	    pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
 
-	    //pi[X] = sqrt(1.0-ep2)*pi[X] + sqrt(ep2)*tb*rad_mat;
 	    pi[X] = sqrt(1.0 - ep2) * pi[X] + sqrt(ep2 * (T[X]/Tcp_mK) * (kBTCf0p_ratio/volElemLattice)) * rad_mat;
 	
             // damping term gives 2.0, but it is absobed by new defination of gamma, then coef is 1.0      
             pi[X] = pi[X] + (deltaPi[X] - 1.0 * config.gamma.re * pi[X])*(config.dt/2.0);
           }
-	} // constant gamma block
-            
+	} // constant gamma block            
       t += config.dt;
-    }
+    } // constant gamma block
   else
     {
       pi[ALL] = pi[X] + deltaPi[X]*config.dt;
