@@ -21,12 +21,8 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
 
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   // const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
-  // const real_t volElemLattice = config.dx * config.dx * config.dx;
-  
-  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
-  
+  // const real_t volElemLattice = config.dx * config.dx * config.dx;    
   int bc=config.boundaryConditions;
-  // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
 
   next_timer.start();
 
@@ -34,7 +30,12 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
   const CoordinateVector originpoints(coordsList);
 
   // update the Temperature field
-  if ( (T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip))
+  if (
+       //------------------------------------------------------------
+       // Here one can have quench and anti-quench
+       // i.e., cooling or warming
+       //------------------------------------------------------------      
+       (T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip))
 	&& config.use_antiQuench == false)
        ||
        (T.get_element(originpoints) < (config.Ttd_Qend * MP.Tcp_mK(config.Inip))
@@ -42,6 +43,10 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
      )
     {
      if (
+	 //------------------------------------------------------------
+	 // two stage homogenuous quench block,
+	 // set has1stQStop be 0 do the stright quench
+	 //------------------------------------------------------------	 	 
 	 ((config.has1stQStop == true)
 	  && ((T.get_element(originpoints) - (config.Ttd_Q1st * MP.Tcp_mK(config.Inip))) <= 0.0)
 	  && (t < config.tQ1Waiting)
@@ -55,22 +60,20 @@ void glsol::next_bath_UniT_quench_AdGRz_Hfield() {
        {/*empty block*/}
      else
        {
+	//------------------------------------------------------------
+	// the 2nd homogenuous quench block 
 	// 1st quench and 2nd quench may have different tauQ
 	// however, if tauQ1 in fact equal to tauQ2, as well as config.has1stQStop == false
-	// calling this functionequal to homogenous quench with one tauQ continously 
-	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
-        	 
+	// calling this functionequal to homogenous quench with one tauQ continously
+        //------------------------------------------------------------	 	 
+	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;        	 
         // Temperature update for uniform quench
-        // T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
 	onsites(ALL)
 	  {
-	   // matep::Matep MPonsites;
 	    T[X] = ( config.use_antiQuench == true ) ? T[X] + ((config.dt/config.tauQ) * Tcp_mK)
 	                                             : T[X] - ((config.dt/config.tauQ) * Tcp_mK);
-	    /*MPonsites.Tcp_mK(config.Inip));*/
 	  }
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
-
        }
     } // Temperature handling block ends here
 

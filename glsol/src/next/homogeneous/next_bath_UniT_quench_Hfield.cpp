@@ -23,7 +23,6 @@ void glsol::next_bath_UniT_quench_Hfield() {
   const real_t Tcp_mK = MP.Tcp_mK(config.Inip);
   // const real_t kBTCf0p_ratio = MP.kBTCf0p_ratio(config.Inip);
   // const real_t volElemLattice = config.dx * config.dx * config.dx;
-  //hila::out0 <<"Bath evolution with: ep2="<<ep2<<" and tb="<<tb<<"\n";
   
   int bc=config.boundaryConditions;
   // hila::out0 << "bc is " << bc << " in this next_bath() call " << std::endl;
@@ -34,32 +33,32 @@ void glsol::next_bath_UniT_quench_Hfield() {
   const CoordinateVector originpoints(coordsList);
 
   // update the Temperature field
-  if ( T.get_element(originpoints) > (config.Ttd_Qend * MP.Tcp_mK(config.Inip)) )
+  if ( T.get_element(originpoints) > (config.Ttd_Qend * Tcp_mK) )
     {
      if (
+	 //------------------------------------------------------------
+	 // two stage homogenuous quench block,
+	 // set has1stQStop be 0 do the stright quench
+	 //------------------------------------------------------------	 
 	 (config.has1stQStop == true)
-	 && ((T.get_element(originpoints) - (config.Ttd_Q1st * MP.Tcp_mK(config.Inip))) <= 0.0)
+	 && ((T.get_element(originpoints) - (config.Ttd_Q1st * Tcp_mK)) <= 0.0)
 	 && (t < config.tQ1Waiting)
 	)
        {/*empty block*/}
      else
        {
+	//------------------------------------------------------------
+	// the 2nd homogenuous quench block 
 	// 1st quench and 2nd quench may have different tauQ
 	// however, if tauQ1 in fact equal to tauQ2, as well as config.has1stQStop == false
-	// calling this functionequal to homogenous quench with one tauQ continously 
+	// calling this functionequal to homogenous quench with one tauQ continously
+        //------------------------------------------------------------	 
 	config.tauQ = (t > config.tQ1Waiting) ? config.tauQ2 : config.tauQ1;
-        	 
-        // Temperature update for uniform quench
-        // T[ALL] = T[X] - ((config.dt/config.tauQ) * MP.Tcp_mK(config.Inip));
-	onsites(ALL)
-	  {
-	   // matep::Matep MPonsites;
-	    T[X] = T[X] - ((config.dt/config.tauQ) * Tcp_mK); /*MPonsites.Tcp_mK(config.Inip));*/
-	  }
+        // Temperature update for homogenuous quench
+	onsites(ALL) { T[X] = T[X] - ((config.dt/config.tauQ) * Tcp_mK); }
         // hila::out0 << " T in site is " << T.get_element(originpoints) << std::endl;
-
        }
-    }
+    } // T-field update block ends here
       
   onsites(ALL) {
     matep::Matep MPonsites;    
@@ -69,7 +68,7 @@ void glsol::next_bath_UniT_quench_Hfield() {
 
     A[X] += config.dt * pi[X];
 
-    if (bc == 1)
+    if (bc == 1 /* flat A-B wall configuration */)
       {
         if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
           {
@@ -100,11 +99,11 @@ void glsol::next_bath_UniT_quench_Hfield() {
                 A[X].e(d1,d2).re = 0.0;
                 A[X].e(d1,d2).im = 0.0;
               }
-	               }
+	    }
             A[X] = gapa * A[X]/sqrt(2.0);
           }
         }
-    else if (bc == 2)
+    else if (bc == 2 /* full pair-breaking BC */)
       {
         if (
 	    X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1) ||
@@ -114,14 +113,12 @@ void glsol::next_bath_UniT_quench_Hfield() {
             X.coordinate(e_z) == 0 || X.coordinate(e_z) == (config.lz - 1) ||
             X.coordinate(e_z) == 1 || X.coordinate(e_z) == (config.lz - 2)
 	   )
-          {
-            A[X]=0.0;	    
-          }
+          { A[X]=0.0; }
       }
   } // onsite() block ends here
 
   dPiGLfe(); // compute free energy contribution for delta Pi
-  ABOBA();   // Canonical momentum Langevin update
+  ABOBA_gBranch();   // Canonical momentum Langevin update
 
   next_timer.stop();
 

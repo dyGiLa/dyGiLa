@@ -38,7 +38,7 @@ void glsol::next_bath() {
 
     A[X] += config.dt * pi[X];
 
-    if (bc == 1)
+    if (bc == 1 /* A-B domain wall conf BC */)
       {
         if (X.coordinate(e_z) == 0 or X.coordinate(e_z) == 1)
           {
@@ -69,11 +69,11 @@ void glsol::next_bath() {
                 A[X].e(d1,d2).re = 0.0;
                 A[X].e(d1,d2).im = 0.0;
               }
-	               }
+	    }
             A[X] = gapa * A[X]/sqrt(2.0);
           }
         }
-    else if (bc == 2)
+    else if (bc == 2 /* full pair breaking BC */)
       {
         if (
 	    X.coordinate(e_x) == 0 || X.coordinate(e_x) == (config.lx - 1) ||
@@ -90,7 +90,7 @@ void glsol::next_bath() {
   } // onsite() block ends here
 
   dPiGLfe(); // compute free energy contribution for delta Pi
-  ABOBA();   // Canonical momentum Langevin update
+  ABOBA_gBranch();   // Canonical momentum Langevin update
   
   next_timer.stop();
 
