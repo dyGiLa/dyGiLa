@@ -59,7 +59,7 @@ void glsol::phaseCounting() {
                      * (MP.xi0GLp(config.Inip)) * (1e6))
                    : 0.f;
   
-  config.streampc
+  config.streampc << std::scientific << std::setprecision(7)
          << rb << "," << t << "," << T000 << ","
 	 /***************************/	 	 	 
 	 << px_acc[/*pxacc::*/p0_acc]/vol << ","    

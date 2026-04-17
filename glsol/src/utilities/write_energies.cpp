@@ -116,7 +116,7 @@ void glsol::write_energies() {
   //if (hila::myrank() == 0)
   {
     //double vol = lattice.volume();       
-       config.stream
+    config.stream << std::scientific << std::setprecision(7)
 	 << t << "," << T000 << "," 
 	 /***************************/	 	 	 
 	 << sumAgap.re / vol << "," << sumAgap.im / vol << ","
