@@ -40,9 +40,6 @@ struct dyGiLaConf {
   
       real_t tStart;
       real_t tEnd;
-
-      real_t tdif;
-      real_t difFac;
       real_t tdis;
 
       //real_t gamma;

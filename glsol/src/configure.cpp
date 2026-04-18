@@ -34,8 +34,10 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.has1stQStop            = parameters.get_item("has1stQStop",{"no", "yes"});
     if (config.has1stQStop == 1)
       {
-	config.Ttd_Q1st = parameters.get("Ttd_Q1st");
-	config.tQ1Waiting = parameters.get("tQ1Waiting");
+	const std::vector<real_t> temp = parameters.get("TtdQ1st_tQ1Wainting_array");
+	config.Ttd_Q1st = temp[0]; config.tQ1Waiting = temp[1];	
+	// config.Ttd_Q1st = parameters.get("Ttd_Q1st");
+	// config.tQ1Waiting = parameters.get("tQ1Waiting");
       }
     config.use_antiQuench         = parameters.get_item("use_antiQuench",{"no", "yes"});
     config.Ttd_Qend = parameters.get("Ttd_Qend");
@@ -47,8 +49,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     
     config.tStart = parameters.get("tStart");
     config.tEnd = parameters.get("tEnd");
-    config.tdif = parameters.get("tdif");
-    config.difFac = parameters.get("difFac");
     config.tdis = parameters.get("tdis");
     
     
@@ -64,8 +64,10 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.TDependnetgamma = parameters.get_item("TDependnetgamma",{"no", "yes"});
 
     // switch for shifting the T-dependent gamma base line
+    // This is usful when T-dep gamma is too small at low Temperature
     config.shiftTDependent_gamma_td = parameters.get_item("shiftTDependent_gamma_td",{"no", "yes"});
-    if (config.shiftTDependent_gamma_td == true) { config.gamma_td_BaseLine = parameters.get("gamma_td_BaseLine"); }
+    if (config.shiftTDependent_gamma_td == true)
+      { config.gamma_td_BaseLine = parameters.get("gamma_td_BaseLine"); }
     
     //config.gamma = parameters.get("gamma");
     std::vector<real_t> tmp1 = parameters.get("gamma1");
@@ -134,15 +136,20 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 								      ,"Wiman2016StripeB"});  //10
                                                                        
 
-    hila::out0 << " config.initialCondition is "
+    hila::out0 << "--config.initialCondition is "
 	       << config.initialCondition
 	       << std::endl;
-    
-    config.variance_sigma = parameters.get("sigma");
-    
+    if (// ---------------------------
+	// kGaussrand initialization
+        // ---------------------------	
+	config.initialCondition == 1)
+      {
+        config.IniMod = parameters.get("IniMod");
+        config.Inilc = parameters.get("Inilc");
+      }    
+
+    config.variance_sigma = parameters.get("sigma");    
     config.seed = parameters.get("seed");
-    config.IniMod = parameters.get("IniMod");
-    config.Inilc = parameters.get("Inilc");
 
     //initialCondition-T
     config.initialConditionT = parameters.get_item("initialConditionT",{"constant","sine","hotblob"});
@@ -152,26 +159,33 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
       }
     else if (config.initialConditionT == 1)
       {
-	config.IniT = parameters.get("IniT");
-	config.ampT = parameters.get("ampT");
+	const std::vector<real_t> temp = parameters.get("IniT_ampT_array");
+	config.IniT = temp[0];
+	config.ampT = temp[1];	
+	// config.IniT = parameters.get("IniT");
+	// config.ampT = parameters.get("ampT");
       }
     else if (config.initialConditionT == 2)
       {
        /*********************************************/
        /* >>>> spherical hot blob parameters <<<<<  */    
        /*********************************************/
+	const std::vector<real_t> temp = parameters.get("HotBlob_params_array");	
+        config.Ttdb1         = temp[0];
+        config.Ttdb0         = temp[1];
+        config.t1            = temp[2];
+        // config.Ttdb1         = parameters.get("Ttdb1");
+        // config.Ttdb0         = parameters.get("Ttdb0");
+        // config.t1            = parameters.get("t1");
 	config.Blob_Tc_cutoff = parameters.get_item("Blob_Tc_cutoff",{"no", "yes"});
-        config.Ttdb1         = parameters.get("Ttdb1");
-        config.Ttdb0         = parameters.get("Ttdb0");
-        config.t1            = parameters.get("t1");
+        config.use_CustomerDctxi = parameters.get_item(" use_CustomerDctxi",{"no", "yes"});
+        if ( config.use_CustomerDctxi == true )
+	  { hila::out0 << "--use Custom Dctxi. " << std::endl; }
+        config.Dctxi             = parameters.get("Dctxi");	
        /*********************************************/
        /* >>>>>> hot bloob parameters end here  <<< */    
        /*********************************************/    	
       }
-
-    config.use_CustomerDctxi = parameters.get_item(" use_CustomerDctxi",{"no", "yes"});
-    if ( config.use_CustomerDctxi == true ) { hila::out0 << " use Custom Dctxi. " << std::endl; }
-    config.Dctxi             = parameters.get("Dctxi");
     
     //initialCondition-p
     config.initialConditionp = parameters.get_item("initialConditionp",{"constant"});
@@ -318,31 +332,48 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     if ( config.do_gapA_clip ==1 )
       {
-        config.gapA_clip1_point_x = parameters.get("gapA_clip1_point_x");
-	config.gapA_clip1_point_y = parameters.get("gapA_clip1_point_y");
-	config.gapA_clip1_point_z = parameters.get("gapA_clip1_point_z");
-        config.gapA_clip1_norm_x = parameters.get("gapA_clip1_norm_x");
-	config.gapA_clip1_norm_y = parameters.get("gapA_clip1_norm_y");
-	config.gapA_clip1_norm_z = parameters.get("gapA_clip1_norm_z");
+	const std::vector<real_t> temp = parameters.get("gapAClip_params_array");
 
-        config.gapA_clip2_point_x = parameters.get("gapA_clip2_point_x");
-	config.gapA_clip2_point_y = parameters.get("gapA_clip2_point_y");
-	config.gapA_clip2_point_z = parameters.get("gapA_clip2_point_z");
-        config.gapA_clip2_norm_x = parameters.get("gapA_clip2_norm_x");
-	config.gapA_clip2_norm_y = parameters.get("gapA_clip2_norm_y");
-	config.gapA_clip2_norm_z = parameters.get("gapA_clip2_norm_z");	
+        config.gapA_clip1_point_x = temp[0];
+	config.gapA_clip1_point_y = temp[1];
+	config.gapA_clip1_point_z = temp[2];
+        config.gapA_clip1_norm_x = temp[3];
+	config.gapA_clip1_norm_y = temp[4];
+	config.gapA_clip1_norm_z = temp[5];
+	
+        // config.gapA_clip1_point_x = parameters.get("gapA_clip1_point_x");
+	// config.gapA_clip1_point_y = parameters.get("gapA_clip1_point_y");
+	// config.gapA_clip1_point_z = parameters.get("gapA_clip1_point_z");
+        // config.gapA_clip1_norm_x = parameters.get("gapA_clip1_norm_x");
+	// config.gapA_clip1_norm_y = parameters.get("gapA_clip1_norm_y");
+	// config.gapA_clip1_norm_z = parameters.get("gapA_clip1_norm_z");
+
+        // config.gapA_clip2_point_x = parameters.get("gapA_clip2_point_x");
+	// config.gapA_clip2_point_y = parameters.get("gapA_clip2_point_y");
+	// config.gapA_clip2_point_z = parameters.get("gapA_clip2_point_z");
+        // config.gapA_clip2_norm_x = parameters.get("gapA_clip2_norm_x");
+	// config.gapA_clip2_norm_y = parameters.get("gapA_clip2_norm_y");
+	// config.gapA_clip2_norm_z = parameters.get("gapA_clip2_norm_z");	
 	
       } // gapA clip control parammeters
 
     config.do_gapA_slice         = parameters.get_item("do_gapA_slice",{"no","yes"});
     if ( config.do_gapA_slice ==1 )
       {
-        config.gapA_slice1_point_x = parameters.get("gapA_slice1_point_x");
-	config.gapA_slice1_point_y = parameters.get("gapA_slice1_point_y");
-	config.gapA_slice1_point_z = parameters.get("gapA_slice1_point_z");
-        config.gapA_slice1_norm_x = parameters.get("gapA_slice1_norm_x");
-	config.gapA_slice1_norm_y = parameters.get("gapA_slice1_norm_y");
-	config.gapA_slice1_norm_z = parameters.get("gapA_slice1_norm_z");
+	const std::vector<real_t> temp = parameters.get("gapASlice_params_array");	
+        config.gapA_slice1_point_x = temp[0];
+	config.gapA_slice1_point_y = temp[1];
+	config.gapA_slice1_point_z = temp[2];
+        config.gapA_slice1_norm_x = temp[3];
+	config.gapA_slice1_norm_y = temp[4];
+	config.gapA_slice1_norm_z = temp[5];
+	
+        // config.gapA_slice1_point_x = parameters.get("gapA_slice1_point_x");
+	// config.gapA_slice1_point_y = parameters.get("gapA_slice1_point_y");
+	// config.gapA_slice1_point_z = parameters.get("gapA_slice1_point_z");
+        // config.gapA_slice1_norm_x = parameters.get("gapA_slice1_norm_x");
+	// config.gapA_slice1_norm_y = parameters.get("gapA_slice1_norm_y");
+	// config.gapA_slice1_norm_z = parameters.get("gapA_slice1_norm_z");
 
         // config.gapA_slice2_point_x = parameters.get("gapA_slice2_point_x");
 	// config.gapA_slice2_point_y = parameters.get("gapA_slice2_point_y");
@@ -357,49 +388,74 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_fed_clip         = parameters.get_item("do_fed_clip",{"no","yes"});
     if ( config.do_fed_clip ==1 )
       {
-        config.fed_clip_point_x = parameters.get("fed_clip_point_x");
-	config.fed_clip_point_y = parameters.get("fed_clip_point_y");
-	config.fed_clip_point_z = parameters.get("fed_clip_point_z");
-        config.fed_clip_norm_x = parameters.get("fed_clip_norm_x");
-	config.fed_clip_norm_y = parameters.get("fed_clip_norm_y");
-	config.fed_clip_norm_z = parameters.get("fed_clip_norm_z");	
+	const std::vector<real_t> temp = parameters.get("fedClip_params_array");
+        config.fed_clip_point_x = temp[0];
+	config.fed_clip_point_y = temp[1];
+	config.fed_clip_point_z = temp[2];
+        config.fed_clip_norm_x = temp[3];
+	config.fed_clip_norm_y = temp[4];
+	config.fed_clip_norm_z = temp[5];	
+	
+        // config.fed_clip_point_x = parameters.get("fed_clip_point_x");
+	// config.fed_clip_point_y = parameters.get("fed_clip_point_y");
+	// config.fed_clip_point_z = parameters.get("fed_clip_point_z");
+        // config.fed_clip_norm_x = parameters.get("fed_clip_norm_x");
+	// config.fed_clip_norm_y = parameters.get("fed_clip_norm_y");
+	// config.fed_clip_norm_z = parameters.get("fed_clip_norm_z");	
       } // gapA clip control parammeters
     
     
     config.do_gapA_isosurface   = parameters.get_item("do_gapA_isosurface",{"no","yes"});
     if ( config.do_gapA_isosurface == 1 )
       {
-        config.iso_values_vector = parameters.get("iso_values_vector");
+        config.iso_values_vector = parameters.get("gapAIsoValues_array");
       } // gapA clip control parammeters
 
     config.do_Temperature_clip = parameters.get_item("do_Temperature_clip",{"no", "yes"});
     if (config.do_Temperature_clip ==1)
       {
-        config.Temperature_clip_point_x = parameters.get("Temperature_clip_point_x");
-	config.Temperature_clip_point_y = parameters.get("Temperature_clip_point_y");
-	config.Temperature_clip_point_z = parameters.get("Temperature_clip_point_z");
-        config.Temperature_clip_norm_x = parameters.get("Temperature_clip_norm_x");
-	config.Temperature_clip_norm_y = parameters.get("Temperature_clip_norm_y");
-	config.Temperature_clip_norm_z = parameters.get("Temperature_clip_norm_z");
-	config.Temperature_clamp       = parameters.get("Temperature_clamp");
+	const std::vector<real_t> temp = parameters.get("TempClip_params_array");
+        config.Temperature_clip_point_x = Temp[0];
+	config.Temperature_clip_point_y = Temp[1];
+	config.Temperature_clip_point_z = Temp[2];
+        config.Temperature_clip_norm_x = Temp[3];
+	config.Temperature_clip_norm_y = Temp[4];
+	config.Temperature_clip_norm_z = Temp[5];
+	config.Temperature_clamp       = Temp[6];
+	
+        // config.Temperature_clip_point_x = parameters.get("Temperature_clip_point_x");
+	// config.Temperature_clip_point_y = parameters.get("Temperature_clip_point_y");
+	// config.Temperature_clip_point_z = parameters.get("Temperature_clip_point_z");
+        // config.Temperature_clip_norm_x = parameters.get("Temperature_clip_norm_x");
+	// config.Temperature_clip_norm_y = parameters.get("Temperature_clip_norm_y");
+	// config.Temperature_clip_norm_z = parameters.get("Temperature_clip_norm_z");
+	// config.Temperature_clamp       = parameters.get("Temperature_clamp");
       }
 
     config.do_Temperature_slice = parameters.get_item("do_Temperature_slice",{"no", "yes"});
     if (config.do_Temperature_slice ==1)
       {
-        config.Temperature_slice_point_x = parameters.get("Temperature_slice_point_x");
-	config.Temperature_slice_point_y = parameters.get("Temperature_slice_point_y");
-	config.Temperature_slice_point_z = parameters.get("Temperature_slice_point_z");
-        config.Temperature_slice_norm_x = parameters.get("Temperature_slice_norm_x");
-	config.Temperature_slice_norm_y = parameters.get("Temperature_slice_norm_y");
-	config.Temperature_slice_norm_z = parameters.get("Temperature_slice_norm_z");
+	const std::vector<real_t> temp = parameters.get("TempSlice_params_array");
+        config.Temperature_slice_point_x = temp[0];
+	config.Temperature_slice_point_y = temp[1];
+	config.Temperature_slice_point_z = temp[2];
+        config.Temperature_slice_norm_x = temp[3];
+	config.Temperature_slice_norm_y = temp[4];
+        config.Temperature_slice_norm_z = temp[5];
+	
+        // config.Temperature_slice_point_x = parameters.get("Temperature_slice_point_x");
+	// config.Temperature_slice_point_y = parameters.get("Temperature_slice_point_y");
+	// config.Temperature_slice_point_z = parameters.get("Temperature_slice_point_z");
+        // config.Temperature_slice_norm_x = parameters.get("Temperature_slice_norm_x");
+	// config.Temperature_slice_norm_y = parameters.get("Temperature_slice_norm_y");
+	// config.Temperature_slice_norm_z = parameters.get("Temperature_slice_norm_z");
       }
 
     
     config.do_Temperature_isosurface = parameters.get_item("do_Temperature_isosurface",{"no","yes"});
     if ( config.do_Temperature_isosurface ==1 )
       {
-	std::vector<real_t> tmp3 = parameters.get("Temperature_iso_values_vector");
+	std::vector<real_t> tmp3 = parameters.get("TempIsoValues_params_array");
 	real_t TcpmK = MP.Tcp_mK(config.Inip);
         for (auto i : tmp3) { config.Temperature_iso_values_vector.push_back(i * TcpmK); }
       } // gapA clip control parammeters
@@ -407,29 +463,45 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_phaseMarker_slice1 = parameters.get_item("do_phaseMarker_slice1",{"no","yes"});
     if (config.do_phaseMarker_slice1 == 1)
       {
-        config.pMarker_slice1_point_x = parameters.get("pMarker_slice1_point_x");
-	config.pMarker_slice1_point_y = parameters.get("pMarker_slice1_point_y");
-	config.pMarker_slice1_point_z = parameters.get("pMarker_slice1_point_z");
-        config.pMarker_slice1_norm_x = parameters.get("pMarker_slice1_norm_x");
-	config.pMarker_slice1_norm_y = parameters.get("pMarker_slice1_norm_y");
-	config.pMarker_slice1_norm_z = parameters.get("pMarker_slice1_norm_z");
+	const std::vector<real_t> temp = parameters.get("pMarkerSlice1_params_array");
+        config.pMarker_slice1_point_x = temp[0];
+	config.pMarker_slice1_point_y = temp[1];
+	config.pMarker_slice1_point_z = temp[2];
+        config.pMarker_slice1_norm_x = temp[3];
+	config.pMarker_slice1_norm_y = temp[4];
+	config.pMarker_slice1_norm_z = temp[5];
+	
+        // config.pMarker_slice1_point_x = parameters.get("pMarker_slice1_point_x");
+	// config.pMarker_slice1_point_y = parameters.get("pMarker_slice1_point_y");
+	// config.pMarker_slice1_point_z = parameters.get("pMarker_slice1_point_z");
+        // config.pMarker_slice1_norm_x = parameters.get("pMarker_slice1_norm_x");
+	// config.pMarker_slice1_norm_y = parameters.get("pMarker_slice1_norm_y");
+	// config.pMarker_slice1_norm_z = parameters.get("pMarker_slice1_norm_z");
       }
 
     config.do_phaseMarker_slice2 = parameters.get_item("do_phaseMarker_slice2",{"no","yes"});
     if (config.do_phaseMarker_slice2 == 1)
       {
-        config.pMarker_slice2_point_x = parameters.get("pMarker_slice2_point_x");
-	config.pMarker_slice2_point_y = parameters.get("pMarker_slice2_point_y");
-	config.pMarker_slice2_point_z = parameters.get("pMarker_slice2_point_z");
-        config.pMarker_slice2_norm_x = parameters.get("pMarker_slice2_norm_x");
-	config.pMarker_slice2_norm_y = parameters.get("pMarker_slice2_norm_y");
-	config.pMarker_slice2_norm_z = parameters.get("pMarker_slice2_norm_z");
+	const std::vector<real_t> temp = parameters.get("pMarkerSlice2_params_array");
+        config.pMarker_slice2_point_x = temp[0];
+	config.pMarker_slice2_point_y = temp[1];
+	config.pMarker_slice2_point_z = temp[2];
+        config.pMarker_slice2_norm_x = temp[3];
+	config.pMarker_slice2_norm_y = temp[4];
+	config.pMarker_slice2_norm_z = temp[5];
+	
+        // config.pMarker_slice2_point_x = parameters.get("pMarker_slice2_point_x");
+	// config.pMarker_slice2_point_y = parameters.get("pMarker_slice2_point_y");
+	// config.pMarker_slice2_point_z = parameters.get("pMarker_slice2_point_z");
+        // config.pMarker_slice2_norm_x = parameters.get("pMarker_slice2_norm_x");
+	// config.pMarker_slice2_norm_y = parameters.get("pMarker_slice2_norm_y");
+	// config.pMarker_slice2_norm_z = parameters.get("pMarker_slice2_norm_z");
       }
     
     config.do_phaseMarker_isosurface = parameters.get_item("do_phaseMarker_isosurface",{"no","yes"});
     if (config.do_phaseMarker_isosurface == 1)
       {
-	std::vector<real_t> tmp4 = parameters.get("phaseMarker_iso_values_vector");
+	std::vector<real_t> tmp4 = parameters.get("pMarkerIsoValues_params_array");
         for (auto i : tmp4) { config.phaseMarker_iso_values_vector.push_back(i); }
       }
 
@@ -441,29 +513,45 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_U13phi_slice = parameters.get_item("do_U13phi_slice",{"no","yes"});
     if (config.do_U13phi_slice == 1)
       {
-        config.U13phi_slice_point_x = parameters.get("U13phi_slice_point_x");
-	config.U13phi_slice_point_y = parameters.get("U13phi_slice_point_y");
-	config.U13phi_slice_point_z = parameters.get("U13phi_slice_point_z");
-        config.U13phi_slice_norm_x = parameters.get("U13phi_slice_norm_x");
-	config.U13phi_slice_norm_y = parameters.get("U13phi_slice_norm_y");
-	config.U13phi_slice_norm_z = parameters.get("U13phi_slice_norm_z");
+	std::vector<real_t> temp = parameters.get("U13phiSlice_params_array");
+        config.U13phi_slice_point_x = temp[0];
+	config.U13phi_slice_point_y = temp[1];
+	config.U13phi_slice_point_z = temp[2];
+        config.U13phi_slice_norm_x = temp[3];
+	config.U13phi_slice_norm_y = temp[4];
+	config.U13phi_slice_norm_z = temp[5];
+	
+        // config.U13phi_slice_point_x = parameters.get("U13phi_slice_point_x");
+	// config.U13phi_slice_point_y = parameters.get("U13phi_slice_point_y");
+	// config.U13phi_slice_point_z = parameters.get("U13phi_slice_point_z");
+        // config.U13phi_slice_norm_x = parameters.get("U13phi_slice_norm_x");
+	// config.U13phi_slice_norm_y = parameters.get("U13phi_slice_norm_y");
+	// config.U13phi_slice_norm_z = parameters.get("U13phi_slice_norm_z");
       }
 
     config.do_l_sq_slice = parameters.get_item("do_l_sq_slice",{"no","yes"});
     if (config.do_l_sq_slice == 1)
       {
-        config.l_sq_slice_point_x = parameters.get("l_sq_slice_point_x");
-	config.l_sq_slice_point_y = parameters.get("l_sq_slice_point_y");
-	config.l_sq_slice_point_z = parameters.get("l_sq_slice_point_z");
-        config.l_sq_slice_norm_x = parameters.get("l_sq_slice_norm_x");
-	config.l_sq_slice_norm_y = parameters.get("l_sq_slice_norm_y");
-	config.l_sq_slice_norm_z = parameters.get("l_sq_slice_norm_z");
+	std::vector<real_t> temp = parameters.get("lsqSlice_params_array");
+        config.l_sq_slice_point_x = temp[0];
+	config.l_sq_slice_point_y = temp[1];
+	config.l_sq_slice_point_z = temp[2];
+        config.l_sq_slice_norm_x = temp[3];
+	config.l_sq_slice_norm_y = temp[4];
+	config.l_sq_slice_norm_z = temp[5];
+	
+        // config.l_sq_slice_point_x = parameters.get("l_sq_slice_point_x");
+	// config.l_sq_slice_point_y = parameters.get("l_sq_slice_point_y");
+	// config.l_sq_slice_point_z = parameters.get("l_sq_slice_point_z");
+        // config.l_sq_slice_norm_x = parameters.get("l_sq_slice_norm_x");
+	// config.l_sq_slice_norm_y = parameters.get("l_sq_slice_norm_y");
+	// config.l_sq_slice_norm_z = parameters.get("l_sq_slice_norm_z");
       }
 
     config.do_GPhi_slice_extract = parameters.get_item("do_GPhi_slice_extract",{"no","yes"});
     if (config.do_GPhi_slice_extract == 1)
       {
-        std::vector<real_t> exaslice_params = parameters.get("GPhi_slice_params");        	
+        std::vector<real_t> exaslice_params = parameters.get("GPhiSlice_params_array");        	
         config.GPhi_slice1_point_x = exaslice_params[0];
 	config.GPhi_slice1_point_y = exaslice_params[1];
 	config.GPhi_slice1_point_z = exaslice_params[2];
@@ -475,7 +563,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.do_GPhi_clip_extract = parameters.get_item("do_GPhi_clip_extract",{"no","yes"});
     if (config.do_GPhi_clip_extract == 1)
       {
-        std::vector<real_t> clip_params = parameters.get("GPhi_clip_params");        	
+        std::vector<real_t> clip_params = parameters.get("GPhiClip_params_array");        	
         config.GPhi_clip1_point_x = clip_params[0];
 	config.GPhi_clip1_point_y = clip_params[1];
 	config.GPhi_clip1_point_z = clip_params[2];
@@ -487,29 +575,63 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
     // config.do_gapA_slice        = parameters.get_item("do_gapA_slice",{"no","yes"});            
-    
-    config.clamp_bias_gapMin = parameters.get("clamp_bias_gapMin");
-    config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax");
-    config.clamp_bias_fed_Min = parameters.get("clamp_bias_fed_Min");
-    config.clamp_bias_fed_Max = parameters.get("clamp_bias_fed_Max");
 
-    config.CBxMin = parameters.get("CBxMin");
-    config.CBxMax = parameters.get("CBxMax");
-    config.CByMin = parameters.get("CByMin");
-    config.CByMax = parameters.get("CByMax");    
-    
-    config.image_width1 = parameters.get("image_width1");
-    config.image_height1 = parameters.get("image_height1");
-    config.image_width2 = parameters.get("image_width2");
-    config.image_height2 = parameters.get("image_height2");
-    
-    config.camera1_azi = parameters.get("camera1_azi");
-    config.camera1_ele = parameters.get("camera1_ele");
-    config.camera2_azi = parameters.get("camera2_azi");
-    config.camera2_ele = parameters.get("camera2_ele");
+    const std::vector<real_t> gapAClampBias_params = parameters.get("gapAClampBias_params_array");
+    {
+     config.clamp_bias_gapMin = gapAClampBias_params[0];
+     config.clamp_bias_gapMax = gapAClampBias_params[1];
+    }
 
-    config.zoom1 = parameters.get("zoom1");
-    config.zoom2 = parameters.get("zoom2");    
+    const std::vector<real_t> fedClampBias_params = parameters.get("fedClampBias_params_array");
+    {
+     config.clamp_bias_fed_Min = fedClampBias_params[0];
+     config.clamp_bias_fed_Max = fedClampBias_params[1];
+    }
+
+    const std::vector<real_t> ColorBarPosition_params = parameters.get("ColorBarPosition_params_array");
+    {
+     config.CBxMin = ColorBarPosition_params[0];
+     config.CBxMax = ColorBarPosition_params[1];
+     config.CByMin = ColorBarPosition_params[2];
+     config.CByMax = ColorBarPosition_params[3];
+    
+     // config.CBxMin = parameters.get("CBxMin");
+     // config.CBxMax = parameters.get("CBxMax");
+     // config.CByMin = parameters.get("CByMin");
+     // config.CByMax = parameters.get("CByMax");    
+    }
+
+    const std::vector<real_t> ImageSizes_params = parameters.get("ImageSizes_params_array");
+    {
+     config.image_width1 = ImageSizes_params[0];
+     config.image_height1 = ImageSizes_params[1];
+     config.image_width2 = ImageSizes_params[2];
+     config.image_height2 = ImageSizes_params[3];
+
+     // config.image_width1 = parameters.get("image_width1");
+     // config.image_height1 = parameters.get("image_height1");
+     // config.image_width2 = parameters.get("image_width2");
+     // config.image_height2 = parameters.get("image_height2");     
+    }
+
+    const std::vector<real_t> CameraPosition_params = parameters.get("CameraPosition_params_array");
+    {
+      config.camera1_azi = CameraPosition_params[0];
+      config.camera1_ele = CameraPosition_params[1];
+      config.camera2_azi = CameraPosition_params[2];
+      config.camera2_ele = CameraPosition_params[3];
+      
+     // config.camera1_azi = parameters.get("camera1_azi");
+     // config.camera1_ele = parameters.get("camera1_ele");
+     // config.camera2_azi = parameters.get("camera2_azi");
+     // config.camera2_ele = parameters.get("camera2_ele");
+    }
+
+    const std::vector<real_t> CameraZoom_params = parameters.get("CameraZoom_params_array");
+    {
+      config.zoom1 = CameraZoom_params[0];
+      config.zoom2 = CameraZoom_params[1];
+    }
     
     /*----------------------------------------*/
     /* Parallel IO Engine parameters end      */
