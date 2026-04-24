@@ -18,13 +18,18 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     hila::out0 << "------------------------------------------------------------" << "\n"
                << "-- dyGiLa 3D p-Wave TDGL HPC Simulation Suites Parameters --" << "\n"
                << "------------------------------------------------------------" << std::endl;
-    
-    config.lx = parameters.get("Nx");
-    config.ly = parameters.get("Ny");
-    config.lz = parameters.get("Nz");
+
+    const std::vector<unsigned int> lattice_sizes = parameters.get("lattice_sizes_array");
+    // config.lx = parameters.get("Nx");
+    // config.ly = parameters.get("Ny");
+    // config.lz = parameters.get("Nz");
+    config.lx = lattice_sizes[0];
+    config.ly = lattice_sizes[1];
+    config.lz = lattice_sizes[2];    
     config.dx = parameters.get("dx");
     config.dtdxRatio = parameters.get("dtdxRatio");
-
+    config.dt = config.dx * config.dtdxRatio;
+    
     /*********************************************/
     /* >>>>>>  Homogenous quench parameters <<<< */    
     /*********************************************/    
@@ -45,8 +50,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     /*********************************************/
     /* > Homogenous quench parameters end here<< */    
     /*********************************************/    
-    
-    
+        
     config.tStart = parameters.get("tStart");
     config.tEnd = parameters.get("tEnd");
     config.tdis = parameters.get("tdis");
@@ -144,6 +148,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         // ---------------------------	
 	config.initialCondition == 1)
       {
+	const std::vector<real_t> temp = parameters.get("case1_params_array");
         config.IniMod = parameters.get("IniMod");
         config.Inilc = parameters.get("Inilc");
       }    
@@ -180,8 +185,11 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.Blob_Tc_cutoff = parameters.get_item("Blob_Tc_cutoff",{"no", "yes"});
         config.use_CustomerDctxi = parameters.get_item(" use_CustomerDctxi",{"no", "yes"});
         if ( config.use_CustomerDctxi == true )
-	  { hila::out0 << "--use Custom Dctxi. " << std::endl; }
-        config.Dctxi             = parameters.get("Dctxi");	
+	  {
+            config.Dctxi             = parameters.get("Dctxi");		    
+	    hila::out0 << "--use Custom Dctxi. " << std::endl;
+	  }
+
        /*********************************************/
        /* >>>>>> hot bloob parameters end here  <<< */    
        /*********************************************/    	
@@ -199,8 +207,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
        std::vector<real_t> temp	= parameters.get("InitH");
        foralldir(al){ config.InitH.e(al) = temp[al]; }
       }
-    
-    
+        
     config.tStats = parameters.get("tStats");
     config.nOutputs = parameters.get("nOutputs");
 
@@ -259,7 +266,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
       }*/
         
     config.evolveT = parameters.get_item("evolveT",{"no","yes"});
-    if(config.evolveT ==1
+    if(config.evolveT == 1
        && config.initialConditionT != 2 )
       {
 	config.Tevolvetype = parameters.get_item("Tevolvetype",{"heat","wave","homogeneousQuench"});
@@ -311,8 +318,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.hdf5_GradPhiVector_output   = parameters.get_item("hdf5_GradPhiVector_output",{"no","yes"});
     config.hdf5_GradPhiVector_exaslice_output   = parameters.get_item("hdf5_GradPhiVector_exaslice_output",{"no","yes"});
     config.hdf5_GradPhiVector_clip_output   = parameters.get_item("hdf5_GradPhiVector_clip_output",{"no","yes"});
-    
-    
+        
     if (
         (config.hdf5_A_matrix_output == 1)
 	|| (config.hdf5_mass_current_output == 1)
@@ -328,7 +334,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
        config.hdf5Stend   = parameters.get("hdf5Stend");       
       }
     
-
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});
     if ( config.do_gapA_clip ==1 )
       {
@@ -415,13 +420,13 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     if (config.do_Temperature_clip ==1)
       {
 	const std::vector<real_t> temp = parameters.get("TempClip_params_array");
-        config.Temperature_clip_point_x = Temp[0];
-	config.Temperature_clip_point_y = Temp[1];
-	config.Temperature_clip_point_z = Temp[2];
-        config.Temperature_clip_norm_x = Temp[3];
-	config.Temperature_clip_norm_y = Temp[4];
-	config.Temperature_clip_norm_z = Temp[5];
-	config.Temperature_clamp       = Temp[6];
+        config.Temperature_clip_point_x = temp[0];
+	config.Temperature_clip_point_y = temp[1];
+	config.Temperature_clip_point_z = temp[2];
+        config.Temperature_clip_norm_x = temp[3];
+	config.Temperature_clip_norm_y = temp[4];
+	config.Temperature_clip_norm_z = temp[5];
+	config.Temperature_clamp       = temp[6];
 	
         // config.Temperature_clip_point_x = parameters.get("Temperature_clip_point_x");
 	// config.Temperature_clip_point_y = parameters.get("Temperature_clip_point_y");
@@ -576,70 +581,77 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});
     // config.do_gapA_slice        = parameters.get_item("do_gapA_slice",{"no","yes"});            
 
-    const std::vector<real_t> gapAClampBias_params = parameters.get("gapAClampBias_params_array");
+    //const std::vector<real_t> gapAClampBias_params = parameters.get("gapAClampBias_params_array");
     {
-     config.clamp_bias_gapMin = gapAClampBias_params[0];
-     config.clamp_bias_gapMax = gapAClampBias_params[1];
+     // config.clamp_bias_gapMin = gapAClampBias_params[0];
+     // config.clamp_bias_gapMax = gapAClampBias_params[1];
+     
+     config.clamp_bias_gapMin = parameters.get("clamp_bias_gapMin");
+     config.clamp_bias_gapMax = parameters.get("clamp_bias_gapMax"); 
     }
 
-    const std::vector<real_t> fedClampBias_params = parameters.get("fedClampBias_params_array");
+    //const std::vector<real_t> fedClampBias_params = parameters.get("fedClampBias_params_array");
     {
-     config.clamp_bias_fed_Min = fedClampBias_params[0];
-     config.clamp_bias_fed_Max = fedClampBias_params[1];
+     // config.clamp_bias_fed_Min = fedClampBias_params[0];
+     // config.clamp_bias_fed_Max = fedClampBias_params[1];
+
+     config.clamp_bias_fed_Min = parameters.get("clamp_bias_fed_Min");
+     config.clamp_bias_fed_Max = parameters.get("clamp_bias_fed_Max");      
     }
 
-    const std::vector<real_t> ColorBarPosition_params = parameters.get("ColorBarPosition_params_array");
+    //const std::vector<real_t> ColorBarPosition_params = parameters.get("ColorBarPosition_params_array");
     {
-     config.CBxMin = ColorBarPosition_params[0];
-     config.CBxMax = ColorBarPosition_params[1];
-     config.CByMin = ColorBarPosition_params[2];
-     config.CByMax = ColorBarPosition_params[3];
+     // config.CBxMin = ColorBarPosition_params[0];
+     // config.CBxMax = ColorBarPosition_params[1];
+     // config.CByMin = ColorBarPosition_params[2];
+     // config.CByMax = ColorBarPosition_params[3];
     
-     // config.CBxMin = parameters.get("CBxMin");
-     // config.CBxMax = parameters.get("CBxMax");
-     // config.CByMin = parameters.get("CByMin");
-     // config.CByMax = parameters.get("CByMax");    
+     config.CBxMin = parameters.get("CBxMin");
+     config.CBxMax = parameters.get("CBxMax");
+     config.CByMin = parameters.get("CByMin");
+     config.CByMax = parameters.get("CByMax");    
     }
 
-    const std::vector<real_t> ImageSizes_params = parameters.get("ImageSizes_params_array");
+    // const std::vector<real_t> ImageSizes_params = parameters.get("ImageSizes_params_array");
     {
-     config.image_width1 = ImageSizes_params[0];
-     config.image_height1 = ImageSizes_params[1];
-     config.image_width2 = ImageSizes_params[2];
-     config.image_height2 = ImageSizes_params[3];
+     // config.image_width1 = ImageSizes_params[0];
+     // config.image_height1 = ImageSizes_params[1];
+     // config.image_width2 = ImageSizes_params[2];
+     // config.image_height2 = ImageSizes_params[3];
 
-     // config.image_width1 = parameters.get("image_width1");
-     // config.image_height1 = parameters.get("image_height1");
-     // config.image_width2 = parameters.get("image_width2");
-     // config.image_height2 = parameters.get("image_height2");     
+     config.image_width1 = parameters.get("image_width1");
+     config.image_height1 = parameters.get("image_height1");
+     config.image_width2 = parameters.get("image_width2");
+     config.image_height2 = parameters.get("image_height2");     
     }
 
-    const std::vector<real_t> CameraPosition_params = parameters.get("CameraPosition_params_array");
+    // const std::vector<real_t> CameraPosition_params = parameters.get("CameraPosition_params_array");
     {
-      config.camera1_azi = CameraPosition_params[0];
-      config.camera1_ele = CameraPosition_params[1];
-      config.camera2_azi = CameraPosition_params[2];
-      config.camera2_ele = CameraPosition_params[3];
+      // config.camera1_azi = CameraPosition_params[0];
+      // config.camera1_ele = CameraPosition_params[1];
+      // config.camera2_azi = CameraPosition_params[2];
+      // config.camera2_ele = CameraPosition_params[3];
       
-     // config.camera1_azi = parameters.get("camera1_azi");
-     // config.camera1_ele = parameters.get("camera1_ele");
-     // config.camera2_azi = parameters.get("camera2_azi");
-     // config.camera2_ele = parameters.get("camera2_ele");
+     config.camera1_azi = parameters.get("camera1_azi");
+     config.camera1_ele = parameters.get("camera1_ele");
+     config.camera2_azi = parameters.get("camera2_azi");
+     config.camera2_ele = parameters.get("camera2_ele");
     }
 
-    const std::vector<real_t> CameraZoom_params = parameters.get("CameraZoom_params_array");
+    // const std::vector<real_t> CameraZoom_params = parameters.get("CameraZoom_params_array");
     {
-      config.zoom1 = CameraZoom_params[0];
-      config.zoom2 = CameraZoom_params[1];
+      // config.zoom1 = CameraZoom_params[0];
+      // config.zoom2 = CameraZoom_params[1];
+
+      config.zoom1 = parameters.get("zoom1");
+      config.zoom2 = parameters.get("zoom2");;
     }
     
     /*----------------------------------------*/
     /* Parallel IO Engine parameters end      */
     /*----------------------------------------*/
-	
-    config.dt = config.dx * config.dtdxRatio;
-    t = config.tStart;
 
+    t = config.tStart;    
     return name_files; //output_file pVfile;
     
 } // allocate() function ends here

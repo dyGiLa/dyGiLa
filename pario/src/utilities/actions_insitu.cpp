@@ -80,35 +80,35 @@ void parIO::defineActions_insitu(glsol &sol) {
       }
     /* >>>>>>>>>>>>>> pipleline gapA clip 2 <<<<<<<<<<<<< */
 
-    if (sol.config.do_gapA_clip == 1)
-      {
-       pipelines["pl2/f1/type"] = "clip";
-       conduit::Node &clip_params2 = pipelines["pl2/f1/params"];
+    // if (sol.config.do_gapA_clip == 1)
+    //   {
+    //    pipelines["pl2/f1/type"] = "clip";
+    //    conduit::Node &clip_params2 = pipelines["pl2/f1/params"];
 
-       clip_params2["topology"] = "topo";
-       clip_params2["plane/point/x"] = sol.config.gapA_clip2_point_x;
-       clip_params2["plane/point/y"] = sol.config.gapA_clip2_point_y;
-       clip_params2["plane/point/z"] = sol.config.gapA_clip2_point_z;
-       clip_params2["plane/normal/x"] = sol.config.gapA_clip2_norm_x;
-       clip_params2["plane/normal/y"] = sol.config.gapA_clip2_norm_y;
-       clip_params2["plane/normal/z"] = sol.config.gapA_clip2_norm_z;
+    //    clip_params2["topology"] = "topo";
+    //    clip_params2["plane/point/x"] = sol.config.gapA_clip2_point_x;
+    //    clip_params2["plane/point/y"] = sol.config.gapA_clip2_point_y;
+    //    clip_params2["plane/point/z"] = sol.config.gapA_clip2_point_z;
+    //    clip_params2["plane/normal/x"] = sol.config.gapA_clip2_norm_x;
+    //    clip_params2["plane/normal/y"] = sol.config.gapA_clip2_norm_y;
+    //    clip_params2["plane/normal/z"] = sol.config.gapA_clip2_norm_z;
 
-       scenes["s3/plots/p1/type"] = "pseudocolor";
-       scenes["s3/plots/p1/pipeline"] = "pl2";
-       scenes["s3/plots/p1/field"] = "gapA";
+    //    scenes["s3/plots/p1/type"] = "pseudocolor";
+    //    scenes["s3/plots/p1/pipeline"] = "pl2";
+    //    scenes["s3/plots/p1/field"] = "gapA";
 
-       scenes["s3/plots/p1/min_value"]
-	 = matep.gap_A_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMin);
+    //    scenes["s3/plots/p1/min_value"]
+    // 	 = matep.gap_A_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMin);
 
-       scenes["s3/plots/p1/max_value"]
-	 = matep.gap_B_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
+    //    scenes["s3/plots/p1/max_value"]
+    // 	 = matep.gap_B_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
 
-       scenes["s3/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
-       scenes["s3/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
-       scenes["s3/renders/r1/image_prefix"] = "insitu/gapA-clip2/gapA-clip2_t-%09d";
-       scenes["s3/renders/r1/camera/azimuth"] = sol.config.camera2_azi/*35.0*/;
-       scenes["s3/renders/r1/camera/elevation"] = sol.config.camera2_ele/*30.0*/;
-      }
+    //    scenes["s3/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
+    //    scenes["s3/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);        
+    //    scenes["s3/renders/r1/image_prefix"] = "insitu/gapA-clip2/gapA-clip2_t-%09d";
+    //    scenes["s3/renders/r1/camera/azimuth"] = sol.config.camera2_azi/*35.0*/;
+    //    scenes["s3/renders/r1/camera/elevation"] = sol.config.camera2_ele/*30.0*/;
+    //   }
 
     /* >>>>>>>>>>>>>> pipleline gapA slice1 <<<<<<<<<<<<< */
     
