@@ -65,18 +65,32 @@ void parIO::defineActions_insitu(glsol &sol) {
        scenes["s2/plots/p1/type"] = "pseudocolor";
        scenes["s2/plots/p1/pipeline"] = "pl1";
        scenes["s2/plots/p1/field"] = "gapA";
+       scenes["s2/plots/p1/color_table/name"] = "Jet";
 
-       scenes["s2/plots/p1/min_value"]
-	 = matep.gap_A_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMin);
-    
+       scenes["s2/plots/p1/min_value"] = 0.0;
        scenes["s2/plots/p1/max_value"]
-	 = matep.gap_B_td(sol.config.Inip, (sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))) * (1. + sol.config.clamp_bias_gapMax);
+	 = (//-----------------------------------------
+	    // if T-conf is hotBlob, use Ttdb0 for gap
+	    //-----------------------------------------
+	    sol.config.initialConditionT == 2
+	   )
+	   ? matep.gap_B_td(sol.config.Inip,
+			    sol.config.Ttdb0 * matep.Tcp_mK(sol.config.Inip))
+	                   * (1. + sol.config.clamp_bias_gapMax)
+	   //---------------------------------------------------
+	   // T-conf is homogeneous quench, use Ttd_Qend for gap
+	   //---------------------------------------------------	 
+	   : matep.gap_B_td(sol.config.Inip,
+			    sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip))
+	                   * (1. + sol.config.clamp_bias_gapMax);
 
+       scenes["s2/renders/r1/color_bar_position"].set(colorbar_position,4);              
+       
        scenes["s2/renders/r1/bg_color"].set_float64_ptr(bg_colvec, 3);
        scenes["s2/renders/r1/fg_color"].set_float64_ptr(fg_colvec, 3);    
        scenes["s2/renders/r1/image_prefix"] = "insitu/gapA-clip1/gapA-clip1_t-%09d";
-       scenes["s2/renders/r1/camera/azimuth"] = sol.config.camera1_azi;
-       scenes["s2/renders/r1/camera/elevation"] = sol.config.camera1_ele;
+       scenes["s2/renders/r1/camera/azimuth"] = sol.config.camera2_azi;
+       scenes["s2/renders/r1/camera/elevation"] = sol.config.camera2_ele;
       }
     /* >>>>>>>>>>>>>> pipleline gapA clip 2 <<<<<<<<<<<<< */
 
@@ -146,9 +160,6 @@ void parIO::defineActions_insitu(glsol &sol) {
 			    sol.config.Ttd_Qend * matep.Tcp_mK(sol.config.Inip))
 	                   * (1. + sol.config.clamp_bias_gapMax);
 
-       conduit::Node control_points;
-       colorControlPointsGenerator(control_points);       
-       scenes["s10/plots/p1/color_table/control_points"] = control_points;       
        scenes["s4/renders/r1/color_bar_position"].set(colorbar_position,4);       
        
        scenes["s4/renders/r1/image_width"]  = sol.config.image_width1;
