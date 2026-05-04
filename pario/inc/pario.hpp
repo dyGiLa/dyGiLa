@@ -74,7 +74,8 @@ private:
   void defineActions_lVec();
   void defineActions_GradientPhiVec();
   void defineActions_GradientPhiVec_exaslice(glsol &);
-  void defineActions_GradientPhiVec_clip(glsol &);  
+  void defineActions_GradientPhiVec_clip(glsol &);
+  void defineActions_GradientPhiVec_boxclip(glsol &);    
   void defineActions_massCurrent(glsol &);
   void defineActions_spinCurrent(glsol &);
   void defineActions_AMatrix(glsol &);
