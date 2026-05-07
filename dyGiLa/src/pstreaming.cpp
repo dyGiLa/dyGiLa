@@ -65,10 +65,20 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
       || (gl.config.hdf5_GradPhiVector_exaslice_output == 1)
       || (gl.config.hdf5_GradPhiVector_clip_output == 1)
       || (gl.config.hdf5_GradPhiVector_boxclip_output == 1))                  
-      && (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
       && (modPSSR == 0)
      )
-    paraio.pstream(gl, stat_counter);
+    {
+      if (gl.config.hdf5_cheerypick == true)
+	{
+	  for (unsigned int &cp_marker : gl.config.hdf5_cheerypick_array)
+	    { if (stat_counter == cp_marker) paraio.pstream(gl, stat_counter); }
+	}
+      else
+	{
+         if (gl.t >= gl.config.hdf5Ststart && gl.t <= gl.config.hdf5Stend)
+	   paraio.pstream(gl, stat_counter);
+	}
+    }    
   else if (
            // insitu visualization block, no parallel hd5 stream
            (gl.config.hdf5_A_matrix_output != 1)

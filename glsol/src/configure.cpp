@@ -257,14 +257,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.use_AdGRz_surfaces = parameters.get_item("use_AdGRz_surfaces",{"no","yes"});
     if ( config.use_AdGRz_surfaces == 1 ) { config.bt = parameters.get("bt_AdGR"); }
     // config.Wn = parameters.get("BoundaryPhaseWindingNO");
-           
-    /*if(config.positions==1)
-      {
-	config.npositionout = parameters.get("npositionout");
-	config.write_phases = parameters.get_item("write_phases",{"no","yes"});
-	config.write_eigen = parameters.get_item("write_eigen",{"no","yes"});
-      }*/
-        
+                   
     config.evolveT = parameters.get_item("evolveT",{"no","yes"});
     if(config.evolveT == 1
        && config.initialConditionT != 2 )
@@ -333,8 +326,17 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	|| (config.hdf5_GradPhiVector_boxclip_output == 1)			
        )
       {
-       config.hdf5Ststart = parameters.get("hdf5Ststart");
-       config.hdf5Stend   = parameters.get("hdf5Stend");       
+	config.hdf5_cheerypick = parameters.get_item("hdf5_cheerypick",{"no","yes"});
+	if ( config.hdf5_cheerypick == true )
+	  {
+	    const std::vector<unsigned int> temp = parameters.get("hdf5_cheerypick_array");
+	    config.hdf5_cheerypick_array.assign(temp.begin(), temp.end());
+	  } // cheerypick params
+	else
+	  {	    
+            config.hdf5Ststart = parameters.get("hdf5Ststart");
+            config.hdf5Stend   = parameters.get("hdf5Stend");       
+	  } // streming pip params		
       }
     
     config.do_gapA_clip         = parameters.get_item("do_gapA_clip",{"no","yes"});

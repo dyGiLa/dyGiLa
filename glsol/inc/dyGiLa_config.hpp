@@ -238,6 +238,8 @@ struct dyGiLaConf {
 	           hdf5_GradPhiVector_exaslice_output,
 	           hdf5_GradPhiVector_clip_output,
 	           hdf5_GradPhiVector_boxclip_output;
+      unsigned int hdf5_cheerypick = 1;
+      std::vector<unsigned int> hdf5_cheerypick_array{0};
       real_t hdf5Ststart = 0., hdf5Stend = 0.;	  
 	      
       real_t clamp_bias_gapMin, clamp_bias_gapMax;
