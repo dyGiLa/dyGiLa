@@ -55,7 +55,10 @@ void parIO::init(glsol &sol) {
     if (sol.config.pario_compute_U1Phase == 1) { describeMesh_U13phi(); }
     if (sol.config.pario_compute_lVector == 1) { describeMesh_lVecSq(); }
 
-    if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
+    if (
+	( sol.config.hdf5_cheerypick == true )
+	|| ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
+       )
       {
        if (sol.config.hdf5_mass_current_output == 1) {describeMesh_massCurrent();}
        if (sol.config.hdf5_spin_current_output == 1) {describeMesh_spinCurrent();}
@@ -88,7 +91,10 @@ void parIO::init(glsol &sol) {
     /*   all defineActions calls     */
     /*********************************/        
     defineActions_insitu(sol);
-    if ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))
+    if (
+	( sol.config.hdf5_cheerypick == true )
+	|| ((!!sol.config.hdf5Ststart == true) && (!!sol.config.hdf5Stend == true))	
+       )
       {
        if (sol.config.hdf5_lVector_output == 1) {defineActions_lVec();}
        if (sol.config.hdf5_GradPhiVector_output == 1) {defineActions_GradientPhiVec();}

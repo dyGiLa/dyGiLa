@@ -331,6 +331,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	  {
 	    const std::vector<unsigned int> temp = parameters.get("hdf5_cheerypick_array");
 	    config.hdf5_cheerypick_array.assign(temp.begin(), temp.end());
+   	    hila::out0 << "--do Cheerypick on hdf5. " << std::endl;
 	  } // cheerypick params
 	else
 	  {	    
