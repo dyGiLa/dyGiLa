@@ -2,7 +2,7 @@
 
 # *.cpp files searching path
 vpath %.cpp pario/src pario/src/utilities pario/src/xml \
-$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioStream $(DYGILA_DIR)/utils/pioInit/containerReserve
+$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioInit/action $(DYGILA_DIR)/utils/pioStream $(DYGILA_DIR)/utils/pioInit/containerReserve
 
 # Add Ascent include path, linder flags
 # of path and binary libs into
