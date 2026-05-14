@@ -226,8 +226,12 @@ struct dyGiLaConf {
 	     GPhi_boxclip1_max_x, GPhi_boxclip1_max_y, GPhi_boxclip1_max_z,	      	
 	     GPhi_clip1_point_x, GPhi_clip1_point_y, GPhi_clip1_point_z,
 	     GPhi_clip1_norm_x, GPhi_clip1_norm_y, GPhi_clip1_norm_z;
-  
-      unsigned int hdf5_A_matrix_output;
+
+      unsigned int do_AMatrix_slice_extract;
+      real_t AM_slice1_point_x, AM_slice1_point_y, AM_slice1_point_z,
+	     AM_slice1_norm_x, AM_slice1_norm_y, AM_slice1_norm_z;
+    
+      unsigned int hdf5_A_matrix_output, hdf5_AMatrix_exaslice_output;
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
       unsigned int hdf5_mass_current_output,

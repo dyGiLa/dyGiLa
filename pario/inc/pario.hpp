@@ -79,6 +79,7 @@ private:
   void defineActions_massCurrent(glsol &);
   void defineActions_spinCurrent(glsol &);
   void defineActions_AMatrix(glsol &);
+  void defineActions_AMatrix_exaslice(glsol &);
   void defineActions_phaseMarker(glsol &);
   
   void defineActions_printTree();

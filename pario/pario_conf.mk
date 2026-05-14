@@ -1,8 +1,9 @@
 # Makefie of parallel IO engine pario
 
 # *.cpp files searching path
-vpath %.cpp pario/src pario/src/utilities pario/src/xml \
-$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioInit/action $(DYGILA_DIR)/utils/pioStream $(DYGILA_DIR)/utils/pioInit/containerReserve
+vpath %.cpp pario/src pario/src/utils pario/src/xml \
+$(DYGILA_DIR)/utils/pioInit $(DYGILA_DIR)/utils/pioInit/action \
+$(DYGILA_DIR)/utils/pioStream $(DYGILA_DIR)/utils/pioInit/containerReserve
 
 # Add Ascent include path, linder flags
 # of path and binary libs into
@@ -53,6 +54,7 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/actions_massCurrent.o \
                 $(PARIO_PATH)/actions_spinCurrent.o \
                 $(PARIO_PATH)/actions_AMatrix.o     \
+                $(PARIO_PATH)/actions_AMatrix_exaslice.o \
                 $(PARIO_PATH)/actions_phaseMarker.o \
                 $(PARIO_PATH)/actions_lVec.o \
                 $(PARIO_PATH)/actions_GradientPhiVec.o \

@@ -20,9 +20,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
                << "------------------------------------------------------------" << std::endl;
 
     const std::vector<unsigned int> lattice_sizes = parameters.get("lattice_sizes_array");
-    // config.lx = parameters.get("Nx");
-    // config.ly = parameters.get("Ny");
-    // config.lz = parameters.get("Nz");
     config.lx = lattice_sizes[0];
     config.ly = lattice_sizes[1];
     config.lz = lattice_sizes[2];    
@@ -179,9 +176,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.Ttdb1         = temp[0];
         config.Ttdb0         = temp[1];
         config.t1            = temp[2];
-        // config.Ttdb1         = parameters.get("Ttdb1");
-        // config.Ttdb0         = parameters.get("Ttdb0");
-        // config.t1            = parameters.get("t1");
 	config.Blob_Tc_cutoff = parameters.get_item("Blob_Tc_cutoff",{"no", "yes"});
         config.use_CustomerDctxi = parameters.get_item(" use_CustomerDctxi",{"no", "yes"});
         if ( config.use_CustomerDctxi == true )
@@ -303,7 +297,8 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");
     config.lVec_SqlTol = parameters.get("lVec_SqlTol");        
     
-    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});    
+    config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
+    config.hdf5_AMatrix_exaslice_output        = parameters.get_item("hdf5_AMatrix_exaslice_output",{"no","yes"});        
     config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
     config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
     config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
@@ -316,6 +311,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     
     if (
         (config.hdf5_A_matrix_output == 1)
+	|| (config.hdf5_AMatrix_exaslice_output == 1)
 	|| (config.hdf5_mass_current_output == 1)
 	|| (config.hdf5_spin_current_output == 1)
 	|| (config.hdf5_pMarker_output == 1)
@@ -344,28 +340,13 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     if ( config.do_gapA_clip ==1 )
       {
 	const std::vector<real_t> temp = parameters.get("gapAClip_params_array");
-
         config.gapA_clip1_point_x = temp[0];
 	config.gapA_clip1_point_y = temp[1];
 	config.gapA_clip1_point_z = temp[2];
         config.gapA_clip1_norm_x = temp[3];
 	config.gapA_clip1_norm_y = temp[4];
 	config.gapA_clip1_norm_z = temp[5];
-	
-        // config.gapA_clip1_point_x = parameters.get("gapA_clip1_point_x");
-	// config.gapA_clip1_point_y = parameters.get("gapA_clip1_point_y");
-	// config.gapA_clip1_point_z = parameters.get("gapA_clip1_point_z");
-        // config.gapA_clip1_norm_x = parameters.get("gapA_clip1_norm_x");
-	// config.gapA_clip1_norm_y = parameters.get("gapA_clip1_norm_y");
-	// config.gapA_clip1_norm_z = parameters.get("gapA_clip1_norm_z");
-
-        // config.gapA_clip2_point_x = parameters.get("gapA_clip2_point_x");
-	// config.gapA_clip2_point_y = parameters.get("gapA_clip2_point_y");
-	// config.gapA_clip2_point_z = parameters.get("gapA_clip2_point_z");
-        // config.gapA_clip2_norm_x = parameters.get("gapA_clip2_norm_x");
-	// config.gapA_clip2_norm_y = parameters.get("gapA_clip2_norm_y");
-	// config.gapA_clip2_norm_z = parameters.get("gapA_clip2_norm_z");	
-	
+		
       } // gapA clip control parammeters
 
     config.do_gapA_slice         = parameters.get_item("do_gapA_slice",{"no","yes"});
@@ -377,22 +358,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.gapA_slice1_point_z = temp[2];
         config.gapA_slice1_norm_x = temp[3];
 	config.gapA_slice1_norm_y = temp[4];
-	config.gapA_slice1_norm_z = temp[5];
-	
-        // config.gapA_slice1_point_x = parameters.get("gapA_slice1_point_x");
-	// config.gapA_slice1_point_y = parameters.get("gapA_slice1_point_y");
-	// config.gapA_slice1_point_z = parameters.get("gapA_slice1_point_z");
-        // config.gapA_slice1_norm_x = parameters.get("gapA_slice1_norm_x");
-	// config.gapA_slice1_norm_y = parameters.get("gapA_slice1_norm_y");
-	// config.gapA_slice1_norm_z = parameters.get("gapA_slice1_norm_z");
-
-        // config.gapA_slice2_point_x = parameters.get("gapA_slice2_point_x");
-	// config.gapA_slice2_point_y = parameters.get("gapA_slice2_point_y");
-	// config.gapA_slice2_point_z = parameters.get("gapA_slice2_point_z");
-        // config.gapA_slice2_norm_x = parameters.get("gapA_slice2_norm_x");
-	// config.gapA_slice2_norm_y = parameters.get("gapA_slice2_norm_y");
-	// config.gapA_slice2_norm_z = parameters.get("gapA_slice2_norm_z");	
-	
+	config.gapA_slice1_norm_z = temp[5];	
       } // gapA slice control parammeters
 
     
@@ -406,13 +372,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.fed_clip_norm_x = temp[3];
 	config.fed_clip_norm_y = temp[4];
 	config.fed_clip_norm_z = temp[5];	
-	
-        // config.fed_clip_point_x = parameters.get("fed_clip_point_x");
-	// config.fed_clip_point_y = parameters.get("fed_clip_point_y");
-	// config.fed_clip_point_z = parameters.get("fed_clip_point_z");
-        // config.fed_clip_norm_x = parameters.get("fed_clip_norm_x");
-	// config.fed_clip_norm_y = parameters.get("fed_clip_norm_y");
-	// config.fed_clip_norm_z = parameters.get("fed_clip_norm_z");	
       } // gapA clip control parammeters
     
     
@@ -433,14 +392,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.Temperature_clip_norm_y = temp[4];
 	config.Temperature_clip_norm_z = temp[5];
 	config.Temperature_clamp       = temp[6];
-	
-        // config.Temperature_clip_point_x = parameters.get("Temperature_clip_point_x");
-	// config.Temperature_clip_point_y = parameters.get("Temperature_clip_point_y");
-	// config.Temperature_clip_point_z = parameters.get("Temperature_clip_point_z");
-        // config.Temperature_clip_norm_x = parameters.get("Temperature_clip_norm_x");
-	// config.Temperature_clip_norm_y = parameters.get("Temperature_clip_norm_y");
-	// config.Temperature_clip_norm_z = parameters.get("Temperature_clip_norm_z");
-	// config.Temperature_clamp       = parameters.get("Temperature_clamp");
       }
 
     config.do_Temperature_slice = parameters.get_item("do_Temperature_slice",{"no", "yes"});
@@ -453,15 +404,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.Temperature_slice_norm_x = temp[3];
 	config.Temperature_slice_norm_y = temp[4];
         config.Temperature_slice_norm_z = temp[5];
-	
-        // config.Temperature_slice_point_x = parameters.get("Temperature_slice_point_x");
-	// config.Temperature_slice_point_y = parameters.get("Temperature_slice_point_y");
-	// config.Temperature_slice_point_z = parameters.get("Temperature_slice_point_z");
-        // config.Temperature_slice_norm_x = parameters.get("Temperature_slice_norm_x");
-	// config.Temperature_slice_norm_y = parameters.get("Temperature_slice_norm_y");
-	// config.Temperature_slice_norm_z = parameters.get("Temperature_slice_norm_z");
       }
-
     
     config.do_Temperature_isosurface = parameters.get_item("do_Temperature_isosurface",{"no","yes"});
     if ( config.do_Temperature_isosurface ==1 )
@@ -481,13 +424,6 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.pMarker_slice1_norm_x = temp[3];
 	config.pMarker_slice1_norm_y = temp[4];
 	config.pMarker_slice1_norm_z = temp[5];
-	
-        // config.pMarker_slice1_point_x = parameters.get("pMarker_slice1_point_x");
-	// config.pMarker_slice1_point_y = parameters.get("pMarker_slice1_point_y");
-	// config.pMarker_slice1_point_z = parameters.get("pMarker_slice1_point_z");
-        // config.pMarker_slice1_norm_x = parameters.get("pMarker_slice1_norm_x");
-	// config.pMarker_slice1_norm_y = parameters.get("pMarker_slice1_norm_y");
-	// config.pMarker_slice1_norm_z = parameters.get("pMarker_slice1_norm_z");
       }
 
     config.do_phaseMarker_slice2 = parameters.get_item("do_phaseMarker_slice2",{"no","yes"});
@@ -499,14 +435,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.pMarker_slice2_point_z = temp[2];
         config.pMarker_slice2_norm_x = temp[3];
 	config.pMarker_slice2_norm_y = temp[4];
-	config.pMarker_slice2_norm_z = temp[5];
-	
-        // config.pMarker_slice2_point_x = parameters.get("pMarker_slice2_point_x");
-	// config.pMarker_slice2_point_y = parameters.get("pMarker_slice2_point_y");
-	// config.pMarker_slice2_point_z = parameters.get("pMarker_slice2_point_z");
-        // config.pMarker_slice2_norm_x = parameters.get("pMarker_slice2_norm_x");
-	// config.pMarker_slice2_norm_y = parameters.get("pMarker_slice2_norm_y");
-	// config.pMarker_slice2_norm_z = parameters.get("pMarker_slice2_norm_z");
+	config.pMarker_slice2_norm_z = temp[5];	
       }
     
     config.do_phaseMarker_isosurface = parameters.get_item("do_phaseMarker_isosurface",{"no","yes"});
@@ -530,14 +459,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.U13phi_slice_point_z = temp[2];
         config.U13phi_slice_norm_x = temp[3];
 	config.U13phi_slice_norm_y = temp[4];
-	config.U13phi_slice_norm_z = temp[5];
-	
-        // config.U13phi_slice_point_x = parameters.get("U13phi_slice_point_x");
-	// config.U13phi_slice_point_y = parameters.get("U13phi_slice_point_y");
-	// config.U13phi_slice_point_z = parameters.get("U13phi_slice_point_z");
-        // config.U13phi_slice_norm_x = parameters.get("U13phi_slice_norm_x");
-	// config.U13phi_slice_norm_y = parameters.get("U13phi_slice_norm_y");
-	// config.U13phi_slice_norm_z = parameters.get("U13phi_slice_norm_z");
+	config.U13phi_slice_norm_z = temp[5];	
       }
 
     config.do_l_sq_slice = parameters.get_item("do_l_sq_slice",{"no","yes"});
@@ -549,14 +471,7 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.l_sq_slice_point_z = temp[2];
         config.l_sq_slice_norm_x = temp[3];
 	config.l_sq_slice_norm_y = temp[4];
-	config.l_sq_slice_norm_z = temp[5];
-	
-        // config.l_sq_slice_point_x = parameters.get("l_sq_slice_point_x");
-	// config.l_sq_slice_point_y = parameters.get("l_sq_slice_point_y");
-	// config.l_sq_slice_point_z = parameters.get("l_sq_slice_point_z");
-        // config.l_sq_slice_norm_x = parameters.get("l_sq_slice_norm_x");
-	// config.l_sq_slice_norm_y = parameters.get("l_sq_slice_norm_y");
-	// config.l_sq_slice_norm_z = parameters.get("l_sq_slice_norm_z");
+	config.l_sq_slice_norm_z = temp[5];	
       }
 
     config.do_GPhi_slice_extract = parameters.get_item("do_GPhi_slice_extract",{"no","yes"});
@@ -593,6 +508,18 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         config.GPhi_boxclip1_max_x = clip_params[3];
 	config.GPhi_boxclip1_max_y = clip_params[4];
 	config.GPhi_boxclip1_max_z = clip_params[5];
+      }
+
+    config.do_AMatrix_slice_extract = parameters.get_item("do_AMatrix_slice_extract",{"no","yes"});
+    if (config.do_AMatrix_slice_extract == 1)
+      {
+        std::vector<real_t> exaslice_params = parameters.get("AMSlice_params_array");        	
+        config.AM_slice1_point_x = exaslice_params[0];
+	config.AM_slice1_point_y = exaslice_params[1];
+	config.AM_slice1_point_z = exaslice_params[2];
+        config.AM_slice1_norm_x = exaslice_params[3];
+	config.AM_slice1_norm_y = exaslice_params[4];
+	config.AM_slice1_norm_z = exaslice_params[5];
       }
 
     
