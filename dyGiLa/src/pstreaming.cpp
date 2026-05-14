@@ -57,6 +57,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
 #if defined USE_PARIO
   if (
       ((gl.config.hdf5_A_matrix_output == 1)
+      || (gl.config.hdf5_AMatrix_exaslice_output == 1)       
       || (gl.config.hdf5_pMarker_output == 1)
       || (gl.config.hdf5_mass_current_output == 1)
       || (gl.config.hdf5_spin_current_output == 1)
@@ -82,6 +83,7 @@ void pStreaming(glsol &gl, parIO &paraio, unsigned int &stat_counter, const unsi
   else if (
            // insitu visualization block, no parallel hd5 stream
            (gl.config.hdf5_A_matrix_output != 1)
+	   && (gl.config.hdf5_AMatrix_exaslice_output != 1)
            && (gl.config.hdf5_pMarker_output != 1)
            && (gl.config.hdf5_mass_current_output != 1)
            && (gl.config.hdf5_spin_current_output != 1)

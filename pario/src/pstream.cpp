@@ -191,7 +191,10 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     }
 
     /*----------------     A matrix elements ---------------------*/
-    if (sol.config.hdf5_A_matrix_output == 1){
+    if (
+	(sol.config.hdf5_A_matrix_output == 1)
+	|| (sol.config.hdf5_AMatrix_exaslice_output == 1)
+       ){
      u11[ALL] = sol.AwT[X].e(0,0).re; v11[ALL] = sol.AwT[X].e(0,0).im;
      u12[ALL] = sol.AwT[X].e(0,1).re; v12[ALL] = sol.AwT[X].e(0,1).im;
      u13[ALL] = sol.AwT[X].e(0,2).re; v13[ALL] = sol.AwT[X].e(0,2).im;
