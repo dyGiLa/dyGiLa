@@ -291,7 +291,9 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     config.pario_compute_phaseMarker = parameters.get_item("pario_compute_phaseMarker",{"no","yes"});
     config.pario_compute_U1Phase     = parameters.get_item("pario_compute_U1Phase",{"no","yes"});
     config.pario_compute_lVector     = parameters.get_item("pario_compute_lVector",{"no","yes"});
-    config.pario_compute_GPhiVector     = parameters.get_item("pario_compute_GPhiVector",{"no","yes"});
+    config.pario_compute_GPhiVector  = parameters.get_item("pario_compute_GPhiVector",{"no","yes"});
+    //config.pario_compute_massCurr = parameters.get_item("pario_compute_massCurr",{"no","yes"});
+    config.pario_compute_spinCurr = parameters.get_item("pario_compute_spinCurr",{"no","yes"});
     
     
     config.U1_3phi_DetA_ZeroTol = parameters.get("U1_3phi_DetA_ZeroTol");
@@ -299,8 +301,12 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
     
     config.hdf5_A_matrix_output        = parameters.get_item("hdf5_A_matrix_output",{"no","yes"});
     config.hdf5_AMatrix_exaslice_output        = parameters.get_item("hdf5_AMatrix_exaslice_output",{"no","yes"});        
-    config.hdf5_mass_current_output    = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
-    config.hdf5_spin_current_output    = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
+    config.hdf5_mass_current_output = parameters.get_item("hdf5_mass_current_output",{"no","yes"});
+    //config.hdf5_massCurr_exaslice_output = parameters.get_item("hdf5_massCurr_exaslice_output",{"no","yes"});
+    
+    config.hdf5_spin_current_output = parameters.get_item("hdf5_spin_current_output",{"no","yes"});
+    config.hdf5_spinCurr_exaslice_output = parameters.get_item("hdf5_spinCurr_exaslice_output",{"no","yes"});
+    
     config.hdf5_pMarker_output         = parameters.get_item("hdf5_pMarker_output",{"no","yes"});
     config.hdf5_lVector_output         = parameters.get_item("hdf5_lVector_output",{"no","yes"});
     config.hdf5_GradPhiVector_output   = parameters.get_item("hdf5_GradPhiVector_output",{"no","yes"});
@@ -313,7 +319,9 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
         (config.hdf5_A_matrix_output == 1)
 	|| (config.hdf5_AMatrix_exaslice_output == 1)
 	|| (config.hdf5_mass_current_output == 1)
+	// || (config.hdf5_massCurr_exaslice_output == 1)	
 	|| (config.hdf5_spin_current_output == 1)
+	|| (config.hdf5_spinCurr_exaslice_output == 1)	
 	|| (config.hdf5_pMarker_output == 1)
 	|| (config.hdf5_lVector_output == 1)
 	|| (config.hdf5_GradPhiVector_output == 1)
@@ -522,6 +530,19 @@ const std::vector<std::string> glsol::configure(const std::string &fname, int ar
 	config.AM_slice1_norm_z = exaslice_params[5];
       }
 
+    config.do_spinCurr_slice_extract = parameters.get_item("do_spinCurr_slice_extract",{"no","yes"});
+    if (config.do_spinCurr_slice_extract == 1)
+      {
+        std::vector<real_t> exaslice_params = parameters.get("spinCurrSlice_params_array");        	
+        config.spinCurr_slice1_point_x = exaslice_params[0];
+	config.spinCurr_slice1_point_y = exaslice_params[1];
+	config.spinCurr_slice1_point_z = exaslice_params[2];
+        config.spinCurr_slice1_norm_x = exaslice_params[3];
+	config.spinCurr_slice1_norm_y = exaslice_params[4];
+	config.spinCurr_slice1_norm_z = exaslice_params[5];
+      }
+
+    
     
     // config.do_gapA_3slice       = parameters.get_item("do_gapA_3slice",{"no","yes"});
     // config.do_fe_slice          = parameters.get_item("do_fe_slice",{"no","yes"});

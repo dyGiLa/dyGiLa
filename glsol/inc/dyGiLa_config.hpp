@@ -158,7 +158,8 @@ struct dyGiLaConf {
       /*----------------------------------------*/
       unsigned int pario_compute_gapA, pario_compute_feDensity,
 	           pario_compute_phaseMarker, pario_compute_U1Phase,
-	           pario_compute_lVector, pario_compute_GPhiVector;
+	           pario_compute_lVector, pario_compute_GPhiVector,
+	           pario_compute_massCurr, pario_compute_spinCurr;
       unsigned int pario_Temperature_pStream;
 
       real_t U1_3phi_DetA_ZeroTol, lVec_SqlTol;
@@ -230,12 +231,20 @@ struct dyGiLaConf {
       unsigned int do_AMatrix_slice_extract;
       real_t AM_slice1_point_x, AM_slice1_point_y, AM_slice1_point_z,
 	     AM_slice1_norm_x, AM_slice1_norm_y, AM_slice1_norm_z;
-    
+
+      unsigned int do_spinCurr_slice_extract;
+      real_t spinCurr_slice1_point_x, spinCurr_slice1_point_y, spinCurr_slice1_point_z,
+	     spinCurr_slice1_norm_x, spinCurr_slice1_norm_y, spinCurr_slice1_norm_z;
+  
+      unsigned int do_massCurr_slice_extract;  
+      real_t massCurr_slice1_point_x, massCurr_slice1_point_y, massCurr_slice1_point_z,
+	     massCurr_slice1_norm_x, massCurr_slice1_norm_y, massCurr_slice1_norm_z;
+  
       unsigned int hdf5_A_matrix_output, hdf5_AMatrix_exaslice_output;
       //              hdf5_trA_output,
       //              hdf5_eigvA_output,
-      unsigned int hdf5_mass_current_output,
-                   hdf5_spin_current_output,
+      unsigned int hdf5_mass_current_output, hdf5_massCurr_exaslice_output,
+                   hdf5_spin_current_output, hdf5_spinCurr_exaslice_output,
 	           hdf5_pMarker_output,
 	           hdf5_lVector_output,
 	           hdf5_GradPhiVector_output,
