@@ -122,7 +122,7 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 			  + sol.AwT[X].e(al,j).conj() * (sol.AwT[X+j].e(al,i) - sol.AwT[X-j].e(al,i))
 			  + sol.AwT[X].e(al,i).conj() * (sol.AwT[X+j].e(al,j) - sol.AwT[X-j].e(al,j))).imag();
 	} // foralldir end here, outermost foralldir slowest, inner run earier
-	jmX[X] /= 2*sol.config.dx;
+	jmX[X] /= 2.*sol.config.dx;
       } // onsites(ALL) end here
 
       jm1[ALL] = jmX[X].e(0);
@@ -150,7 +150,10 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
     }
 
     // /*------------------ spin current components ------------------*/
-    if (sol.config.hdf5_spin_current_output == 1){
+    if (
+	(sol.config.hdf5_spin_current_output == 1)
+	|| (sol.config.hdf5_spinCurr_exaslice_output == 1)
+       ){
       Field<Matrix<3,3,double>> jsX; // column is alpha for spin, row is i for spatial
 
       onsites(ALL) {
@@ -163,7 +166,7 @@ void parIO::pstream(glsol &sol, unsigned int &stat_counter) {
 			        + sol.AwT[X].e(be,j).conj() * (sol.AwT[X+j].e(ga,i) - sol.AwT[X-j].e(ga,i))).real();
 	  
 	} // foralldir end here, outermost foralldir slowest, inner run earier
-	jsX[X] /= 2*sol.config.dx;
+	jsX[X] /= 2.*sol.config.dx;
       } // onsites(ALL) end here
 
       js11[ALL] = jsX[X].e(0,0);

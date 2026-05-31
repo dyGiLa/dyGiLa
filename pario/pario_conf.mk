@@ -53,6 +53,7 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/actions_insitu.o  \
                 $(PARIO_PATH)/actions_massCurrent.o \
                 $(PARIO_PATH)/actions_spinCurrent.o \
+		$(PARIO_PATH)/actions_spinCurr_exaslice.o \
                 $(PARIO_PATH)/actions_AMatrix.o     \
                 $(PARIO_PATH)/actions_AMatrix_exaslice.o \
                 $(PARIO_PATH)/actions_phaseMarker.o \

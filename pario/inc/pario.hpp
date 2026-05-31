@@ -77,7 +77,9 @@ private:
   void defineActions_GradientPhiVec_clip(glsol &);
   void defineActions_GradientPhiVec_boxclip(glsol &);    
   void defineActions_massCurrent(glsol &);
+  //void defineActions_massCurrent_exaslice(glsol &);  
   void defineActions_spinCurrent(glsol &);
+  void defineActions_spinCurrent_exaslice(glsol &);  
   void defineActions_AMatrix(glsol &);
   void defineActions_AMatrix_exaslice(glsol &);
   void defineActions_phaseMarker(glsol &);
@@ -134,7 +136,6 @@ private:
   std::vector<real_t> lsqContainer, l1Container, l2Container, l3Container;
   std::vector<real_t> GPhi1Container, GPhi2Container, GPhi3Container;  
 
-  /* std::vector<real_t> phaseExpModulusContainer, phaseExpAngleContainer acosphiContainer, asinphiContainer, phaseExp2ReContainer, phaseExp2ImContainer;*/
   std::vector<real_t> js11Container, js21Container, js31Container,
                       js12Container, js22Container, js32Container,
                       js13Container, js23Container, js33Container;
