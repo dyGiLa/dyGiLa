@@ -17,7 +17,7 @@ ifeq ($(USE_PARIO), ON)
   ifeq ($(ARCH), lumi)
     LDLIBS += $(ASCENT_MPI_LIB_FLAGS)
   else
-    ifeq ($(ARCH), lumi-hip-CC)
+    ifneq ($(filter $(ARCH),lumi-hip-CC roihu-gpu),)
       LDLIBS += $(ASCENT_MPI_CUDA_LIB_FLAGS)
     endif
   endif
@@ -53,7 +53,7 @@ PARIO_OBJECTS = $(PARIO_PATH)/xdmf.o     \
                 $(PARIO_PATH)/actions_insitu.o  \
                 $(PARIO_PATH)/actions_massCurrent.o \
                 $(PARIO_PATH)/actions_spinCurrent.o \
-		$(PARIO_PATH)/actions_spinCurr_exaslice.o \
+		        $(PARIO_PATH)/actions_spinCurr_exaslice.o \
                 $(PARIO_PATH)/actions_AMatrix.o     \
                 $(PARIO_PATH)/actions_AMatrix_exaslice.o \
                 $(PARIO_PATH)/actions_phaseMarker.o \
