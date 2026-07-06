@@ -1,0 +1,6 @@
+[submodule "libs/inshila"]
+	path = libs/inshila
+	url = https://github.com/timohyva/insHILA.git
+[submodule "libs/ascent"]
+	path = libs/ascent
+	url = https://github.com/timohyva/ascent.git
