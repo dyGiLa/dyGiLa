@@ -1,3 +1,6 @@
 [submodule "inshila"]
 	path = inshila
 	url = https://github.com/timohyva/insHILA.git
+[submodule "ascent"]
+	path = ascent
+	url = https://github.com/timohyva/ascent.git
