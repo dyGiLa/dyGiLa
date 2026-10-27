@@ -11,9 +11,8 @@ ASCENT_DIR := /projappl/project_462000836/ascent-v0.9.3-mpi/install/ascent-v0.9.
 #ASCENT_DIR := /projappl/project_462000465/ascent-0.9.3/scripts/build_ascent/install/ascent-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   HILA_DIR:= /projappl/project_462000960/insHILA-develop
-   # HILA_DIR:= /projappl/project_462000960/insHILA-809
-   ASCENT_DIR := /projappl/project_462000960/ascent-v0.9.4/ascent-v0.9.4/scripts/build_ascent/install/ascent-checkout
+   HILA_DIR:= /projappl/project_462001603/dyGiLa-develop/libs/inshila
+   ASCENT_DIR := /projappl/project_462001603/dyGiLa-develop/libs/ascent/scripts/build_ascent/install/ascent-checkout
   endif
   ifeq ($(ARCH), mahti-cuda)
    HILA_DIR:= /projappl/project_2014552/insHILA
@@ -31,7 +30,7 @@ ifeq ($(ARCH), lumi)
  DYGILA_DIR := /projappl/project_462000836/dyGiLa-develop
 else
   ifeq ($(ARCH), lumi-hip-CC)
-   DYGILA_DIR := /projappl/project_462000960/dyGiLa-develop
+   DYGILA_DIR := /project/project_462001603/dyGiLa-develop/
   endif
   ifeq ($(ARCH), mahti-cuda)
    DYGILA_DIR := /projappl/project_2014552/dyGiLa-GPU
